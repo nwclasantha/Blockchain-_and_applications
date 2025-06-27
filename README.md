@@ -40,7 +40,11 @@ Comparatively, the simulators we discuss in this article were originally develop
 
 ## III. Methodology
 
+![image](https://github.com/user-attachments/assets/8441ad3b-4cf8-4bea-94f2-20f1287622a3)
+
 ### A. Design Approach
+
+![image](https://github.com/user-attachments/assets/7bafa41a-30be-4489-8e69-d4e46de1cac2)
 
 The simulators are built on an object-oriented and modular design that mirrors the real-world structure of blockchain systems. In the Python-based simulators, core entities such as `Block`, `Blockchain` (ledger), `Transaction`, `Node`, `Miner`, and `Validator` are implemented as classes, encapsulating the data and behaviors of those components. This enables simulations to be constructed by instantiating objects and invoking methods that simulate real operations (e.g., mining a block, signing a transaction, verifying a signature). For example, an educational blockchain simulator in Python defines classes for Transaction, SmartContract, Block, User, and Blockchain to model on-chain operations and state changes in a self-contained way. This mirrors the layered architecture of actual blockchain software, separating concerns of data (transactions/blocks) from consensus logic and network interaction.
 
@@ -69,6 +73,8 @@ By structuring the simulators in this methodical way—object-oriented design, e
 In this section, we categorize and describe the simulators, dividing them into thematic groups. Each subsection outlines both Python-based and HTML-based simulators (if available) for that category, explaining their features, workflows, and example application scenarios.
 
 ### A. Blockchain Basics and Architecture Simulators
+
+![image](https://github.com/user-attachments/assets/ae194f95-a9de-4b45-9e44-04d1a95a81c0)
 
 The first set of simulators introduces fundamental blockchain data structures and operations. A basic blockchain simulator (provided in both Python and HTML form) demonstrates how a chain of blocks is constructed, how each block links via hashes, and how new transactions are added.
 
@@ -118,11 +124,19 @@ Moving beyond consensus, the simulators also delve into specifics of cryptocurre
 
 Moving into security, the lecture simulators include a suite devoted to common smart contract vulnerabilities and advanced topics like contract lifecycle and oracles.
 
-**Reentrancy Attack Simulator (Python):** This models the infamous reentrancy bug (which led to the DAO hack on Ethereum). The simulator likely sets up a mock contract with a withdraw function that does not properly lock its state. It then simulates an attacker calling withdraw recursively.
+**Reentrancy Attack Simulator (Python):** 
+
+![image](https://github.com/user-attachments/assets/ddf6a4c9-33ff-48ab-9e24-1eb0aa136a4d)
+
+This models the infamous reentrancy bug (which led to the DAO hack on Ethereum). The simulator likely sets up a mock contract with a withdraw function that does not properly lock its state. It then simulates an attacker calling withdraw recursively.
 
 **Oracle Problem Simulator (Python):** This addresses the reliance of smart contracts on off-chain data. The simulator might have a contract that needs an external price or event. Initially, it shows the contract waiting for external data, and then if no oracle is present, it cannot update state. Then it simulates an oracle providing the data.
 
-**Smart Contract Audit Simulator (Python):** This appears to automate checking a piece of contract code for vulnerabilities. It likely has a sample contract and runs through a checklist of known issues (reentrancy, unsafe math, etc.).
+**Smart Contract Audit Simulator (Python):** 
+
+![image](https://github.com/user-attachments/assets/9ad69b8d-e141-4253-a79e-2348822fb373)
+
+This appears to automate checking a piece of contract code for vulnerabilities. It likely has a sample contract and runs through a checklist of known issues (reentrancy, unsafe math, etc.).
 
 ### F. Network Security and Attack Simulators
 
@@ -138,9 +152,13 @@ The final group of simulators explicitly focuses on *attacks against blockchain 
 
 ## V. Results and Analysis
 
+![image](https://github.com/user-attachments/assets/893aa747-f0ad-4a32-a085-4f3e64cd6a76)
+
 The simulators, when executed, yield qualitative and quantitative results that align with expected blockchain behavior. Here we discuss some key observations from running these tools and analyze their implications for network and security research.
 
 ### A. Consensus Dynamics and Performance
+
+![image](https://github.com/user-attachments/assets/3d411341-55e5-4906-b969-5a6e785d7f2a)
 
 Running the Proof-of-Work mining simulator under various difficulty settings confirms the non-linear impact of difficulty on block discovery time. For instance, at a base difficulty (4 leading hex zeroes in the hash), blocks were found in milliseconds on average in our Python simulation, whereas increasing to 5 zeroes often took on the order of seconds. This matches the real-world notion that PoW difficulty adjustments can exponentially affect throughput.
 
