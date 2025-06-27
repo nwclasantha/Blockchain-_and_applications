@@ -102,13 +102,29 @@ Cryptographic primitives underlie blockchain security; accordingly, the lecture 
 
 Consensus algorithms are at the heart of blockchain network research. The lecture simulators include both Python and HTML tools to model popular consensus protocols: Proof of Work (PoW), Proof of Stake (PoS), Delegated PoS, Practical Byzantine Fault Tolerance (PBFT), and even conceptual demos like the Byzantine Generals Problem.
 
-**Proof of Work (Mining) Simulator (Python):** The script creates a scenario with multiple miners racing to mine a new block. Each miner continuously hashes a block's contents with an incrementing nonce until a hash with the required difficulty (e.g., a prefix of four "0" digits) is found. The script uses multiple Miner instances (e.g., Alice, Bob, Charlie) and effectively *simulates a competition*: whichever miner finds a valid nonce first "wins" and mines the block.
+**Proof of Work (Mining) Simulator (Python):** 
 
-**Proof of Stake Simulator (Python):** The consensus mechanism is simulated by randomly selecting a "validator" weighted by their stake. The script defines Validator objects with names and stake values (e.g., Alice has 50 tokens, Bob 30, Charlie 20). It then creates a "weighted pool" where each validator's name appears proportional to their stake (so Alice appears 50 times, Bob 30, etc.), and picks a random entry from this pool to decide who creates the next block.
+![image](https://github.com/user-attachments/assets/a3e6f766-1358-43b8-a877-038cc0d5eb03)
 
-**Practical Byzantine Fault Tolerance (PBFT) Simulator (Python):** The script models a small network of nodes reaching consensus through a PBFT-like protocol. PBFT normally tolerates up to `f` faulty nodes in a network of `3f+1` nodes. In the provided code, they instantiate, for example, 4 nodes (which corresponds to `f=1` Byzantine fault tolerance). One of these is deliberately marked malicious. Each node "proposes" a block, and then the simulator checks if a supermajority agreement exists on one of the proposals.
+The script creates a scenario with multiple miners racing to mine a new block. Each miner continuously hashes a block's contents with an incrementing nonce until a hash with the required difficulty (e.g., a prefix of four "0" digits) is found. The script uses multiple Miner instances (e.g., Alice, Bob, Charlie) and effectively *simulates a competition*: whichever miner finds a valid nonce first "wins" and mines the block.
 
-**Byzantine Generals Problem Demo (Python):** This explicitly demonstrates the classic problem setup. It may simulate a set of generals (nodes) each voting "Attack" or "Retreat," with some traitors among them flipping votes or sending inconsistent messages. The simulator likely prints each general's vote and then what the final decision is according to majority.
+**Proof of Stake Simulator (Python):** 
+
+![image](https://github.com/user-attachments/assets/70b633aa-5a22-4c25-b868-edee6d481c4f)
+
+The consensus mechanism is simulated by randomly selecting a "validator" weighted by their stake. The script defines Validator objects with names and stake values (e.g., Alice has 50 tokens, Bob 30, Charlie 20). It then creates a "weighted pool" where each validator's name appears proportional to their stake (so Alice appears 50 times, Bob 30, etc.), and picks a random entry from this pool to decide who creates the next block.
+
+**Practical Byzantine Fault Tolerance (PBFT) Simulator (Python):** 
+
+![image](https://github.com/user-attachments/assets/cd29db63-8d77-4b03-bef5-df69abce9652)
+
+The script models a small network of nodes reaching consensus through a PBFT-like protocol. PBFT normally tolerates up to `f` faulty nodes in a network of `3f+1` nodes. In the provided code, they instantiate, for example, 4 nodes (which corresponds to `f=1` Byzantine fault tolerance). One of these is deliberately marked malicious. Each node "proposes" a block, and then the simulator checks if a supermajority agreement exists on one of the proposals.
+
+**Byzantine Generals Problem Demo (Python):** 
+
+![image](https://github.com/user-attachments/assets/a9b3163f-03e9-4fc8-a4ee-bbe54846fcbe)
+
+This explicitly demonstrates the classic problem setup. It may simulate a set of generals (nodes) each voting "Attack" or "Retreat," with some traitors among them flipping votes or sending inconsistent messages. The simulator likely prints each general's vote and then what the final decision is according to majority.
 
 ### D. Cryptocurrency Transaction and Wallet Simulators
 
