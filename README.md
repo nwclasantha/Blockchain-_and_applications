@@ -137,11 +137,15 @@ Moving beyond consensus, the simulators also delve into specifics of cryptocurre
 
 ### E. Smart Contract Vulnerability and Advanced Concept Simulators
 
+![image](https://github.com/user-attachments/assets/99e27dd3-6b41-43c6-8b27-de2620ca46be)
+
 Moving into security, the lecture simulators include a suite devoted to common smart contract vulnerabilities and advanced topics like contract lifecycle and oracles.
 
 **Reentrancy Attack Simulator (Python):** 
 
 ![image](https://github.com/user-attachments/assets/ddf6a4c9-33ff-48ab-9e24-1eb0aa136a4d)
+![image](https://github.com/user-attachments/assets/961fa752-ef82-4cef-af56-6ef7dda3a449)
+![image](https://github.com/user-attachments/assets/7d97fc29-7099-4369-bb36-61575f870457)
 
 This models the infamous reentrancy bug (which led to the DAO hack on Ethereum). The simulator likely sets up a mock contract with a withdraw function that does not properly lock its state. It then simulates an attacker calling withdraw recursively.
 
