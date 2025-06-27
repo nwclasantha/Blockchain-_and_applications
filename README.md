@@ -5,7 +5,6 @@
 *Corresponding Author:* N W Chanaka Lasantha  
 *Affiliation:* Faculty of Graduate Studies, IIC University of Technology, Phnom Penh, Cambodia.  
 *Email:* chanaka.lasantha@gmail.com
-*ORCID:* 0009-0006-3226-7713
 
 ## Abstract
 
