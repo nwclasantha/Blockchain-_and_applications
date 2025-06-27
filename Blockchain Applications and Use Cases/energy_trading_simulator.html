@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Trading Terminal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff41;
+            overflow: hidden;
+            font-size: 11px;
+        }
+
+        .terminal-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            grid-template-rows: 50px 1fr 160px;
+            height: 100vh;
+            gap: 1px;
+            background: #111;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #001a00, #003300, #001a00);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 2px solid #00ff41;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            animation: sweep 3s linear infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .logo {
+            font-size: 14px;
+            font-weight: bold;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            margin-right: 20px;
+        }
+
+        .market-status {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+            margin-right: 20px;
+        }
+
+        .status-item {
+            text-align: center;
+            font-size: 9px;
+        }
+
+        .status-label {
+            color: #666;
+        }
+
+        .status-value {
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .header-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff41;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .left-panel {
+            background: #0a0a0a;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid #333;
+        }
+
+        .panel-header {
+            background: #1a1a1a;
+            padding: 6px 10px;
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+        }
+
+        .watchlist {
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .symbol-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            margin-bottom: 1px;
+            transition: all 0.1s;
+            font-size: 9px;
+        }
+
+        .symbol-row:hover {
+            background: #1a1a1a;
+            border-color: #00ff41;
+        }
+
+        .symbol-row.active {
+            background: #003300;
+            border-color: #00ff41;
+        }
+
+        .symbol-info {
+            flex: 1;
+        }
+
+        .symbol-code {
+            color: #fff;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .symbol-name {
+            color: #666;
+            font-size: 8px;
+        }
+
+        .symbol-data {
+            text-align: right;
+        }
+
+        .price {
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .change {
+            font-size: 8px;
+        }
+
+        .positive { color: #00ff41; }
+        .negative { color: #ff3333; }
+
+        .order-section {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .order-tabs {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .order-tab {
+            flex: 1;
+            padding: 4px;
+            text-align: center;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            cursor: pointer;
+            font-size: 8px;
+            transition: all 0.2s;
+        }
+
+        .order-tab.active {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            color: #666;
+            font-size: 8px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff41;
+            padding: 4px;
+            font-size: 9px;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 3px rgba(0, 255, 65, 0.3);
+        }
+
+        .order-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .order-btn {
+            padding: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 9px;
+            transition: all 0.2s;
+        }
+
+        .buy-btn {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .buy-btn:hover {
+            background: #00cc33;
+            transform: translateY(-1px);
+        }
+
+        .sell-btn {
+            background: #ff3333;
+            color: #fff;
+        }
+
+        .sell-btn:hover {
+            background: #cc2222;
+            transform: translateY(-1px);
+        }
+
+        .algo-section {
+            background: #0f0f0f;
+            padding: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .algo-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8px;
+        }
+
+        .algo-info {
+            flex: 1;
+        }
+
+        .algo-name {
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .algo-status {
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .algo-pnl {
+            font-size: 7px;
+        }
+
+        .algo-toggle {
+            background: #333;
+            border: 1px solid #555;
+            color: #00ff41;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 7px;
+            transition: all 0.2s;
+        }
+
+        .algo-toggle.active {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .main-panel {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            background: #1a1a1a;
+            padding: 6px 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 3px;
+        }
+
+        .chart-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #00ff41;
+            padding: 3px 6px;
+            cursor: pointer;
+            font-size: 8px;
+            transition: all 0.2s;
+        }
+
+        .chart-btn.active {
+            background: #00ff41;
+            color: #000;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .indicators-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            padding: 8px;
+            font-size: 8px;
+            min-width: 120px;
+            z-index: 10;
+        }
+
+        .indicator-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .indicator-label {
+            color: #666;
+        }
+
+        .indicator-value {
+            color: #00ff41;
+            font-weight: bold;
+        }
+
+        .depth-chart {
+            height: 80px;
+            background: #0f0f0f;
+            border-top: 1px solid #333;
+            position: relative;
+        }
+
+        .right-panel {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .orderbook-section {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .orderbook {
+            height: 100%;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .orderbook-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+
+        .orderbook-table th {
+            background: #1a1a1a;
+            color: #666;
+            padding: 3px;
+            border-bottom: 1px solid #333;
+            font-size: 7px;
+            text-transform: uppercase;
+        }
+
+        .orderbook-table td {
+            padding: 2px 3px;
+            border-bottom: 1px solid #222;
+            text-align: right;
+        }
+
+        .bid { color: #00ff41; }
+        .ask { color: #ff3333; }
+
+        .positions-section {
+            flex: 1;
+            padding: 8px;
+            overflow-y: auto;
+            border-top: 1px solid #333;
+        }
+
+        .position-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 6px;
+            margin-bottom: 4px;
+            font-size: 8px;
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .position-symbol {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .position-side {
+            font-weight: bold;
+        }
+
+        .position-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            font-size: 7px;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            color: #00ff41;
+            text-align: right;
+        }
+
+        .news-section {
+            flex: 1;
+            padding: 8px;
+            overflow-y: auto;
+            border-top: 1px solid #333;
+        }
+
+        .news-item {
+            padding: 4px;
+            border-bottom: 1px solid #222;
+            font-size: 7px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .news-item:hover {
+            background: #1a1a1a;
+        }
+
+        .news-time {
+            color: #666;
+            margin-bottom: 1px;
+        }
+
+        .news-title {
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 1px;
+            line-height: 1.2;
+        }
+
+        .news-impact {
+            color: #00ff41;
+            font-size: 6px;
+        }
+
+        .bottom-panel {
+            grid-column: 1 / -1;
+            background: #0a0a0a;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1px;
+            border-top: 1px solid #333;
+        }
+
+        .bottom-section {
+            background: #0f0f0f;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        .bottom-header {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7px;
+        }
+
+        .data-table th {
+            background: #1a1a1a;
+            color: #666;
+            padding: 2px;
+            border-bottom: 1px solid #333;
+            text-align: left;
+            font-size: 6px;
+        }
+
+        .data-table td {
+            padding: 2px;
+            border-bottom: 1px solid #222;
+            font-size: 7px;
+        }
+
+        .risk-gauge {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+            font-size: 7px;
+        }
+
+        .risk-label {
+            width: 50px;
+            color: #666;
+        }
+
+        .risk-bar {
+            flex: 1;
+            height: 4px;
+            background: #1a1a1a;
+            margin: 0 6px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .risk-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .risk-low { background: #00ff41; }
+        .risk-medium { background: #ffaa00; }
+        .risk-high { background: #ff3333; }
+
+        .risk-value {
+            color: #00ff41;
+            font-weight: bold;
+            width: 40px;
+            text-align: right;
+            font-size: 7px;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1px;
+            height: 100%;
+        }
+
+        .heatmap-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .vol-high { background: #ff3333; }
+        .vol-medium { background: #ffaa00; }
+        .vol-low { background: #00ff41; }
+
+        .alert {
+            position: fixed;
+            top: 60px;
+            right: 15px;
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            padding: 8px;
+            border-radius: 3px;
+            color: #00ff41;
+            font-size: 9px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 250px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #00ff41 #1a1a1a;
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 2px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            padding: 20px;
+            max-width: 500px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff3333;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .action-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #ff3333;
+            padding: 1px 4px;
+            cursor: pointer;
+            font-size: 7px;
+        }
+
+        .action-btn:hover {
+            background: #ff3333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-grid">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">⚡ QUANTUM ENERGY TERMINAL</div>
+            <div class="market-status">
+                <div class="status-item">
+                    <div class="status-label">TIME</div>
+                    <div class="status-value" id="current-time">16:42:33</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">STATUS</div>
+                    <div class="status-value">OPEN</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">VOLUME</div>
+                    <div class="status-value" id="total-volume">171.7M</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">VIX</div>
+                    <div class="status-value" id="vix-value">28.2</div>
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="showModal('settings')">SETTINGS</button>
+                <button class="header-btn" onclick="showModal('backtest')">BACKTEST</button>
+                <button class="header-btn" onclick="exportData()">EXPORT</button>
+                <button class="header-btn" onclick="showModal('help')">HELP</button>
+            </div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <div class="panel-header">Market Data</div>
+                <div class="watchlist scrollbar" id="watchlist">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-header">Order Entry</div>
+                <div class="order-section">
+                    <div class="order-tabs">
+                        <div class="order-tab active" data-tab="basic">BASIC</div>
+                        <div class="order-tab" data-tab="advanced">ADV</div>
+                        <div class="order-tab" data-tab="options">OPT</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Symbol</label>
+                            <select class="form-input" id="order-symbol">
+                                <option value="NG-M25">NG-M25</option>
+                                <option value="CL-M25">CL-M25</option>
+                                <option value="HO-M25">HO-M25</option>
+                                <option value="RB-M25">RB-M25</option>
+                                <option value="ELEC-H25">ELEC-H25</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Order Type</label>
+                            <select class="form-input" id="order-type">
+                                <option value="market">Market</option>
+                                <option value="limit">Limit</option>
+                                <option value="stop">Stop</option>
+                                <option value="stop-limit">Stop Limit</option>
+                                <option value="twap">TWAP</option>
+                                <option value="vwap">VWAP</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <input class="form-input" id="order-quantity" type="number" value="1000" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Price</label>
+                            <input class="form-input" id="order-price" type="number" step="0.001" value="3.422">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">TIF</label>
+                            <select class="form-input" id="time-in-force">
+                                <option value="day">DAY</option>
+                                <option value="gtc">GTC</option>
+                                <option value="ioc">IOC</option>
+                                <option value="fok">FOK</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Strategy</label>
+                            <select class="form-input" id="strategy">
+                                <option value="outright">Outright</option>
+                                <option value="calendar">Calendar</option>
+                                <option value="butterfly">Butterfly</option>
+                                <option value="spread">Spread</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="order-buttons">
+                        <button class="order-btn buy-btn" onclick="placeOrder('buy')">BUY</button>
+                        <button class="order-btn sell-btn" onclick="placeOrder('sell')">SELL</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-header">Algorithms</div>
+                <div class="algo-section scrollbar" id="algorithms">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="chart-header">
+                <div class="chart-title" id="chart-title">NG-M25 Natural Gas Futures</div>
+                <div class="chart-controls">
+                    <button class="chart-btn active" onclick="changeTimeframe('1m')">1m</button>
+                    <button class="chart-btn" onclick="changeTimeframe('5m')">5m</button>
+                    <button class="chart-btn" onclick="changeTimeframe('15m')">15m</button>
+                    <button class="chart-btn" onclick="changeTimeframe('1h')">1h</button>
+                    <button class="chart-btn" onclick="changeTimeframe('4h')">4h</button>
+                    <button class="chart-btn" onclick="changeTimeframe('1d')">1d</button>
+                    <button class="chart-btn" onclick="toggleIndicators()">TECH</button>
+                    <button class="chart-btn" onclick="toggleFullscreen()">FULL</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="main-chart" class="chart-canvas"></canvas>
+                <div class="indicators-overlay" id="indicators-overlay">
+                    <div class="indicator-row">
+                        <span class="indicator-label">RSI(14):</span>
+                        <span class="indicator-value" id="rsi">63.7</span>
+                    </div>
+                    <div class="indicator-row">
+                        <span class="indicator-label">MACD:</span>
+                        <span class="indicator-value" id="macd">0.000</span>
+                    </div>
+                    <div class="indicator-row">
+                        <span class="indicator-label">BB Upper:</span>
+                        <span class="indicator-value" id="bb-upper">3.431</span>
+                    </div>
+                    <div class="indicator-row">
+                        <span class="indicator-label">BB Lower:</span>
+                        <span class="indicator-value" id="bb-lower">3.419</span>
+                    </div>
+                    <div class="indicator-row">
+                        <span class="indicator-label">Vol(20):</span>
+                        <span class="indicator-value" id="volatility">15.2%</span>
+                    </div>
+                    <div class="indicator-row">
+                        <span class="indicator-label">ATR(14):</span>
+                        <span class="indicator-value" id="atr">0.006</span>
+                    </div>
+                </div>
+            </div>
+            <div class="depth-chart">
+                <canvas id="depth-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="orderbook-section">
+                <div class="panel-header">Order Book</div>
+                <div class="orderbook scrollbar">
+                    <table class="orderbook-table">
+                        <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>Bid</th>
+                                <th>Ask</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderbook-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="positions-section">
+                <div class="panel-header">Positions</div>
+                <div id="positions-container" class="scrollbar">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="news-section">
+                <div class="panel-header">News Feed</div>
+                <div id="news-container" class="scrollbar">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel -->
+        <div class="bottom-panel">
+            <div class="bottom-section">
+                <div class="bottom-header">Open Orders</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Symbol</th>
+                            <th>Side</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bottom-section">
+                <div class="bottom-header">Portfolio Analytics</div>
+                <div id="portfolio-analytics">
+                    <div class="risk-gauge">
+                        <div class="risk-label">P&L:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-medium" style="width: 65%;" id="pnl-bar"></div>
+                        </div>
+                        <div class="risk-value" id="pnl-value">+$6.7K</div>
+                    </div>
+                    <div class="risk-gauge">
+                        <div class="risk-label">VaR 1d:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-high" style="width: 45%;" id="var-bar"></div>
+                        </div>
+                        <div class="risk-value" id="var-value">$8.2K</div>
+                    </div>
+                    <div class="risk-gauge">
+                        <div class="risk-label">Delta:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-low" style="width: 30%;" id="delta-bar"></div>
+                        </div>
+                        <div class="risk-value" id="delta-value">+2.10</div>
+                    </div>
+                    <div class="risk-gauge">
+                        <div class="risk-label">Gamma:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-medium" style="width: 55%;" id="gamma-bar"></div>
+                        </div>
+                        <div class="risk-value" id="gamma-value">76.80</div>
+                    </div>
+                    <div class="risk-gauge">
+                        <div class="risk-label">Theta:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-high" style="width: 75%;" id="theta-bar"></div>
+                        </div>
+                        <div class="risk-value" id="theta-value">-$730</div>
+                    </div>
+                    <div class="risk-gauge">
+                        <div class="risk-label">Vega:</div>
+                        <div class="risk-bar">
+                            <div class="risk-fill risk-low" style="width: 25%;" id="vega-bar"></div>
+                        </div>
+                        <div class="risk-value" id="vega-value">+$158</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-section">
+                <div class="bottom-header">Volatility Heatmap</div>
+                <div class="heatmap" id="volatility-heatmap">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Settings
+                <button class="close-btn" onclick="closeModal('settings')">&times;</button>
+            </div>
+            <p>Trading settings and preferences can be configured here.</p>
+        </div>
+    </div>
+
+    <div class="modal" id="backtest-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Backtesting Engine
+                <button class="close-btn" onclick="closeModal('backtest')">&times;</button>
+            </div>
+            <p>Historical strategy backtesting and performance analysis.</p>
+        </div>
+    </div>
+
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Help & Shortcuts
+                <button class="close-btn" onclick="closeModal('help')">&times;</button>
+            </div>
+            <div style="line-height: 1.6; font-size: 11px;">
+                <strong>Keyboard Shortcuts:</strong><br>
+                F1 - Quick Buy | F2 - Quick Sell<br>
+                F3 - Cancel All Orders | F4 - Close All Positions<br>
+                Ctrl+1-6 - Change Timeframes<br>
+                Space - Toggle Technical Indicators<br><br>
+                <strong>Order Types:</strong><br>
+                Market - Immediate execution at best price<br>
+                Limit - Execute at specified price or better<br>
+                TWAP - Time-weighted average price algorithm<br>
+                VWAP - Volume-weighted average price algorithm
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Trading Engine with Working Features
+        class EnergyTradingEngine {
+            constructor() {
+                this.symbols = new Map();
+                this.positions = new Map();
+                this.orders = [];
+                this.priceHistory = new Map();
+                this.orderBooks = new Map();
+                this.algorithms = new Map();
+                this.news = [];
+                this.currentSymbol = 'NG-M25';
+                this.currentTimeframe = '1m';
+                this.chart = null;
+                this.depthChart = null;
+                
+                this.initialize();
+            }
+
+            initialize() {
+                this.setupSymbols();
+                this.setupAlgorithms();
+                this.generateInitialData();
+                this.initializeCharts();
+                this.setupEventListeners();
+                this.startDataFeed();
+                this.updateAll();
+            }
+
+            setupSymbols() {
+                const symbolsData = [
+                    { code: 'NG-M25', name: 'Natural Gas Jun25', price: 3.422, vol: 0.35 },
+                    { code: 'CL-M25', name: 'Crude Oil Jun25', price: 82.15, vol: 0.28 },
+                    { code: 'HO-M25', name: 'Heating Oil Jun25', price: 2.641, vol: 0.32 },
+                    { code: 'RB-M25', name: 'Gasoline Jun25', price: 2.387, vol: 0.30 },
+                    { code: 'ELEC-H25', name: 'Electricity Mar25', price: 85.50, vol: 0.45 }
+                ];
+
+                symbolsData.forEach(data => {
+                    this.symbols.set(data.code, {
+                        ...data,
+                        bid: data.price - 0.005,
+                        ask: data.price + 0.005,
+                        change: (Math.random() - 0.5) * 0.04,
+                        volume: Math.floor(Math.random() * 50000) + 10000,
+                        lastUpdate: Date.now()
+                    });
+                });
+
+                // Sample positions
+                this.positions.set('NG-M25', {
+                    quantity: 5000,
+                    avgPrice: 3.385,
+                    side: 'long',
+                    unrealizedPnL: 0,
+                    realizedPnL: 1850
+                });
+
+                this.positions.set('CL-M25', {
+                    quantity: -2000,
+                    avgPrice: 83.20,
+                    side: 'short',
+                    unrealizedPnL: 0,
+                    realizedPnL: -450
+                });
+            }
+
+            setupAlgorithms() {
+                const algoData = [
+                    { id: 'momentum', name: 'Momentum Scanner', status: 'active', pnl: 2450, desc: 'RSI + MACD signals' },
+                    { id: 'meanRev', name: 'Mean Reversion', status: 'active', pnl: -850, desc: 'Bollinger reversals' },
+                    { id: 'arbitrage', name: 'Spread Arb', status: 'paused', pnl: 1670, desc: 'Calendar spreads' },
+                    { id: 'volatility', name: 'Vol Trading', status: 'active', pnl: 3200, desc: 'Vol breakouts' }
+                ];
+
+                algoData.forEach(algo => {
+                    this.algorithms.set(algo.id, algo);
+                });
+            }
+
+            generateInitialData() {
+                // Generate price history
+                this.symbols.forEach((data, symbol) => {
+                    this.priceHistory.set(symbol, this.createPriceHistory(data.price, 200));
+                    this.orderBooks.set(symbol, this.createOrderBook(data.price));
+                });
+
+                // Generate news
+                this.generateNews();
+            }
+
+            createPriceHistory(basePrice, periods) {
+                const history = [];
+                let price = basePrice;
+                
+                for (let i = periods; i >= 0; i--) {
+                    const timestamp = Date.now() - (i * 60000);
+                    const change = (Math.random() - 0.5) * 0.001;
+                    price = Math.max(0.001, price * (1 + change));
+                    
+                    history.push({
+                        timestamp,
+                        open: price * (1 + (Math.random() - 0.5) * 0.0005),
+                        high: price * (1 + Math.random() * 0.001),
+                        low: price * (1 - Math.random() * 0.001),
+                        close: price,
+                        volume: Math.floor(Math.random() * 500) + 100
+                    });
+                }
+                
+                return history;
+            }
+
+            createOrderBook(price) {
+                const book = { bids: [], asks: [] };
+                
+                for (let i = 0; i < 15; i++) {
+                    book.bids.push({
+                        price: price - (i + 1) * 0.001,
+                        size: Math.floor(Math.random() * 800) + 200
+                    });
+                    
+                    book.asks.push({
+                        price: price + (i + 1) * 0.001,
+                        size: Math.floor(Math.random() * 800) + 200
+                    });
+                }
+                
+                return book;
+            }
+
+            generateNews() {
+                const newsItems = [
+                    'Natural gas storage data shows unexpected draw',
+                    'Hurricane Ida threatens Gulf production',
+                    'Renewable energy credits surge on policy changes',
+                    'Power grid stress in Texas drives electricity prices',
+                    'LNG exports to Europe reach record levels',
+                    'Oil inventory builds exceed expectations'
+                ];
+
+                for (let i = 0; i < 15; i++) {
+                    const time = new Date(Date.now() - Math.random() * 3600000);
+                    this.news.push({
+                        time: time.toLocaleTimeString(),
+                        title: newsItems[Math.floor(Math.random() * newsItems.length)],
+                        impact: ['HIGH', 'MEDIUM', 'CRITICAL'][Math.floor(Math.random() * 3)]
+                    });
+                }
+            }
+
+            initializeCharts() {
+                // Main price chart
+                const ctx = document.getElementById('main-chart').getContext('2d');
+                const history = this.priceHistory.get(this.currentSymbol);
+                
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: history.slice(-50).map(h => new Date(h.timestamp).toLocaleTimeString()),
+                        datasets: [{
+                            label: 'Price',
+                            data: history.slice(-50).map(h => h.close),
+                            borderColor: '#00ff41',
+                            backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                            borderWidth: 1,
+                            fill: true,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            pointHoverRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                display: true,
+                                ticks: { 
+                                    color: '#666',
+                                    maxTicksLimit: 8,
+                                    font: { size: 8 }
+                                },
+                                grid: { color: 'rgba(102, 102, 102, 0.2)' }
+                            },
+                            y: {
+                                display: true,
+                                position: 'right',
+                                ticks: { 
+                                    color: '#00ff41',
+                                    font: { size: 8 }
+                                },
+                                grid: { color: 'rgba(0, 255, 65, 0.2)' }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+
+                // Depth chart
+                const depthCtx = document.getElementById('depth-chart').getContext('2d');
+                const book = this.orderBooks.get(this.currentSymbol);
+                
+                this.depthChart = new Chart(depthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [...book.bids.reverse().map(b => b.price.toFixed(3)), 
+                               ...book.asks.map(a => a.price.toFixed(3))],
+                        datasets: [{
+                            label: 'Bids',
+                            data: [...book.bids.map(b => b.size), ...Array(book.asks.length).fill(0)],
+                            borderColor: '#00ff41',
+                            backgroundColor: 'rgba(0, 255, 65, 0.3)',
+                            fill: true,
+                            tension: 0
+                        }, {
+                            label: 'Asks',
+                            data: [...Array(book.bids.length).fill(0), ...book.asks.map(a => a.size)],
+                            borderColor: '#ff3333',
+                            backgroundColor: 'rgba(255, 51, 51, 0.3)',
+                            fill: true,
+                            tension: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                display: false
+                            },
+                            y: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            setupEventListeners() {
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'F1':
+                            e.preventDefault();
+                            this.placeOrder('buy');
+                            break;
+                        case 'F2':
+                            e.preventDefault();
+                            this.placeOrder('sell');
+                            break;
+                        case 'F3':
+                            e.preventDefault();
+                            this.cancelAllOrders();
+                            break;
+                        case 'F4':
+                            e.preventDefault();
+                            this.closeAllPositions();
+                            break;
+                        case ' ':
+                            e.preventDefault();
+                            this.toggleIndicators();
+                            break;
+                    }
+                });
+
+                // Order type change
+                document.getElementById('order-type').addEventListener('change', (e) => {
+                    const priceInput = document.getElementById('order-price');
+                    priceInput.style.display = e.target.value === 'market' ? 'none' : 'block';
+                });
+            }
+
+            startDataFeed() {
+                // Real-time data updates
+                setInterval(() => {
+                    this.updatePrices();
+                    this.updateOrderBooks();
+                    this.updatePositions();
+                    this.processAlgorithms();
+                    this.updateAll();
+                }, 1000);
+
+                // Chart updates
+                setInterval(() => {
+                    this.updateCharts();
+                }, 2000);
+
+                // News generation
+                setInterval(() => {
+                    if (Math.random() < 0.1) {
+                        this.generateNewsEvent();
+                    }
+                }, 10000);
+            }
+
+            updatePrices() {
+                this.symbols.forEach((data, symbol) => {
+                    // Realistic price movement
+                    const volatility = data.vol / Math.sqrt(252 * 24 * 60 * 60);
+                    const drift = (Math.random() - 0.5) * 0.0001;
+                    const shock = Math.random() < 0.01 ? (Math.random() - 0.5) * 0.005 : 0;
+                    
+                    const change = drift + volatility * this.normalRandom() + shock;
+                    data.price = Math.max(0.001, data.price * (1 + change));
+                    
+                    data.bid = data.price - (0.001 + Math.random() * 0.003);
+                    data.ask = data.price + (0.001 + Math.random() * 0.003);
+                    data.volume += Math.floor(Math.random() * 100) + 10;
+                    
+                    // Update price history
+                    const history = this.priceHistory.get(symbol);
+                    const now = Date.now();
+                    const lastCandle = history[history.length - 1];
+                    
+                    if (now - lastCandle.timestamp > 60000) {
+                        history.push({
+                            timestamp: now,
+                            open: data.price,
+                            high: data.price,
+                            low: data.price,
+                            close: data.price,
+                            volume: 0
+                        });
+                        
+                        if (history.length > 500) {
+                            history.shift();
+                        }
+                    } else {
+                        lastCandle.high = Math.max(lastCandle.high, data.price);
+                        lastCandle.low = Math.min(lastCandle.low, data.price);
+                        lastCandle.close = data.price;
+                        lastCandle.volume += Math.floor(Math.random() * 10);
+                    }
+                });
+            }
+
+            updateOrderBooks() {
+                this.symbols.forEach((data, symbol) => {
+                    const book = this.orderBooks.get(symbol);
+                    const midPrice = (data.bid + data.ask) / 2;
+                    
+                    // Update bid/ask levels
+                    book.bids.forEach((level, i) => {
+                        level.price = midPrice - (i + 1) * 0.001;
+                        level.size += Math.floor((Math.random() - 0.5) * 50);
+                        level.size = Math.max(100, level.size);
+                    });
+                    
+                    book.asks.forEach((level, i) => {
+                        level.price = midPrice + (i + 1) * 0.001;
+                        level.size += Math.floor((Math.random() - 0.5) * 50);
+                        level.size = Math.max(100, level.size);
+                    });
+                });
+            }
+
+            updatePositions() {
+                this.positions.forEach((position, symbol) => {
+                    const currentPrice = this.symbols.get(symbol).price;
+                    const priceDiff = currentPrice - position.avgPrice;
+                    position.unrealizedPnL = priceDiff * position.quantity;
+                });
+            }
+
+            processAlgorithms() {
+                this.algorithms.forEach((algo, id) => {
+                    if (algo.status === 'active' && Math.random() < 0.1) {
+                        // Simulate algorithm trading
+                        const pnlChange = (Math.random() - 0.4) * 100; // Slight positive bias
+                        algo.pnl += pnlChange;
+                        
+                        if (Math.random() < 0.05) {
+                            this.showAlert(`Algorithm ${algo.name}: ${pnlChange > 0 ? 'PROFIT' : 'LOSS'} $${Math.abs(pnlChange).toFixed(0)}`);
+                        }
+                    }
+                });
+            }
+
+            updateCharts() {
+                if (!this.chart) return;
+                
+                const history = this.priceHistory.get(this.currentSymbol);
+                const recentData = history.slice(-50);
+                
+                this.chart.data.labels = recentData.map(h => new Date(h.timestamp).toLocaleTimeString().slice(0,5));
+                this.chart.data.datasets[0].data = recentData.map(h => h.close);
+                this.chart.update('none');
+                
+                // Update depth chart
+                if (this.depthChart) {
+                    const book = this.orderBooks.get(this.currentSymbol);
+                    this.depthChart.data.datasets[0].data = [...book.bids.reverse().map(b => b.size), ...Array(book.asks.length).fill(0)];
+                    this.depthChart.data.datasets[1].data = [...Array(book.bids.length).fill(0), ...book.asks.map(a => a.size)];
+                    this.depthChart.update('none');
+                }
+            }
+
+            updateAll() {
+                this.updateWatchlist();
+                this.updateOrderBook();
+                this.updatePositionsDisplay();
+                this.updateNewsDisplay();
+                this.updateOrdersDisplay();
+                this.updatePortfolioAnalytics();
+                this.updateAlgorithmsDisplay();
+                this.updateIndicators();
+                this.updateHeatmap();
+                this.updateHeader();
+            }
+
+            updateWatchlist() {
+                const container = document.getElementById('watchlist');
+                container.innerHTML = '';
+                
+                this.symbols.forEach((data, symbol) => {
+                    const row = document.createElement('div');
+                    row.className = `symbol-row ${symbol === this.currentSymbol ? 'active' : ''}`;
+                    row.onclick = () => this.selectSymbol(symbol);
+                    
+                    const changeClass = data.change >= 0 ? 'positive' : 'negative';
+                    const changeSign = data.change >= 0 ? '+' : '';
+                    
+                    row.innerHTML = `
+                        <div class="symbol-info">
+                            <div class="symbol-code">${symbol}</div>
+                            <div class="symbol-name">${data.name}</div>
+                        </div>
+                        <div class="symbol-data">
+                            <div class="price">${data.price.toFixed(3)}</div>
+                            <div class="change ${changeClass}">${changeSign}${(data.change * 100).toFixed(2)}%</div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(row);
+                });
+            }
+
+            updateOrderBook() {
+                const tbody = document.getElementById('orderbook-body');
+                tbody.innerHTML = '';
+                
+                const book = this.orderBooks.get(this.currentSymbol);
+                
+                for (let i = 0; i < 12; i++) {
+                    const bid = book.bids[i];
+                    const ask = book.asks[i];
+                    
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${bid.size}</td>
+                        <td class="bid">${bid.price.toFixed(3)}</td>
+                        <td class="ask">${ask.price.toFixed(3)}</td>
+                        <td>${ask.size}</td>
+                    `;
+                }
+            }
+
+            updatePositionsDisplay() {
+                const container = document.getElementById('positions-container');
+                container.innerHTML = '';
+                
+                this.positions.forEach((position, symbol) => {
+                    const symbolData = this.symbols.get(symbol);
+                    const pnlClass = position.unrealizedPnL >= 0 ? 'positive' : 'negative';
+                    const sideClass = position.side === 'long' ? 'positive' : 'negative';
+                    
+                    const item = document.createElement('div');
+                    item.className = 'position-item';
+                    item.innerHTML = `
+                        <div class="position-header">
+                            <span class="position-symbol">${symbol}</span>
+                            <span class="position-side ${sideClass}">${position.side.toUpperCase()}</span>
+                        </div>
+                        <div class="position-details">
+                            <div class="detail-label">Qty:</div>
+                            <div class="detail-value">${Math.abs(position.quantity).toLocaleString()}</div>
+                            <div class="detail-label">Avg:</div>
+                            <div class="detail-value">${position.avgPrice.toFixed(3)}</div>
+                            <div class="detail-label">Current:</div>
+                            <div class="detail-value">${symbolData.price.toFixed(3)}</div>
+                            <div class="detail-label">P&L:</div>
+                            <div class="detail-value ${pnlClass}">${position.unrealizedPnL >= 0 ? '+' : ''}$${position.unrealizedPnL.toFixed(0)}</div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(item);
+                });
+            }
+
+            updateNewsDisplay() {
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                
+                this.news.slice(0, 15).forEach(news => {
+                    const item = document.createElement('div');
+                    item.className = 'news-item';
+                    item.innerHTML = `
+                        <div class="news-time">${news.time}</div>
+                        <div class="news-title">${news.title}</div>
+                        <div class="news-impact">Impact: ${news.impact}</div>
+                    `;
+                    
+                    container.appendChild(item);
+                });
+            }
+
+            updateOrdersDisplay() {
+                const tbody = document.getElementById('orders-tbody');
+                tbody.innerHTML = '';
+                
+                this.orders.slice(-8).forEach(order => {
+                    const row = tbody.insertRow();
+                    const statusClass = order.status === 'filled' ? 'positive' : 
+                                      order.status === 'cancelled' ? 'negative' : '';
+                    
+                    row.innerHTML = `
+                        <td>${new Date(order.timestamp).toLocaleTimeString().slice(0,5)}</td>
+                        <td>${order.symbol}</td>
+                        <td class="${order.side === 'buy' ? 'positive' : 'negative'}">${order.side.toUpperCase()}</td>
+                        <td>${order.quantity}</td>
+                        <td>${order.price ? order.price.toFixed(3) : 'MKT'}</td>
+                        <td class="${statusClass}">${order.status.toUpperCase()}</td>
+                        <td><button class="action-btn" onclick="cancelOrder('${order.id}')">X</button></td>
+                    `;
+                });
+            }
+
+            updatePortfolioAnalytics() {
+                let totalPnL = 0;
+                this.positions.forEach(position => {
+                    totalPnL += position.unrealizedPnL + position.realizedPnL;
+                });
+                
+                document.getElementById('pnl-value').textContent = totalPnL >= 0 ? 
+                    `+$${(totalPnL / 1000).toFixed(1)}K` : 
+                    `-$${Math.abs(totalPnL / 1000).toFixed(1)}K`;
+                
+                // Update other metrics with simulated values
+                document.getElementById('var-value').textContent = `$${(Math.random() * 10 + 5).toFixed(1)}K`;
+                document.getElementById('delta-value').textContent = `+${(Math.random() * 3).toFixed(2)}`;
+                document.getElementById('gamma-value').textContent = `${(Math.random() * 100).toFixed(0)}`;
+                document.getElementById('theta-value').textContent = `-$${(Math.random() * 500 + 200).toFixed(0)}`;
+                document.getElementById('vega-value').textContent = `+$${(Math.random() * 200 + 50).toFixed(0)}`;
+            }
+
+            updateAlgorithmsDisplay() {
+                const container = document.getElementById('algorithms');
+                container.innerHTML = '';
+                
+                this.algorithms.forEach((algo, id) => {
+                    const item = document.createElement('div');
+                    item.className = 'algo-item';
+                    
+                    const pnlClass = algo.pnl >= 0 ? 'positive' : 'negative';
+                    const statusClass = algo.status === 'active' ? 'positive' : 'negative';
+                    
+                    item.innerHTML = `
+                        <div class="algo-info">
+                            <div class="algo-name">${algo.name}</div>
+                            <div class="algo-status ${statusClass}">${algo.status.toUpperCase()}</div>
+                            <div style="color: #666; font-size: 7px;">${algo.desc}</div>
+                            <div class="algo-pnl ${pnlClass}">P&L: ${algo.pnl >= 0 ? '+' : ''}$${algo.pnl}</div>
+                        </div>
+                        <button class="algo-toggle ${algo.status === 'active' ? 'active' : ''}" 
+                                onclick="toggleAlgorithm('${id}')">
+                            ${algo.status === 'active' ? 'STOP' : 'START'}
+                        </button>
+                    `;
+                    
+                    container.appendChild(item);
+                });
+            }
+
+            updateIndicators() {
+                // Simulate technical indicators
+                document.getElementById('rsi').textContent = (Math.random() * 40 + 30).toFixed(1);
+                document.getElementById('macd').textContent = (Math.random() * 0.01 - 0.005).toFixed(3);
+                
+                const currentPrice = this.symbols.get(this.currentSymbol).price;
+                document.getElementById('bb-upper').textContent = (currentPrice * 1.01).toFixed(3);
+                document.getElementById('bb-lower').textContent = (currentPrice * 0.99).toFixed(3);
+                document.getElementById('volatility').textContent = (Math.random() * 20 + 10).toFixed(1) + '%';
+                document.getElementById('atr').textContent = (Math.random() * 0.01 + 0.005).toFixed(3);
+            }
+
+            updateHeatmap() {
+                const container = document.getElementById('volatility-heatmap');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < 24; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell';
+                    
+                    const vol = Math.random();
+                    const percentage = (vol * 50 + 10).toFixed(0);
+                    
+                    if (vol > 0.7) {
+                        cell.classList.add('vol-high');
+                    } else if (vol > 0.4) {
+                        cell.classList.add('vol-medium');
+                    } else {
+                        cell.classList.add('vol-low');
+                    }
+                    
+                    cell.textContent = percentage + '%';
+                    container.appendChild(cell);
+                }
+            }
+
+            updateHeader() {
+                document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
+                document.getElementById('total-volume').textContent = (Math.random() * 100 + 150).toFixed(1) + 'M';
+                document.getElementById('vix-value').textContent = (Math.random() * 15 + 20).toFixed(1);
+            }
+
+            selectSymbol(symbol) {
+                this.currentSymbol = symbol;
+                const data = this.symbols.get(symbol);
+                
+                document.getElementById('order-symbol').value = symbol;
+                document.getElementById('order-price').value = data.price.toFixed(3);
+                document.getElementById('chart-title').textContent = `${symbol} ${data.name}`;
+                
+                this.updateCharts();
+                this.updateAll();
+            }
+
+            placeOrder(side) {
+                const symbol = document.getElementById('order-symbol').value;
+                const orderType = document.getElementById('order-type').value;
+                const quantity = parseInt(document.getElementById('order-quantity').value);
+                const price = parseFloat(document.getElementById('order-price').value);
+                
+                if (!quantity || quantity <= 0) {
+                    this.showAlert('Invalid quantity');
+                    return;
+                }
+                
+                const order = {
+                    id: Date.now() + Math.random(),
+                    symbol,
+                    side,
+                    quantity,
+                    price: orderType === 'market' ? null : price,
+                    orderType,
+                    status: 'working',
+                    timestamp: Date.now()
+                };
+                
+                this.orders.push(order);
+                
+                // Simulate execution
+                setTimeout(() => {
+                    if (Math.random() > 0.15) {
+                        order.status = 'filled';
+                        order.fillPrice = this.symbols.get(symbol).price;
+                        this.updatePosition(symbol, side, quantity, order.fillPrice);
+                        this.showAlert(`Order filled: ${side.toUpperCase()} ${quantity} ${symbol} @ ${order.fillPrice.toFixed(3)}`);
+                    } else {
+                        order.status = 'cancelled';
+                        this.showAlert(`Order cancelled: ${side.toUpperCase()} ${quantity} ${symbol}`);
+                    }
+                }, Math.random() * 3000 + 500);
+                
+                this.showAlert(`Order placed: ${side.toUpperCase()} ${quantity} ${symbol}`);
+            }
+
+            updatePosition(symbol, side, quantity, price) {
+                const multiplier = side === 'buy' ? 1 : -1;
+                const currentPosition = this.positions.get(symbol);
+                
+                if (currentPosition) {
+                    const newQuantity = currentPosition.quantity + (quantity * multiplier);
+                    
+                    if (newQuantity === 0) {
+                        this.positions.delete(symbol);
+                    } else {
+                        const totalCost = (currentPosition.quantity * currentPosition.avgPrice) + 
+                                        (quantity * multiplier * price);
+                        currentPosition.avgPrice = Math.abs(totalCost / newQuantity);
+                        currentPosition.quantity = newQuantity;
+                        currentPosition.side = newQuantity > 0 ? 'long' : 'short';
+                    }
+                } else {
+                    this.positions.set(symbol, {
+                        quantity: quantity * multiplier,
+                        avgPrice: price,
+                        side: multiplier > 0 ? 'long' : 'short',
+                        unrealizedPnL: 0,
+                        realizedPnL: 0
+                    });
+                }
+            }
+
+            cancelAllOrders() {
+                this.orders.forEach(order => {
+                    if (order.status === 'working') {
+                        order.status = 'cancelled';
+                    }
+                });
+                this.showAlert('All orders cancelled');
+            }
+
+            closeAllPositions() {
+                this.positions.clear();
+                this.showAlert('All positions closed');
+            }
+
+            generateNewsEvent() {
+                const items = [
+                    'Breaking: Major pipeline disruption affects supply',
+                    'Weather alert: Cold snap increases heating demand',
+                    'Inventory data shows unexpected build',
+                    'Regulatory update: New trading rules announced'
+                ];
+                
+                const news = {
+                    time: new Date().toLocaleTimeString(),
+                    title: items[Math.floor(Math.random() * items.length)],
+                    impact: ['HIGH', 'MEDIUM', 'CRITICAL'][Math.floor(Math.random() * 3)]
+                };
+                
+                this.news.unshift(news);
+                this.news = this.news.slice(0, 30);
+                this.showAlert(`NEWS: ${news.title}`);
+            }
+
+            normalRandom() {
+                let u = 0, v = 0;
+                while(u === 0) u = Math.random();
+                while(v === 0) v = Math.random();
+                return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            }
+
+            showAlert(message) {
+                const alert = document.createElement('div');
+                alert.className = 'alert';
+                alert.textContent = message;
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            }
+
+            toggleIndicators() {
+                const overlay = document.getElementById('indicators-overlay');
+                overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+            }
+
+            changeTimeframe(timeframe) {
+                this.currentTimeframe = timeframe;
+                document.querySelectorAll('.chart-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                this.showAlert(`Timeframe: ${timeframe}`);
+            }
+        }
+
+        // Global functions
+        let tradingEngine;
+
+        function placeOrder(side) {
+            tradingEngine.placeOrder(side);
+        }
+
+        function cancelOrder(orderId) {
+            const order = tradingEngine.orders.find(o => o.id == orderId);
+            if (order && order.status === 'working') {
+                order.status = 'cancelled';
+                tradingEngine.showAlert(`Order cancelled`);
+            }
+        }
+
+        function toggleAlgorithm(algoId) {
+            const algo = tradingEngine.algorithms.get(algoId);
+            algo.status = algo.status === 'active' ? 'paused' : 'active';
+            tradingEngine.showAlert(`Algorithm ${algo.name} ${algo.status}`);
+        }
+
+        function changeTimeframe(timeframe) {
+            tradingEngine.changeTimeframe(timeframe);
+        }
+
+        function toggleIndicators() {
+            tradingEngine.toggleIndicators();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function showModal(modalId) {
+            document.getElementById(`${modalId}-modal`).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(`${modalId}-modal`).style.display = 'none';
+        }
+
+        function exportData() {
+            const data = {
+                positions: Array.from(tradingEngine.positions.entries()),
+                orders: tradingEngine.orders,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `trading_data_${Date.now()}.json`;
+            a.click();
+            
+            tradingEngine.showAlert('Data exported successfully');
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            tradingEngine = new EnergyTradingEngine();
+        });
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>

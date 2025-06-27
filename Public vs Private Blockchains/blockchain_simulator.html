@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Types Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 5px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            margin: 5px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .blockchain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .blockchain-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .blockchain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .blockchain-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .public-icon { background: linear-gradient(45deg, #4CAF50, #45a049); }
+        .private-icon { background: linear-gradient(45deg, #FF9800, #e68900); }
+        .consortium-icon { background: linear-gradient(45deg, #9C27B0, #7B1FA2); }
+
+        .simulator-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .transaction-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .simulate-btn {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .simulate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .simulation-output {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .decision-wizard {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .question {
+            margin: 20px 0;
+        }
+
+        .question label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .question label:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .recommendation {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .node-visualization {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin: 10px;
+            position: relative;
+        }
+
+        .public-node { background: #4CAF50; }
+        .private-node { background: #FF9800; }
+        .consortium-node { background: #9C27B0; }
+
+        .connection {
+            width: 50px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            margin: 0 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-success { background: rgba(76, 175, 80, 0.2); border-color: #4CAF50; }
+        .alert-warning { background: rgba(255, 152, 0, 0.2); border-color: #FF9800; }
+        .alert-info { background: rgba(33, 150, 243, 0.2); border-color: #2196F3; }
+
+        @media (max-width: 768px) {
+            .blockchain-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .transaction-form {
+                flex-direction: column;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                border-radius: 15px;
+            }
+            
+            .nav-tab {
+                margin: 2px 0;
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Advanced Blockchain Types Simulator</h1>
+            <p>Explore, Compare, and Simulate Public, Private, and Consortium Blockchains</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('overview')">Overview</button>
+            <button class="nav-tab" onclick="showTab('public')">Public Blockchain</button>
+            <button class="nav-tab" onclick="showTab('private')">Private Blockchain</button>
+            <button class="nav-tab" onclick="showTab('consortium')">Consortium Blockchain</button>
+            <button class="nav-tab" onclick="showTab('comparison')">Comparison</button>
+            <button class="nav-tab" onclick="showTab('decision')">Decision Guide</button>
+        </div>
+
+        <div id="overview" class="tab-content active">
+            <div class="blockchain-grid">
+                <div class="blockchain-card">
+                    <div class="card-header">
+                        <div class="blockchain-icon public-icon">🌐</div>
+                        <h3>Public Blockchains</h3>
+                    </div>
+                    <p>Completely decentralized networks where anyone can participate, view transactions, and contribute to consensus.</p>
+                    <ul class="feature-list">
+                        <li>Fully decentralized</li>
+                        <li>Open to everyone</li>
+                        <li>High security through consensus</li>
+                        <li>Transparent and immutable</li>
+                    </ul>
+                </div>
+
+                <div class="blockchain-card">
+                    <div class="card-header">
+                        <div class="blockchain-icon private-icon">🏢</div>
+                        <h3>Private Blockchains</h3>
+                    </div>
+                    <p>Restricted networks controlled by a single organization with limited access and enhanced privacy.</p>
+                    <ul class="feature-list">
+                        <li>Centralized control</li>
+                        <li>Restricted access</li>
+                        <li>High performance</li>
+                        <li>Enhanced privacy</li>
+                    </ul>
+                </div>
+
+                <div class="blockchain-card">
+                    <div class="card-header">
+                        <div class="blockchain-icon consortium-icon">🤝</div>
+                        <h3>Consortium Blockchains</h3>
+                    </div>
+                    <p>Semi-decentralized networks controlled by a group of organizations, balancing openness and control.</p>
+                    <ul class="feature-list">
+                        <li>Semi-decentralized</li>
+                        <li>Controlled by consortium</li>
+                        <li>Balanced governance</li>
+                        <li>Selective transparency</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTransactions">0</div>
+                    <div>Total Simulated Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeNodes">24</div>
+                    <div>Active Network Nodes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="blockHeight">1,547</div>
+                    <div>Current Block Height</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="networkSpeed">2.3s</div>
+                    <div>Average Block Time</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="public" class="tab-content">
+            <div class="blockchain-card">
+                <div class="card-header">
+                    <div class="blockchain-icon public-icon">🌐</div>
+                    <h2>Public Blockchain Simulator</h2>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Public Blockchain:</strong> Open, decentralized network where anyone can participate. High security through proof-of-work/proof-of-stake consensus.
+                </div>
+
+                <div class="node-visualization">
+                    <div class="node public-node">N1</div>
+                    <div class="connection"></div>
+                    <div class="node public-node">N2</div>
+                    <div class="connection"></div>
+                    <div class="node public-node">N3</div>
+                    <div class="connection"></div>
+                    <div class="node public-node">N4</div>
+                    <div class="connection"></div>
+                    <div class="node public-node">N5</div>
+                </div>
+
+                <div class="simulator-area">
+                    <h4>Simulate Public Transaction</h4>
+                    <div class="transaction-form">
+                        <input type="text" class="form-input" id="publicFrom" placeholder="From Address (public)">
+                        <input type="text" class="form-input" id="publicTo" placeholder="To Address (public)">
+                        <input type="number" class="form-input" id="publicAmount" placeholder="Amount">
+                        <button class="simulate-btn" onclick="simulatePublicTransaction()">Send Transaction</button>
+                    </div>
+                    <div class="simulation-output" id="publicOutput">
+                        <div>Public Blockchain Network Status: ✅ Online</div>
+                        <div>Network Participants: 10,847 nodes</div>
+                        <div>Consensus Mechanism: Proof of Stake</div>
+                        <div>Average Confirmation Time: 15 seconds</div>
+                        <div>Gas Fee: ~$2.50 USD</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="private" class="tab-content">
+            <div class="blockchain-card">
+                <div class="card-header">
+                    <div class="blockchain-icon private-icon">🏢</div>
+                    <h2>Private Blockchain Simulator</h2>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Private Blockchain:</strong> Controlled network with restricted access. High performance and privacy, managed by a single organization.
+                </div>
+
+                <div class="node-visualization">
+                    <div class="node private-node">C1</div>
+                    <div class="connection"></div>
+                    <div class="node private-node">C2</div>
+                    <div class="connection"></div>
+                    <div class="node private-node">C3</div>
+                </div>
+
+                <div class="simulator-area">
+                    <h4>Simulate Private Transaction</h4>
+                    <div class="transaction-form">
+                        <select class="form-input" id="privateFrom">
+                            <option>Corporate Account A</option>
+                            <option>Corporate Account B</option>
+                            <option>Treasury Account</option>
+                        </select>
+                        <select class="form-input" id="privateTo">
+                            <option>Department Finance</option>
+                            <option>Department HR</option>
+                            <option>Department IT</option>
+                        </select>
+                        <input type="number" class="form-input" id="privateAmount" placeholder="Amount">
+                        <button class="simulate-btn" onclick="simulatePrivateTransaction()">Transfer</button>
+                    </div>
+                    <div class="simulation-output" id="privateOutput">
+                        <div>Private Network Status: ✅ Secure</div>
+                        <div>Authorized Nodes: 3 corporate nodes</div>
+                        <div>Consensus: Practical Byzantine Fault Tolerance</div>
+                        <div>Average Processing Time: 0.5 seconds</div>
+                        <div>Transaction Fee: $0.001 (internal)</div>
+                        <div>Privacy Level: High (encrypted)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="consortium" class="tab-content">
+            <div class="blockchain-card">
+                <div class="card-header">
+                    <div class="blockchain-icon consortium-icon">🤝</div>
+                    <h2>Consortium Blockchain Simulator</h2>
+                </div>
+                
+                <div class="alert alert-success">
+                    <strong>Consortium Blockchain:</strong> Semi-decentralized network controlled by a group of organizations. Balanced approach between openness and control.
+                </div>
+
+                <div class="node-visualization">
+                    <div class="node consortium-node">B1</div>
+                    <div class="connection"></div>
+                    <div class="node consortium-node">B2</div>
+                    <div class="connection"></div>
+                    <div class="node consortium-node">B3</div>
+                    <div class="connection"></div>
+                    <div class="node consortium-node">B4</div>
+                </div>
+
+                <div class="simulator-area">
+                    <h4>Simulate Consortium Transaction</h4>
+                    <div class="transaction-form">
+                        <select class="form-input" id="consortiumFrom">
+                            <option>Bank Alpha</option>
+                            <option>Bank Beta</option>
+                            <option>Bank Gamma</option>
+                            <option>Bank Delta</option>
+                        </select>
+                        <select class="form-input" id="consortiumTo">
+                            <option>Bank Alpha</option>
+                            <option>Bank Beta</option>
+                            <option>Bank Gamma</option>
+                            <option>Bank Delta</option>
+                        </select>
+                        <input type="number" class="form-input" id="consortiumAmount" placeholder="Amount">
+                        <button class="simulate-btn" onclick="simulateConsortiumTransaction()">Process Transfer</button>
+                    </div>
+                    <div class="simulation-output" id="consortiumOutput">
+                        <div>Consortium Network Status: ✅ Active</div>
+                        <div>Member Institutions: 4 banks</div>
+                        <div>Consensus: Delegated Proof of Authority</div>
+                        <div>Average Settlement Time: 3 seconds</div>
+                        <div>Inter-bank Fee: $0.10</div>
+                        <div>Regulatory Compliance: ✅ Compliant</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="comparison" class="tab-content">
+            <h2>Blockchain Types Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Public</th>
+                        <th>Private</th>
+                        <th>Consortium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Decentralization</strong></td>
+                        <td>Fully decentralized</td>
+                        <td>Centralized</td>
+                        <td>Semi-decentralized</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Access Control</strong></td>
+                        <td>Open to all</td>
+                        <td>Restricted</td>
+                        <td>Controlled by consortium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transaction Speed</strong></td>
+                        <td>Slow (15+ seconds)</td>
+                        <td>Fast (&lt;1 second)</td>
+                        <td>Medium (3-5 seconds)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Energy Consumption</strong></td>
+                        <td>High</td>
+                        <td>Low</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Security</strong></td>
+                        <td>Very High</td>
+                        <td>Moderate</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transparency</strong></td>
+                        <td>Fully transparent</td>
+                        <td>Private</td>
+                        <td>Selective transparency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost</strong></td>
+                        <td>High (gas fees)</td>
+                        <td>Low</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Use Cases</strong></td>
+                        <td>Cryptocurrencies, DeFi</td>
+                        <td>Enterprise, Supply Chain</td>
+                        <td>Banking, Healthcare</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scalability</strong></td>
+                        <td>Limited</td>
+                        <td>High</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Regulatory Compliance</strong></td>
+                        <td>Challenging</td>
+                        <td>Easy</td>
+                        <td>Moderate</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="decision" class="tab-content">
+            <div class="decision-wizard">
+                <h2>🎯 Blockchain Type Decision Guide</h2>
+                <p>Answer these questions to get a recommendation for your use case:</p>
+
+                <div class="question">
+                    <h4>1. Who needs access to your blockchain?</h4>
+                    <label><input type="radio" name="access" value="public"> Anyone in the world</label>
+                    <label><input type="radio" name="access" value="consortium"> Select group of organizations</label>
+                    <label><input type="radio" name="access" value="private"> Only my organization</label>
+                </div>
+
+                <div class="question">
+                    <h4>2. How important is transaction speed?</h4>
+                    <label><input type="radio" name="speed" value="low"> Not critical (can wait minutes)</label>
+                    <label><input type="radio" name="speed" value="medium"> Moderately important (few seconds)</label>
+                    <label><input type="radio" name="speed" value="high"> Critical (sub-second)</label>
+                </div>
+
+                <div class="question">
+                    <h4>3. What's your privacy requirement?</h4>
+                    <label><input type="radio" name="privacy" value="public"> Full transparency desired</label>
+                    <label><input type="radio" name="privacy" value="selective"> Selective transparency</label>
+                    <label><input type="radio" name="privacy" value="private"> Maximum privacy required</label>
+                </div>
+
+                <div class="question">
+                    <h4>4. What's your budget for transaction costs?</h4>
+                    <label><input type="radio" name="cost" value="high"> High budget ($1+ per transaction)</label>
+                    <label><input type="radio" name="cost" value="medium"> Medium budget ($0.10-$1)</label>
+                    <label><input type="radio" name="cost" value="low"> Low budget (&lt;$0.10)</label>
+                </div>
+
+                <div class="question">
+                    <h4>5. How important is regulatory compliance?</h4>
+                    <label><input type="radio" name="compliance" value="low"> Not important</label>
+                    <label><input type="radio" name="compliance" value="medium"> Somewhat important</label>
+                    <label><input type="radio" name="compliance" value="high"> Critical requirement</label>
+                </div>
+
+                <button class="simulate-btn" onclick="getRecommendation()" style="margin-top: 20px;">Get My Recommendation</button>
+
+                <div id="recommendation" class="recommendation">
+                    <!-- Recommendation will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let transactionCount = 0;
+        let nodeCount = 24;
+        let blockHeight = 1547;
+
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Hide all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function simulatePublicTransaction() {
+            const from = document.getElementById('publicFrom').value;
+            const to = document.getElementById('publicTo').value;
+            const amount = document.getElementById('publicAmount').value;
+            const output = document.getElementById('publicOutput');
+
+            if (!from || !to || !amount) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            transactionCount++;
+            updateStats();
+
+            const timestamp = new Date().toLocaleTimeString();
+            const txHash = generateHash();
+            const gasUsed = Math.floor(Math.random() * 50000 + 21000);
+            const gasFee = (gasUsed * 0.000000001 * 2500).toFixed(4);
+
+            output.innerHTML += `
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 10px;">
+                    <div>⏰ ${timestamp} - New Public Transaction</div>
+                    <div>📝 TX Hash: ${txHash}</div>
+                    <div>👤 From: ${from}</div>
+                    <div>👤 To: ${to}</div>
+                    <div>💰 Amount: ${amount} ETH</div>
+                    <div>⛽ Gas Used: ${gasUsed.toLocaleString()}</div>
+                    <div>💸 Gas Fee: $${gasFee}</div>
+                    <div>⏱️ Confirmation Time: ${Math.floor(Math.random() * 30 + 10)} seconds</div>
+                    <div style="color: #4CAF50;">✅ Transaction Confirmed on Block ${blockHeight + Math.floor(Math.random() * 3)}</div>
+                </div>
+            `;
+            output.scrollTop = output.scrollHeight;
+
+            // Clear form
+            document.getElementById('publicFrom').value = '';
+            document.getElementById('publicTo').value = '';
+            document.getElementById('publicAmount').value = '';
+        }
+
+        function simulatePrivateTransaction() {
+            const from = document.getElementById('privateFrom').value;
+            const to = document.getElementById('privateTo').value;
+            const amount = document.getElementById('privateAmount').value;
+            const output = document.getElementById('privateOutput');
+
+            if (!amount) {
+                alert('Please enter an amount');
+                return;
+            }
+
+            transactionCount++;
+            updateStats();
+
+            const timestamp = new Date().toLocaleTimeString();
+            const txId = generatePrivateId();
+
+            output.innerHTML += `
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 10px;">
+                    <div>⏰ ${timestamp} - Internal Transfer</div>
+                    <div>🔒 TX ID: ${txId}</div>
+                    <div>🏢 From: ${from}</div>
+                    <div>🏢 To: ${to}</div>
+                    <div>💰 Amount: $${Number(amount).toLocaleString()}</div>
+                    <div>🔐 Encryption: AES-256</div>
+                    <div>⚡ Processing Time: 0.${Math.floor(Math.random() * 9 + 1)} seconds</div>
+                    <div>💸 Internal Fee: $0.001</div>
+                    <div style="color: #4CAF50;">✅ Transfer Approved by Corporate Node</div>
+                </div>
+            `;
+            output.scrollTop = output.scrollHeight;
+
+            // Clear amount
+            document.getElementById('privateAmount').value = '';
+        }
+
+        function simulateConsortiumTransaction() {
+            const from = document.getElementById('consortiumFrom').value;
+            const to = document.getElementById('consortiumTo').value;
+            const amount = document.getElementById('consortiumAmount').value;
+            const output = document.getElementById('consortiumOutput');
+
+            if (!amount || from === to) {
+                alert('Please enter amount and select different banks');
+                return;
+            }
+
+            transactionCount++;
+            updateStats();
+
+            const timestamp = new Date().toLocaleTimeString();
+            const settlementId = generateSettlementId();
+            const confirmationTime = Math.floor(Math.random() * 3 + 2);
+
+            output.innerHTML += `
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 10px;">
+                    <div>⏰ ${timestamp} - Inter-bank Settlement</div>
+                    <div>🏦 Settlement ID: ${settlementId}</div>
+                    <div>🏛️ From: ${from}</div>
+                    <div>🏛️ To: ${to}</div>
+                    <div>💰 Amount: $${Number(amount).toLocaleString()}</div>
+                    <div>👥 Validators: 3/4 consortium members</div>
+                    <div>⏱️ Settlement Time: ${confirmationTime} seconds</div>
+                    <div>💸 Settlement Fee: $0.10</div>
+                    <div>📋 Compliance Check: ✅ Passed</div>
+                    <div style="color: #4CAF50;">✅ Settlement Completed Successfully</div>
+                </div>
+            `;
+            output.scrollTop = output.scrollHeight;
+
+            // Clear amount
+            document.getElementById('consortiumAmount').value = '';
+        }
+
+        function generateHash() {
+            return '0x' + Math.random().toString(16).substr(2, 64);
+        }
+
+        function generatePrivateId() {
+            return 'PVT-' + Math.random().toString(36).substr(2, 16).toUpperCase();
+        }
+
+        function generateSettlementId() {
+            return 'SET-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        function updateStats() {
+            document.getElementById('totalTransactions').textContent = transactionCount;
+            
+            // Simulate changing stats
+            nodeCount += Math.floor(Math.random() * 3 - 1);
+            if (nodeCount < 20) nodeCount = 20;
+            if (nodeCount > 30) nodeCount = 30;
+            document.getElementById('activeNodes').textContent = nodeCount;
+
+            blockHeight += Math.floor(Math.random() * 2);
+            document.getElementById('blockHeight').textContent = blockHeight.toLocaleString();
+
+            const speeds = ['1.8s', '2.1s', '2.3s', '2.7s', '3.1s'];
+            document.getElementById('networkSpeed').textContent = speeds[Math.floor(Math.random() * speeds.length)];
+        }
+
+        function getRecommendation() {
+            const access = document.querySelector('input[name="access"]:checked')?.value;
+            const speed = document.querySelector('input[name="speed"]:checked')?.value;
+            const privacy = document.querySelector('input[name="privacy"]:checked')?.value;
+            const cost = document.querySelector('input[name="cost"]:checked')?.value;
+            const compliance = document.querySelector('input[name="compliance"]:checked')?.value;
+
+            if (!access || !speed || !privacy || !cost || !compliance) {
+                alert('Please answer all questions');
+                return;
+            }
+
+            let score = { public: 0, private: 0, consortium: 0 };
+
+            // Scoring logic
+            if (access === 'public') score.public += 3;
+            else if (access === 'consortium') score.consortium += 3;
+            else score.private += 3;
+
+            if (speed === 'high') score.private += 2;
+            else if (speed === 'medium') score.consortium += 2;
+            else score.public += 1;
+
+            if (privacy === 'public') score.public += 2;
+            else if (privacy === 'selective') score.consortium += 2;
+            else score.private += 2;
+
+            if (cost === 'low') score.private += 2;
+            else if (cost === 'medium') score.consortium += 2;
+            else score.public += 1;
+
+            if (compliance === 'high') { score.private += 2; score.consortium += 1; }
+            else if (compliance === 'medium') score.consortium += 2;
+            else score.public += 1;
+
+            // Find the highest scoring option
+            const maxScore = Math.max(score.public, score.private, score.consortium);
+            let recommended;
+            let icon, color, description;
+
+            if (score.public === maxScore) {
+                recommended = 'Public Blockchain';
+                icon = '🌐';
+                color = '#4CAF50';
+                description = 'Perfect for applications requiring maximum transparency, decentralization, and global access. Ideal for cryptocurrencies, DeFi applications, and public voting systems.';
+            } else if (score.private === maxScore) {
+                recommended = 'Private Blockchain';
+                icon = '🏢';
+                color = '#FF9800';
+                description = 'Best suited for enterprise applications requiring high performance, privacy, and regulatory compliance. Ideal for internal company processes and supply chain management.';
+            } else {
+                recommended = 'Consortium Blockchain';
+                icon = '🤝';
+                color = '#9C27B0';
+                description = 'Perfect balance for multi-organization collaborations requiring shared control and selective transparency. Ideal for banking networks, healthcare data sharing, and industry collaborations.';
+            }
+
+            const recommendationDiv = document.getElementById('recommendation');
+            recommendationDiv.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
+            recommendationDiv.innerHTML = `
+                <h3>${icon} Recommended: ${recommended}</h3>
+                <p>${description}</p>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <strong>Scores:</strong><br>
+                    Public: ${score.public} points<br>
+                    Private: ${score.private} points<br>
+                    Consortium: ${score.consortium} points
+                </div>
+            `;
+            recommendationDiv.style.display = 'block';
+        }
+
+        // Auto-update stats every 5 seconds
+        setInterval(() => {
+            updateStats();
+        }, 5000);
+
+        // Initialize with some sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+    </script>
+</body>
+</html>

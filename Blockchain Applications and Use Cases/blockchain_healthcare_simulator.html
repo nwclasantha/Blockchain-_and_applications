@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Healthcare Data Access Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #00d4ff, #ff00a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .network-status {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            min-height: 80vh;
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-panel {
+            margin-bottom: 20px;
+        }
+        
+        .user-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #00ff88;
+        }
+        
+        .action-panel {
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .action-btn.danger {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+        }
+        
+        .action-btn.success {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+        }
+        
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .blockchain-view {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 400px;
+        }
+        
+        .blocks-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        
+        .block {
+            min-width: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .block.genesis {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+        }
+        
+        .block.pending {
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .block-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .block-data {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .hash {
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel h3 {
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+        
+        .transaction-pool {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .transaction {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 3px solid #00d4ff;
+        }
+        
+        .transaction.medical {
+            border-left-color: #ff6b6b;
+        }
+        
+        .transaction.access {
+            border-left-color: #4ecdc4;
+        }
+        
+        .mining-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .mining-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .mining-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff88;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .smart-contracts {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .contract {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 3px solid #9b59b6;
+        }
+        
+        .nodes-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .node {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #00ff88;
+        }
+        
+        .node.offline {
+            border-color: #ff4757;
+            opacity: 0.6;
+        }
+        
+        .consensus-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff88;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .consensus-indicator.disagreement {
+            background: #ff4757;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .audit-trail {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .audit-entry {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            margin: 3px 0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border-left: 2px solid #00d4ff;
+        }
+        
+        .encryption-demo {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Blockchain Healthcare Data Access Simulator</h1>
+            <div class="network-status">
+                <div class="status-item">
+                    <div class="status-value" id="blockCount">0</div>
+                    <div>Blocks</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="activeNodes">5</div>
+                    <div>Active Nodes</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="pendingTx">0</div>
+                    <div>Pending Transactions</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="consensusStatus">✅</div>
+                    <div>Consensus</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="user-panel">
+                    <h3>👤 User Identity</h3>
+                    <select class="user-select" id="userSelect">
+                        <option value="patient1">Patient - Alice Johnson</option>
+                        <option value="doctor1">Doctor - Dr. Smith</option>
+                        <option value="hospital1">Hospital - MedCenter</option>
+                        <option value="researcher1">Researcher - DataLab</option>
+                        <option value="insurance1">Insurance - HealthCorp</option>
+                    </select>
+                    <div class="user-info" id="userInfo"></div>
+                </div>
+                
+                <div class="action-panel">
+                    <h3>🔧 Actions</h3>
+                    <button class="action-btn" onclick="showCreateRecordModal()">📝 Create Medical Record</button>
+                    <button class="action-btn" onclick="showAccessRequestModal()">🔐 Request Data Access</button>
+                    <button class="action-btn success" onclick="deploySmartContract()">📋 Deploy Smart Contract</button>
+                    <button class="action-btn" onclick="showEncryptionDemo()">🔒 Encryption Demo</button>
+                    <button class="action-btn danger" onclick="simulateAttack()">⚠️ Simulate Attack</button>
+                </div>
+                
+                <div class="nodes-view" id="nodesView">
+                    <h3>🌐 Network Nodes</h3>
+                </div>
+            </div>
+            
+            <div class="center-panel">
+                <div class="blockchain-view">
+                    <h3>⛓️ Blockchain Visualization</h3>
+                    <div class="blocks-container" id="blocksContainer"></div>
+                </div>
+                
+                <div class="panel">
+                    <h3>📊 Analytics Dashboard</h3>
+                    <div id="analyticsContent">
+                        <p>📈 Total Transactions: <span id="totalTx">0</span></p>
+                        <p>🔐 Access Requests: <span id="accessRequests">0</span></p>
+                        <p>📋 Smart Contracts: <span id="contractCount">0</span></p>
+                        <p>⏱️ Average Block Time: <span id="avgBlockTime">30s</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="panel">
+                    <h3>🔄 Transaction Pool</h3>
+                    <div class="transaction-pool" id="transactionPool"></div>
+                </div>
+                
+                <div class="panel">
+                    <h3>⛏️ Mining Operations</h3>
+                    <div class="mining-controls">
+                        <button class="action-btn" onclick="startMining()" id="mineBtn">Start Mining</button>
+                        <div class="mining-progress">
+                            <div class="mining-progress-bar" id="miningProgress"></div>
+                        </div>
+                        <div id="miningStatus">Ready to mine</div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>📋 Smart Contracts</h3>
+                    <div class="smart-contracts" id="smartContracts"></div>
+                </div>
+                
+                <div class="panel">
+                    <h3>📋 Audit Trail</h3>
+                    <div class="audit-trail" id="auditTrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="createRecordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 Create Medical Record</h3>
+                <button class="close-btn" onclick="closeModal('createRecordModal')">&times;</button>
+            </div>
+            <form onsubmit="createMedicalRecord(event)">
+                <div class="form-group">
+                    <label>Patient ID:</label>
+                    <input type="text" id="patientId" required>
+                </div>
+                <div class="form-group">
+                    <label>Record Type:</label>
+                    <select id="recordType" required>
+                        <option value="diagnosis">Diagnosis</option>
+                        <option value="prescription">Prescription</option>
+                        <option value="lab_result">Lab Result</option>
+                        <option value="surgery">Surgery</option>
+                        <option value="vaccination">Vaccination</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Medical Data:</label>
+                    <textarea id="medicalData" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Privacy Level:</label>
+                    <select id="privacyLevel" required>
+                        <option value="public">Public</option>
+                        <option value="restricted">Restricted</option>
+                        <option value="confidential">Confidential</option>
+                    </select>
+                </div>
+                <button type="submit" class="action-btn">Create Record</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="accessRequestModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Request Data Access</h3>
+                <button class="close-btn" onclick="closeModal('accessRequestModal')">&times;</button>
+            </div>
+            <form onsubmit="requestDataAccess(event)">
+                <div class="form-group">
+                    <label>Target Patient ID:</label>
+                    <input type="text" id="targetPatientId" required>
+                </div>
+                <div class="form-group">
+                    <label>Access Purpose:</label>
+                    <select id="accessPurpose" required>
+                        <option value="treatment">Medical Treatment</option>
+                        <option value="research">Medical Research</option>
+                        <option value="insurance">Insurance Claim</option>
+                        <option value="emergency">Emergency Care</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Requested Permissions:</label>
+                    <div class="permissions-grid">
+                        <div class="permission-item">
+                            <input type="checkbox" id="readPerm" checked>
+                            <label for="readPerm">Read</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="writePerm">
+                            <label for="writePerm">Write</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="sharePerm">
+                            <label for="sharePerm">Share</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Access Duration (hours):</label>
+                    <input type="number" id="accessDuration" value="24" min="1" max="8760">
+                </div>
+                <button type="submit" class="action-btn">Request Access</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let blockchain = [];
+        let transactionPool = [];
+        let smartContracts = [];
+        let auditLog = [];
+        let networkNodes = [];
+        let currentUser = 'patient1';
+        let isMining = false;
+        let totalTransactions = 0;
+        let accessRequestCount = 0;
+        let consensusNodes = 5;
+        
+        // User profiles
+        const users = {
+            patient1: { name: 'Alice Johnson', role: 'Patient', id: 'P001', permissions: ['read_own', 'grant_access'] },
+            doctor1: { name: 'Dr. Smith', role: 'Doctor', id: 'D001', permissions: ['read_patient', 'write_record', 'prescribe'] },
+            hospital1: { name: 'MedCenter Hospital', role: 'Hospital', id: 'H001', permissions: ['read_patient', 'write_record', 'manage_staff'] },
+            researcher1: { name: 'DataLab Research', role: 'Researcher', id: 'R001', permissions: ['read_anonymized', 'analytics'] },
+            insurance1: { name: 'HealthCorp Insurance', role: 'Insurance', id: 'I001', permissions: ['read_claims', 'verify_treatment'] }
+        };
+        
+        // Initialize the application
+        function init() {
+            createGenesisBlock();
+            initializeNetworkNodes();
+            updateUserInfo();
+            updateUI();
+            
+            // Start automatic background processes
+            setInterval(updateNetworkStatus, 2000);
+            setInterval(autoGenerateTransactions, 15000);
+        }
+        
+        // Blockchain functions
+        function createGenesisBlock() {
+            const genesisBlock = {
+                index: 0,
+                timestamp: Date.now(),
+                transactions: [{ type: 'genesis', data: 'Healthcare Blockchain Initialized' }],
+                previousHash: '0',
+                hash: calculateHash(0, Date.now(), [], '0', 0),
+                nonce: 0,
+                merkleRoot: 'genesis'
+            };
+            blockchain.push(genesisBlock);
+            addAuditEntry('System', 'Genesis block created');
+        }
+        
+        function calculateHash(index, timestamp, transactions, previousHash, nonce) {
+            const data = index + timestamp + JSON.stringify(transactions) + previousHash + nonce;
+            return sha256(data).substring(0, 16);
+        }
+        
+        // Simple SHA256-like hash function (for simulation)
+        function sha256(data) {
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(16).padStart(16, '0');
+        }
+        
+        function createBlock(transactions) {
+            const previousBlock = blockchain[blockchain.length - 1];
+            const newBlock = {
+                index: blockchain.length,
+                timestamp: Date.now(),
+                transactions: transactions,
+                previousHash: previousBlock.hash,
+                hash: '',
+                nonce: 0,
+                merkleRoot: calculateMerkleRoot(transactions)
+            };
+            
+            // Proof of Work simulation
+            let nonce = 0;
+            let hash = '';
+            const difficulty = 4; // Number of leading zeros required
+            
+            do {
+                nonce++;
+                hash = calculateHash(newBlock.index, newBlock.timestamp, newBlock.transactions, newBlock.previousHash, nonce);
+            } while (!hash.substring(0, difficulty).match(/^0+$/));
+            
+            newBlock.nonce = nonce;
+            newBlock.hash = hash;
+            
+            return newBlock;
+        }
+        
+        function calculateMerkleRoot(transactions) {
+            if (transactions.length === 0) return '0';
+            if (transactions.length === 1) return sha256(JSON.stringify(transactions[0]));
+            
+            let hashes = transactions.map(tx => sha256(JSON.stringify(tx)));
+            
+            while (hashes.length > 1) {
+                const newHashes = [];
+                for (let i = 0; i < hashes.length; i += 2) {
+                    const left = hashes[i];
+                    const right = hashes[i + 1] || hashes[i];
+                    newHashes.push(sha256(left + right));
+                }
+                hashes = newHashes;
+            }
+            
+            return hashes[0];
+        }
+        
+        // Transaction functions
+        function addTransaction(transaction) {
+            transaction.id = generateTransactionId();
+            transaction.timestamp = Date.now();
+            transaction.from = getCurrentUser().id;
+            
+            // Validate transaction
+            if (validateTransaction(transaction)) {
+                transactionPool.push(transaction);
+                addAuditEntry(getCurrentUser().name, `Created transaction: ${transaction.type}`);
+                updateUI();
+                return true;
+            }
+            return false;
+        }
+        
+        function validateTransaction(transaction) {
+            const user = getCurrentUser();
+            
+            // Check permissions based on transaction type
+            switch (transaction.type) {
+                case 'medical_record':
+                    return user.permissions.includes('write_record') || user.role === 'Patient';
+                case 'access_request':
+                    return true; // All users can request access
+                case 'permission_grant':
+                    return user.permissions.includes('grant_access');
+                default:
+                    return false;
+            }
+        }
+        
+        function generateTransactionId() {
+            return 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        }
+        
+        // Mining functions
+        function startMining() {
+            if (isMining || transactionPool.length === 0) return;
+            
+            isMining = true;
+            document.getElementById('mineBtn').textContent = 'Mining...';
+            document.getElementById('mineBtn').disabled = true;
+            
+            const miningTransactions = transactionPool.splice(0, Math.min(5, transactionPool.length));
+            let progress = 0;
+            
+            const miningInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                document.getElementById('miningProgress').style.width = Math.min(progress, 100) + '%';
+                document.getElementById('miningStatus').textContent = `Mining block... ${Math.round(progress)}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(miningInterval);
+                    
+                    const newBlock = createBlock(miningTransactions);
+                    blockchain.push(newBlock);
+                    
+                    totalTransactions += miningTransactions.length;
+                    
+                    // Execute smart contracts
+                    executeSmartContracts(miningTransactions);
+                    
+                    isMining = false;
+                    document.getElementById('mineBtn').textContent = 'Start Mining';
+                    document.getElementById('mineBtn').disabled = false;
+                    document.getElementById('miningProgress').style.width = '0%';
+                    document.getElementById('miningStatus').textContent = `Block #${newBlock.index} mined successfully!`;
+                    
+                    addAuditEntry('Network', `Block #${newBlock.index} mined with ${miningTransactions.length} transactions`);
+                    updateUI();
+                    
+                    // Reset mining status after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById('miningStatus').textContent = 'Ready to mine';
+                    }, 3000);
+                }
+            }, 200);
+        }
+        
+        // Smart contract functions
+        function deploySmartContract() {
+            const contracts = [
+                {
+                    id: 'sc_' + Date.now(),
+                    name: 'Automatic Access Control',
+                    type: 'access_control',
+                    code: 'if (user.role === "Emergency") grant_immediate_access();',
+                    conditions: 'Emergency medical personnel',
+                    status: 'Active'
+                },
+                {
+                    id: 'sc_' + Date.now() + 1,
+                    name: 'Data Retention Policy',
+                    type: 'retention',
+                    code: 'if (data.age > 7_years && data.type !== "critical") archive_data();',
+                    conditions: 'Non-critical data older than 7 years',
+                    status: 'Active'
+                },
+                {
+                    id: 'sc_' + Date.now() + 2,
+                    name: 'Consent Verification',
+                    type: 'consent',
+                    code: 'verify_patient_consent() && check_data_sensitivity();',
+                    conditions: 'Patient consent required for sensitive data',
+                    status: 'Active'
+                }
+            ];
+            
+            const contract = contracts[Math.floor(Math.random() * contracts.length)];
+            smartContracts.push(contract);
+            
+            addAuditEntry(getCurrentUser().name, `Deployed smart contract: ${contract.name}`);
+            updateUI();
+        }
+        
+        function executeSmartContracts(transactions) {
+            transactions.forEach(transaction => {
+                smartContracts.forEach(contract => {
+                    if (shouldExecuteContract(contract, transaction)) {
+                        addAuditEntry('Smart Contract', `Executed: ${contract.name} for transaction ${transaction.id}`);
+                    }
+                });
+            });
+        }
+        
+        function shouldExecuteContract(contract, transaction) {
+            // Simulate smart contract execution logic
+            switch (contract.type) {
+                case 'access_control':
+                    return transaction.type === 'access_request' && transaction.emergency === true;
+                case 'retention':
+                    return transaction.type === 'medical_record' && Math.random() > 0.8;
+                case 'consent':
+                    return transaction.type === 'access_request' && Math.random() > 0.7;
+                default:
+                    return false;
+            }
+        }
+        
+        // Network and consensus functions
+        function initializeNetworkNodes() {
+            const nodeTypes = ['Hospital', 'Research', 'Insurance', 'Government', 'Pharmacy'];
+            for (let i = 0; i < 5; i++) {
+                networkNodes.push({
+                    id: `node_${i + 1}`,
+                    type: nodeTypes[i],
+                    status: 'online',
+                    consensus: true,
+                    lastSeen: Date.now()
+                });
+            }
+        }
+        
+        function updateNetworkStatus() {
+            // Simulate network changes
+            networkNodes.forEach(node => {
+                if (Math.random() < 0.02) { // 2% chance of status change
+                    node.status = node.status === 'online' ? 'offline' : 'online';
+                    node.lastSeen = Date.now();
+                }
+                
+                if (Math.random() < 0.01) { // 1% chance of consensus disagreement
+                    node.consensus = !node.consensus;
+                }
+            });
+            
+            updateUI();
+        }
+        
+        // Security and privacy functions
+        function simulateAttack() {
+            const attacks = [
+                'Unauthorized access attempt detected and blocked',
+                'DDoS attack mitigated by network consensus',
+                'Data tampering attempt failed - blockchain integrity maintained',
+                'Phishing attempt detected and user alerted',
+                'Malicious smart contract deployment prevented'
+            ];
+            
+            const attack = attacks[Math.floor(Math.random() * attacks.length)];
+            addAuditEntry('Security System', `🚨 ${attack}`);
+            
+            // Simulate security response
+            setTimeout(() => {
+                addAuditEntry('Security System', '✅ Security protocols activated - system secure');
+            }, 2000);
+            
+            updateUI();
+        }
+        
+        function encryptData(data, level = 'standard') {
+            // Simulate encryption
+            const methods = {
+                'standard': 'AES-256',
+                'advanced': 'RSA-4096',
+                'quantum': 'Quantum-resistant lattice-based'
+            };
+            
+            const encrypted = btoa(data).replace(/[=]/g, '').slice(0, 32) + '...';
+            return {
+                encrypted: encrypted,
+                method: methods[level],
+                timestamp: Date.now()
+            };
+        }
+        
+        // UI functions
+        function updateUserInfo() {
+            const user = getCurrentUser();
+            const userInfo = document.getElementById('userInfo');
+            userInfo.innerHTML = `
+                <strong>${user.name}</strong><br>
+                Role: ${user.role}<br>
+                ID: ${user.id}<br>
+                Permissions: ${user.permissions.length}
+            `;
+        }
+        
+        function updateUI() {
+            updateBlockchainView();
+            updateTransactionPool();
+            updateSmartContracts();
+            updateAuditTrail();
+            updateNetworkNodes();
+            updateAnalytics();
+            updateNetworkIndicators();
+        }
+        
+        function updateBlockchainView() {
+            const container = document.getElementById('blocksContainer');
+            container.innerHTML = '';
+            
+            blockchain.forEach((block, index) => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = `block ${index === 0 ? 'genesis' : ''}`;
+                blockDiv.onclick = () => showBlockDetails(block);
+                
+                blockDiv.innerHTML = `
+                    <div class="block-header">Block #${block.index}</div>
+                    <div class="block-data">
+                        <div>Transactions: ${block.transactions.length}</div>
+                        <div>Timestamp: ${new Date(block.timestamp).toLocaleTimeString()}</div>
+                        <div class="hash">Hash: ${block.hash}</div>
+                        <div class="hash">Prev: ${block.previousHash}</div>
+                        <div>Nonce: ${block.nonce}</div>
+                    </div>
+                `;
+                
+                container.appendChild(blockDiv);
+            });
+            
+            // Add pending block if transactions exist
+            if (transactionPool.length > 0) {
+                const pendingDiv = document.createElement('div');
+                pendingDiv.className = 'block pending';
+                pendingDiv.innerHTML = `
+                    <div class="block-header">Pending Block</div>
+                    <div class="block-data">
+                        <div>Pending Transactions: ${transactionPool.length}</div>
+                        <div>Status: Awaiting mining</div>
+                    </div>
+                `;
+                container.appendChild(pendingDiv);
+            }
+        }
+        
+        function updateTransactionPool() {
+            const pool = document.getElementById('transactionPool');
+            pool.innerHTML = '';
+            
+            transactionPool.slice(-5).forEach(tx => {
+                const txDiv = document.createElement('div');
+                txDiv.className = `transaction ${tx.type.split('_')[0]}`;
+                txDiv.innerHTML = `
+                    <div><strong>${tx.type.replace('_', ' ').toUpperCase()}</strong></div>
+                    <div>From: ${tx.from}</div>
+                    <div>Time: ${new Date(tx.timestamp).toLocaleTimeString()}</div>
+                    <div>ID: ${tx.id.substring(0, 16)}...</div>
+                `;
+                pool.appendChild(txDiv);
+            });
+        }
+        
+        function updateSmartContracts() {
+            const container = document.getElementById('smartContracts');
+            container.innerHTML = '';
+            
+            smartContracts.slice(-3).forEach(contract => {
+                const contractDiv = document.createElement('div');
+                contractDiv.className = 'contract';
+                contractDiv.innerHTML = `
+                    <div><strong>${contract.name}</strong></div>
+                    <div>Type: ${contract.type}</div>
+                    <div>Status: ${contract.status}</div>
+                `;
+                container.appendChild(contractDiv);
+            });
+        }
+        
+        function updateAuditTrail() {
+            const trail = document.getElementById('auditTrail');
+            trail.innerHTML = '';
+            
+            auditLog.slice(-10).forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'audit-entry';
+                entryDiv.innerHTML = `
+                    <div><strong>${entry.user}</strong>: ${entry.action}</div>
+                    <div style="font-size: 0.75rem; opacity: 0.7;">
+                        ${new Date(entry.timestamp).toLocaleString()}
+                    </div>
+                `;
+                trail.appendChild(entryDiv);
+            });
+        }
+        
+        function updateNetworkNodes() {
+            const container = document.getElementById('nodesView');
+            const existingTitle = container.querySelector('h3');
+            container.innerHTML = '';
+            if (existingTitle) container.appendChild(existingTitle);
+            
+            networkNodes.forEach(node => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = `node ${node.status}`;
+                nodeDiv.innerHTML = `
+                    <div><strong>${node.type}</strong></div>
+                    <div>${node.id}</div>
+                    <div>${node.status}</div>
+                    <div class="consensus-indicator ${node.consensus ? '' : 'disagreement'}"></div>
+                `;
+                container.appendChild(nodeDiv);
+            });
+        }
+        
+        function updateAnalytics() {
+            document.getElementById('totalTx').textContent = totalTransactions;
+            document.getElementById('accessRequests').textContent = accessRequestCount;
+            document.getElementById('contractCount').textContent = smartContracts.length;
+            document.getElementById('avgBlockTime').textContent = '30s';
+        }
+        
+        function updateNetworkIndicators() {
+            document.getElementById('blockCount').textContent = blockchain.length;
+            document.getElementById('activeNodes').textContent = networkNodes.filter(n => n.status === 'online').length;
+            document.getElementById('pendingTx').textContent = transactionPool.length;
+            
+            const consensusAgreement = networkNodes.filter(n => n.consensus).length / networkNodes.length;
+            document.getElementById('consensusStatus').textContent = consensusAgreement > 0.5 ? '✅' : '⚠️';
+        }
+        
+        // Event handlers
+        function getCurrentUser() {
+            return users[currentUser];
+        }
+        
+        document.getElementById('userSelect').addEventListener('change', function(e) {
+            currentUser = e.target.value;
+            updateUserInfo();
+        });
+        
+        function showCreateRecordModal() {
+            document.getElementById('createRecordModal').style.display = 'flex';
+        }
+        
+        function showAccessRequestModal() {
+            document.getElementById('accessRequestModal').style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function createMedicalRecord(event) {
+            event.preventDefault();
+            
+            const transaction = {
+                type: 'medical_record',
+                patientId: document.getElementById('patientId').value,
+                recordType: document.getElementById('recordType').value,
+                data: encryptData(document.getElementById('medicalData').value),
+                privacyLevel: document.getElementById('privacyLevel').value
+            };
+            
+            if (addTransaction(transaction)) {
+                closeModal('createRecordModal');
+                event.target.reset();
+            }
+        }
+        
+        function requestDataAccess(event) {
+            event.preventDefault();
+            
+            const permissions = [];
+            if (document.getElementById('readPerm').checked) permissions.push('read');
+            if (document.getElementById('writePerm').checked) permissions.push('write');
+            if (document.getElementById('sharePerm').checked) permissions.push('share');
+            
+            const transaction = {
+                type: 'access_request',
+                targetPatientId: document.getElementById('targetPatientId').value,
+                purpose: document.getElementById('accessPurpose').value,
+                permissions: permissions,
+                duration: parseInt(document.getElementById('accessDuration').value),
+                emergency: document.getElementById('accessPurpose').value === 'emergency'
+            };
+            
+            if (addTransaction(transaction)) {
+                accessRequestCount++;
+                closeModal('accessRequestModal');
+                event.target.reset();
+            }
+        }
+        
+        function showEncryptionDemo() {
+            const sampleData = "Patient: John Doe, Diagnosis: Hypertension, Treatment: Medication prescribed";
+            const encrypted = encryptData(sampleData, 'advanced');
+            
+            alert(`Encryption Demo:\n\nOriginal Data:\n${sampleData}\n\nEncrypted (${encrypted.method}):\n${encrypted.encrypted}\n\nThis demonstrates how sensitive medical data is protected using advanced encryption before being stored on the blockchain.`);
+        }
+        
+        function showBlockDetails(block) {
+            const details = `
+Block Details:
+
+Index: ${block.index}
+Timestamp: ${new Date(block.timestamp).toLocaleString()}
+Hash: ${block.hash}
+Previous Hash: ${block.previousHash}
+Merkle Root: ${block.merkleRoot}
+Nonce: ${block.nonce}
+Transactions: ${block.transactions.length}
+
+Transaction Details:
+${block.transactions.map(tx => `- ${tx.type}: ${JSON.stringify(tx.data || tx).substring(0, 100)}...`).join('\n')}
+            `;
+            
+            alert(details);
+        }
+        
+        function addAuditEntry(user, action) {
+            auditLog.push({
+                user: user,
+                action: action,
+                timestamp: Date.now()
+            });
+        }
+        
+        function autoGenerateTransactions() {
+            if (Math.random() > 0.3) return; // 30% chance to generate transaction
+            
+            const transactionTypes = [
+                {
+                    type: 'medical_record',
+                    patientId: 'P' + Math.floor(Math.random() * 1000),
+                    recordType: ['diagnosis', 'prescription', 'lab_result'][Math.floor(Math.random() * 3)],
+                    data: encryptData('Auto-generated medical record'),
+                    privacyLevel: ['public', 'restricted', 'confidential'][Math.floor(Math.random() * 3)]
+                },
+                {
+                    type: 'access_request',
+                    targetPatientId: 'P' + Math.floor(Math.random() * 1000),
+                    purpose: ['treatment', 'research', 'insurance'][Math.floor(Math.random() * 3)],
+                    permissions: ['read'],
+                    duration: 24
+                }
+            ];
+            
+            const transaction = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
+            
+            // Override current user temporarily for auto-generation
+            const originalUser = currentUser;
+            currentUser = Object.keys(users)[Math.floor(Math.random() * Object.keys(users).length)];
+            
+            addTransaction(transaction);
+            
+            currentUser = originalUser;
+        }
+        
+        // Initialize the application when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

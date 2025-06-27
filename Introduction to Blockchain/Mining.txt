@@ -1,0 +1,14 @@
+Mining = Solving a complex mathematical puzzle + Validating transactions + Earning rewards
+
+
+
+🔍 How it works:
+Transactions are collected into a pool (called the mempool).
+
+Miners bundle some of these transactions into a block.
+
+The miner must solve a cryptographic puzzle (called Proof of Work in Bitcoin) to make the block valid.
+
+Once solved, the block is broadcast to the network and added to the blockchain.
+
+The successful miner gets a block reward (new coins + transaction fees).

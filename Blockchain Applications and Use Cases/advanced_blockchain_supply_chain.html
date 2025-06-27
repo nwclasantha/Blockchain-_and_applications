@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Supply Chain Management System</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(45deg, #0c0c0c, #1a1a2e, #16213e, #0f0f23);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 300% 300%;
+            animation: gradientText 5s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        @keyframes gradientText {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .nav-tab {
+            padding: 18px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .nav-tab.active::before {
+            left: 0;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: slideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(50px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-number {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: numberPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes numberPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .blockchain-visualizer {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .blockchain-chain {
+            display: flex;
+            gap: 20px;
+            min-width: fit-content;
+            padding: 20px 0;
+        }
+
+        .block-3d {
+            min-width: 300px;
+            height: 200px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.4s ease;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .block-3d:hover {
+            transform: rotateY(15deg) rotateX(5deg) translateY(-10px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .block-3d::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .block-3d:hover::before {
+            opacity: 1;
+        }
+
+        .block-3d.genesis {
+            background: var(--warning-gradient);
+            color: #000;
+        }
+
+        .block-3d.validated {
+            background: var(--success-gradient);
+        }
+
+        .supply-chain-map {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .world-map {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><rect width="1000" height="500" fill="%23001122"/><path d="M100,100 Q200,50 300,100 T500,100 T700,120 T900,100" stroke="%2300ff88" stroke-width="2" fill="none" opacity="0.6"/><circle cx="150" cy="100" r="8" fill="%23ff4757" opacity="0.8"><animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/></circle><circle cx="300" cy="100" r="8" fill="%2300ff88" opacity="0.8"><animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/></circle><circle cx="500" cy="100" r="8" fill="%23ffa502" opacity="0.8"><animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/></circle><circle cx="700" cy="120" r="8" fill="%234834d4" opacity="0.8"><animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/></circle></svg>') center/contain no-repeat;
+            position: relative;
+        }
+
+        .location-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--danger-gradient);
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+
+        .location-pin::after {
+            content: attr(data-location);
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .location-pin:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 75, 87, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255, 75, 87, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 75, 87, 0); }
+        }
+
+        .iot-sensors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .sensor-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-reading {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .sensor-gauge {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            position: relative;
+            background: conic-gradient(from 0deg, #ff4757 0deg 33deg, #ffa502 33deg 66deg, #2ed573 66deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sensor-gauge::before {
+            content: '';
+            width: 80%;
+            height: 80%;
+            background: var(--glass-bg);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .sensor-value {
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            color: white;
+        }
+
+        .real-time-chat {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+            max-height: 400px;
+        }
+
+        .chat-messages {
+            height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .chat-message {
+            background: var(--glass-bg);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary-gradient);
+            animation: messageSlideIn 0.3s ease;
+        }
+
+        @keyframes messageSlideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .ai-predictions {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .prediction-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid var(--success-gradient);
+        }
+
+        .smart-contract-studio {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .contract-editor {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+
+        .btn {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .btn-success { background: var(--success-gradient); }
+        .btn-warning { background: var(--warning-gradient); }
+        .btn-danger { background: var(--danger-gradient); }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-gradient);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            z-index: 10000;
+            animation: notificationSlide 0.5s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        @keyframes notificationSlide {
+            from { transform: translateX(100%) scale(0.8); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-gradient);
+            transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            to { left: 100%; }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 25px;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid var(--glass-border);
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .live-analytics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .analytics-widget {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-animation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            animation: wave 3s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success-gradient);
+            animation: pulse 2s infinite;
+        }
+
+        .consensus-visualization {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .node-network {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .network-node {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--success-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            animation: nodeGlow 3s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        @keyframes nodeGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(76, 172, 254, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(76, 172, 254, 0.8), 0 0 60px rgba(76, 172, 254, 0.3); }
+        }
+
+        .node-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(76, 172, 254, 0.8), rgba(0, 242, 254, 0.8));
+            animation: dataFlow 2s linear infinite;
+        }
+
+        @keyframes dataFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5em; }
+            .nav-tabs { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .blockchain-chain { flex-direction: column; }
+            .container { padding: 15px; }
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0c0c0c, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 100px;
+            height: 100px;
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="floating-particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>🚀 NEXUS BLOCKCHAIN SUPPLY CHAIN</h1>
+                <p>Next-Generation Distributed Ledger Technology for Global Supply Chain Management</p>
+                <div class="network-status">
+                    <div class="status-indicator"></div>
+                    <span>Network Status: <strong>ACTIVE</strong> | Nodes: <span id="nodeCount">12</span> | TPS: <span id="tps">1,247</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('dashboard')">🎯 Command Center</button>
+                <button class="nav-tab" onclick="showTab('blockchain')">⛓️ Blockchain Explorer</button>
+                <button class="nav-tab" onclick="showTab('products')">📦 Asset Management</button>
+                <button class="nav-tab" onclick="showTab('supply-map')">🌍 Global Tracking</button>
+                <button class="nav-tab" onclick="showTab('iot-sensors')">📡 IoT Network</button>
+                <button class="nav-tab" onclick="showTab('ai-analytics')">🤖 AI Analytics</button>
+                <button class="nav-tab" onclick="showTab('smart-contracts')">📋 Smart Contracts</button>
+                <button class="nav-tab" onclick="showTab('consensus')">🔗 Consensus Engine</button>
+            </div>
+        </div>
+
+        <!-- Command Center Dashboard -->
+        <div id="dashboard" class="tab-content active">
+            <h2>🎯 Blockchain Supply Chain Command Center</h2>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAssets">0</div>
+                    <div class="stat-label">Digital Assets Tracked</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="blockHeight">0</div>
+                    <div class="stat-label">Current Block Height</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeNodes">12</div>
+                    <div class="stat-label">Active Network Nodes</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 96%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="transactionPool">0</div>
+                    <div class="stat-label">Pending Transactions</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="live-analytics">
+                <div class="analytics-widget">
+                    <h3>Real-Time Network Activity</h3>
+                    <div id="networkChart" style="height: 200px; background: rgba(0,0,0,0.2); border-radius: 10px; position: relative;">
+                        <canvas id="activityChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="wave-animation"></div>
+                </div>
+
+                <div class="analytics-widget">
+                    <h3>Global Supply Chain Status</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                        <div>
+                            <strong>On Schedule:</strong> <span style="color: #2ed573;">89%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 89%; background: var(--success-gradient);"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <strong>Quality Score:</strong> <span style="color: #4facfe;">96%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 96%; background: var(--success-gradient);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="real-time-chat">
+                <h3>🔊 Real-Time Network Communication</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message">
+                        <strong>Node Berlin-01:</strong> Block #2847 validated successfully
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">2 seconds ago</div>
+                    </div>
+                    <div class="chat-message">
+                        <strong>Smart Contract:</strong> Payment settlement executed for shipment SC-9876
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">8 seconds ago</div>
+                    </div>
+                    <div class="chat-message">
+                        <strong>IoT Sensor:</strong> Temperature alert: Cold chain breach detected in shipment #4521
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">15 seconds ago</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" placeholder="Enter network message..." style="flex: 1;">
+                    <button class="btn" onclick="sendNetworkMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain Explorer -->
+        <div id="blockchain" class="tab-content">
+            <h2>⛓️ Advanced Blockchain Explorer</h2>
+            
+            <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
+                <button class="btn btn-success" onclick="mineNewBlock()">⛏️ Mine Block</button>
+                <button class="btn btn-warning" onclick="validateChain()">✅ Validate Chain</button>
+                <button class="btn" onclick="broadcastTransaction()">📡 Broadcast Transaction</button>
+                <button class="btn btn-danger" onclick="simulateAttack()">🛡️ Security Test</button>
+            </div>
+
+            <div class="blockchain-visualizer">
+                <h3>Live Blockchain Network</h3>
+                <div class="blockchain-chain" id="blockchainChain">
+                    <!-- Blocks will be populated here -->
+                </div>
+            </div>
+
+            <div class="analytics-widget">
+                <h3>Network Statistics</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <strong>Hash Rate:</strong> <span id="hashRate">2.45 TH/s</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 87%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Network Difficulty:</strong> <span id="difficulty">18.7T</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 74%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Block Time:</strong> <span id="blockTime">12.4s</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Mempool Size:</strong> <span id="mempoolSize">1,247</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Management -->
+        <div id="products" class="tab-content">
+            <h2>📦 Advanced Asset Management System</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <h3>🆕 Register New Digital Asset</h3>
+                    <form id="assetForm" onsubmit="registerAsset(event)">
+                        <div class="form-group">
+                            <label>Asset Name</label>
+                            <input type="text" id="assetName" required placeholder="Enter asset name">
+                        </div>
+                        <div class="form-group">
+                            <label>Asset Category</label>
+                            <select id="assetCategory">
+                                <option value="electronics">Electronics & Technology</option>
+                                <option value="pharmaceutical">Pharmaceutical & Healthcare</option>
+                                <option value="automotive">Automotive & Manufacturing</option>
+                                <option value="food">Food & Agriculture</option>
+                                <option value="luxury">Luxury Goods</option>
+                                <option value="chemicals">Chemicals & Materials</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Manufacturer/Origin</label>
+                            <input type="text" id="manufacturer" required placeholder="Manufacturer name">
+                        </div>
+                        <div class="form-group">
+                            <label>Initial GPS Location</label>
+                            <input type="text" id="gpsLocation" placeholder="Lat, Long coordinates">
+                        </div>
+                        <div class="form-group">
+                            <label>Special Requirements</label>
+                            <textarea id="requirements" rows="3" placeholder="Temperature, handling, security requirements..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">🚀 Register & Mint NFT</button>
+                    </form>
+                </div>
+
+                <div>
+                    <h3>🔍 Advanced Asset Tracking</h3>
+                    <div class="form-group">
+                        <label>Asset ID or NFT Hash</label>
+                        <input type="text" id="trackingInput" placeholder="Enter asset identifier">
+                        <button class="btn" onclick="trackAsset()">🎯 Track Asset</button>
+                        <button class="btn btn-warning" onclick="scanQRCode()">📱 Scan QR</button>
+                    </div>
+                    
+                    <div id="trackingResults"></div>
+                </div>
+            </div>
+
+            <div id="assetsList">
+                <h3>📋 Registered Digital Assets</h3>
+                <div id="assetsGrid"></div>
+            </div>
+        </div>
+
+        <!-- Global Supply Chain Map -->
+        <div id="supply-map" class="tab-content">
+            <h2>🌍 Global Supply Chain Visualization</h2>
+            
+            <div class="supply-chain-map">
+                <div class="world-map">
+                    <div class="location-pin" style="top: 30%; left: 15%;" data-location="New York - Distribution Hub"></div>
+                    <div class="location-pin" style="top: 25%; left: 45%;" data-location="London - Quality Control"></div>
+                    <div class="location-pin" style="top: 40%; left: 60%;" data-location="Dubai - Logistics Center"></div>
+                    <div class="location-pin" style="top: 35%; left: 75%;" data-location="Singapore - Manufacturing"></div>
+                    <div class="location-pin" style="top: 45%; left: 85%;" data-location="Tokyo - Technology Hub"></div>
+                </div>
+            </div>
+
+            <div class="live-analytics">
+                <div class="analytics-widget">
+                    <h3>Regional Performance</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                            <span>🇺🇸 North America</span>
+                            <span>94%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 94%"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                            <span>🇪🇺 Europe</span>
+                            <span>91%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 91%"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                            <span>🇦🇪 Middle East</span>
+                            <span>87%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 87%"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                            <span>🇸🇬 Asia Pacific</span>
+                            <span>96%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 96%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-widget">
+                    <h3>Active Shipments</h3>
+                    <div id="activeShipments">
+                        <div style="padding: 15px; border-left: 4px solid #4facfe; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>SC-2847:</strong> Electronics Shipment<br>
+                            <small>Singapore → Los Angeles | ETA: 2 days</small>
+                        </div>
+                        <div style="padding: 15px; border-left: 4px solid #2ed573; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>SC-2848:</strong> Pharmaceutical Delivery<br>
+                            <small>Frankfurt → Dubai | ETA: 8 hours</small>
+                        </div>
+                        <div style="padding: 15px; border-left: 4px solid #ffa502; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>SC-2849:</strong> Luxury Goods Transport<br>
+                            <small>Tokyo → London | ETA: 1 day</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IoT Sensor Network -->
+        <div id="iot-sensors" class="tab-content">
+            <h2>📡 IoT Sensor Network Dashboard</h2>
+            
+            <div class="iot-sensors">
+                <div class="sensor-card">
+                    <h4>🌡️ Temperature Monitoring</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="tempValue">22°C</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Status:</strong> <span style="color: #2ed573;">Normal</span><br>
+                        <small>Last Updated: <span id="tempTimestamp">Just now</span></small>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <h4>💧 Humidity Control</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="humidityValue">45%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Status:</strong> <span style="color: #2ed573;">Optimal</span><br>
+                        <small>Last Updated: <span id="humidityTimestamp">2 min ago</span></small>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <h4>📍 GPS Tracking</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="gpsValue">ACTIVE</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Location:</strong> <span style="color: #4facfe;">Pacific Ocean</span><br>
+                        <small>Speed: <span id="speedValue">23 knots</span></small>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <h4>🔒 Security Seal</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="securityValue">SECURE</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Status:</strong> <span style="color: #2ed573;">Intact</span><br>
+                        <small>Tamper Events: <span style="color: #2ed573;">0</span></small>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <h4>⚡ Power Level</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="batteryValue">87%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Battery:</strong> <span style="color: #2ed573;">Good</span><br>
+                        <small>Est. Life: <span>14 days</span></small>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <h4>📶 Network Signal</h4>
+                    <div class="sensor-gauge">
+                        <div class="sensor-value" id="signalValue">-78dBm</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Quality:</strong> <span style="color: #ffa502;">Fair</span><br>
+                        <small>Provider: <span>5G Global</span></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-widget">
+                <h3>📊 Sensor Data Analytics</h3>
+                <canvas id="sensorChart" width="400" height="200" style="width: 100%; max-height: 200px;"></canvas>
+            </div>
+        </div>
+
+        <!-- AI Analytics -->
+        <div id="ai-analytics" class="tab-content">
+            <h2>🤖 AI-Powered Predictive Analytics</h2>
+            
+            <div class="ai-predictions">
+                <h3>🔮 Predictive Intelligence Engine</h3>
+                
+                <div class="prediction-card">
+                    <h4>📈 Demand Forecasting</h4>
+                    <p><strong>Prediction:</strong> Electronics demand will increase by 23% in Q4 2025</p>
+                    <p><strong>Confidence Level:</strong> <span style="color: #2ed573;">94%</span></p>
+                    <p><strong>Recommended Action:</strong> Increase production capacity by 15% starting next month</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 94%"></div>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <h4>🚚 Delivery Optimization</h4>
+                    <p><strong>Prediction:</strong> Route optimization can reduce delivery times by 18%</p>
+                    <p><strong>Confidence Level:</strong> <span style="color: #4facfe;">87%</span></p>
+                    <p><strong>Recommended Action:</strong> Implement AI-suggested routing algorithms</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 87%"></div>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <h4>⚠️ Risk Assessment</h4>
+                    <p><strong>Prediction:</strong> Potential supply chain disruption detected for Region Asia-Pacific</p>
+                    <p><strong>Risk Level:</strong> <span style="color: #ffa502;">Medium</span></p>
+                    <p><strong>Recommended Action:</strong> Diversify suppliers and increase buffer stock</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%; background: var(--warning-gradient);"></div>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <h4>💰 Cost Optimization</h4>
+                    <p><strong>Prediction:</strong> Blockchain automation can reduce operational costs by 31%</p>
+                    <p><strong>Confidence Level:</strong> <span style="color: #2ed573;">92%</span></p>
+                    <p><strong>Potential Savings:</strong> $2.4M annually across all operations</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="live-analytics">
+                <div class="analytics-widget">
+                    <h3>🧠 Machine Learning Insights</h3>
+                    <div style="margin: 20px 0;">
+                        <div><strong>Model Accuracy:</strong> <span style="color: #2ed573;">96.7%</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 96.7%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Processing Speed:</strong> <span style="color: #4facfe;">1.2M records/sec</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 89%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Data Quality Score:</strong> <span style="color: #2ed573;">94.2%</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 94.2%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-widget">
+                    <h3>📊 Anomaly Detection</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="padding: 10px; background: rgba(46, 213, 115, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>✅ Normal Operations:</strong> 847 transactions
+                        </div>
+                        <div style="padding: 10px; background: rgba(255, 165, 2, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>⚠️ Minor Anomalies:</strong> 3 detected
+                        </div>
+                        <div style="padding: 10px; background: rgba(255, 75, 87, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>🚨 Critical Issues:</strong> 0 detected
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Contracts -->
+        <div id="smart-contracts" class="tab-content">
+            <h2>📋 Smart Contract Development Studio</h2>
+            
+            <div style="margin-bottom: 30px;">
+                <button class="btn btn-success" onclick="deployContract()">🚀 Deploy Contract</button>
+                <button class="btn btn-warning" onclick="executeContract()">⚡ Execute Contract</button>
+                <button class="btn" onclick="auditContracts()">🔍 Audit All</button>
+                <button class="btn btn-danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+            </div>
+
+            <div class="smart-contract-studio">
+                <h3>📝 Contract Editor</h3>
+                <div class="contract-editor" id="contractEditor">
+pragma solidity ^0.8.19;
+
+contract SupplyChainTracker {
+    struct Product {
+        uint256 id;
+        string name;
+        address manufacturer;
+        uint256 timestamp;
+        bool isVerified;
+    }
+    
+    mapping(uint256 => Product) public products;
+    uint256 public productCount;
+    
+    event ProductRegistered(uint256 id, string name, address manufacturer);
+    event ProductVerified(uint256 id, address verifier);
+    
+    function registerProduct(string memory _name) public {
+        productCount++;
+        products[productCount] = Product(
+            productCount,
+            _name,
+            msg.sender,
+            block.timestamp,
+            false
+        );
+        emit ProductRegistered(productCount, _name, msg.sender);
+    }
+    
+    function verifyProduct(uint256 _id) public {
+        require(_id <= productCount, "Product does not exist");
+        products[_id].isVerified = true;
+        emit ProductVerified(_id, msg.sender);
+    }
+}
+                </div>
+            </div>
+
+            <div class="live-analytics">
+                <div class="analytics-widget">
+                    <h3>📊 Active Smart Contracts</h3>
+                    <div id="activeContracts">
+                        <div style="padding: 15px; border-left: 4px solid #2ed573; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>Supply Chain Tracker v2.1</strong><br>
+                            <small>Status: Active | Gas Used: 2.4M | Executions: 1,247</small>
+                        </div>
+                        <div style="padding: 15px; border-left: 4px solid #4facfe; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>Payment Automation v1.8</strong><br>
+                            <small>Status: Active | Gas Used: 1.8M | Executions: 856</small>
+                        </div>
+                        <div style="padding: 15px; border-left: 4px solid #ffa502; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <strong>Quality Assurance v3.0</strong><br>
+                            <small>Status: Pending | Gas Used: 0.9M | Executions: 342</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-widget">
+                    <h3>⛽ Gas Analytics</h3>
+                    <div style="margin: 20px 0;">
+                        <div><strong>Average Gas Price:</strong> <span style="color: #4facfe;">15.2 Gwei</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 76%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Network Congestion:</strong> <span style="color: #2ed573;">Low</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 34%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Contract Efficiency:</strong> <span style="color: #2ed573;">94%</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 94%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consensus Engine -->
+        <div id="consensus" class="tab-content">
+            <h2>🔗 Distributed Consensus Engine</h2>
+            
+            <div class="consensus-visualization">
+                <h3>🌐 Network Consensus Visualization</h3>
+                <div class="node-network">
+                    <div class="network-node" data-node="1" onclick="selectNode(1)">N1</div>
+                    <div class="network-node" data-node="2" onclick="selectNode(2)">N2</div>
+                    <div class="network-node" data-node="3" onclick="selectNode(3)">N3</div>
+                    <div class="network-node" data-node="4" onclick="selectNode(4)">N4</div>
+                    <div class="network-node" data-node="5" onclick="selectNode(5)">N5</div>
+                    <div class="network-node" data-node="6" onclick="selectNode(6)">N6</div>
+                </div>
+            </div>
+
+            <div class="live-analytics">
+                <div class="analytics-widget">
+                    <h3>⚡ Consensus Metrics</h3>
+                    <div style="margin: 20px 0;">
+                        <div><strong>Consensus Algorithm:</strong> <span style="color: #4facfe;">Proof of Stake</span></div>
+                        <div><strong>Validator Count:</strong> <span style="color: #2ed573;">127</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 89%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Network Agreement:</strong> <span style="color: #2ed573;">99.7%</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 99.7%"></div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;"><strong>Finality Time:</strong> <span style="color: #4facfe;">3.2 seconds</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 87%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-widget">
+                    <h3>🔐 Security Status</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="padding: 10px; background: rgba(46, 213, 115, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>✅ Network Security:</strong> Optimal
+                        </div>
+                        <div style="padding: 10px; background: rgba(76, 172, 254, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>🔒 Byzantine Fault Tolerance:</strong> 33% threshold
+                        </div>
+                        <div style="padding: 10px; background: rgba(46, 213, 115, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>🛡️ Attack Resistance:</strong> 99.99% secure
+                        </div>
+                        <div style="padding: 10px; background: rgba(76, 172, 254, 0.2); border-radius: 8px; margin: 10px 0;">
+                            <strong>⚡ Network Uptime:</strong> 99.97%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Notification</h3>
+            <div id="modalMessage"></div>
+            <div style="margin-top: 30px; text-align: right;">
+                <button class="btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced global state management
+        let blockchain = [];
+        let digitalAssets = [];
+        let smartContracts = [];
+        let iotSensors = {};
+        let networkNodes = [];
+        let consensusData = {};
+        let aiPredictions = [];
+
+        // Advanced blockchain implementation
+        class AdvancedBlock {
+            constructor(index, timestamp, data, previousHash) {
+                this.index = index;
+                this.timestamp = timestamp;
+                this.data = data;
+                this.previousHash = previousHash;
+                this.nonce = 0;
+                this.merkleRoot = this.calculateMerkleRoot(data);
+                this.hash = this.calculateHash();
+                this.difficulty = 4;
+                this.validator = this.selectValidator();
+            }
+
+            calculateHash() {
+                return this.sha256(
+                    this.index + 
+                    this.previousHash + 
+                    this.timestamp + 
+                    JSON.stringify(this.data) + 
+                    this.nonce + 
+                    this.merkleRoot
+                );
+            }
+
+            sha256(message) {
+                // Simplified SHA-256 implementation for demo
+                let hash = 0;
+                for (let i = 0; i < message.length; i++) {
+                    const char = message.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).padStart(8, '0');
+            }
+
+            calculateMerkleRoot(transactions) {
+                if (!Array.isArray(transactions)) transactions = [transactions];
+                if (transactions.length === 0) return '0';
+                if (transactions.length === 1) return this.sha256(JSON.stringify(transactions[0]));
+                
+                const hashes = transactions.map(tx => this.sha256(JSON.stringify(tx)));
+                while (hashes.length > 1) {
+                    const newLevel = [];
+                    for (let i = 0; i < hashes.length; i += 2) {
+                        const left = hashes[i];
+                        const right = hashes[i + 1] || left;
+                        newLevel.push(this.sha256(left + right));
+                    }
+                    hashes.splice(0, hashes.length, ...newLevel);
+                }
+                return hashes[0];
+            }
+
+            selectValidator() {
+                const validators = ['Node-Berlin', 'Node-Tokyo', 'Node-NYC', 'Node-London', 'Node-Singapore'];
+                return validators[Math.floor(Math.random() * validators.length)];
+            }
+
+            mineBlock() {
+                const target = Array(this.difficulty + 1).join("0");
+                while (this.hash.substring(0, this.difficulty) !== target) {
+                    this.nonce++;
+                    this.hash = this.calculateHash();
+                }
+                return this.hash;
+            }
+        }
+
+        // Initialize the advanced system
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 500);
+            }, 2000);
+
+            initializeAdvancedBlockchain();
+            initializeIoTSensors();
+            createFloatingParticles();
+            startRealtimeUpdates();
+            simulateNetworkActivity();
+            
+            // Update dashboard metrics
+            updateDashboardMetrics();
+        });
+
+        function initializeAdvancedBlockchain() {
+            // Create genesis block
+            const genesisBlock = new AdvancedBlock(0, Date.now(), {
+                type: "genesis",
+                message: "NEXUS Blockchain Supply Chain Genesis Block",
+                version: "2.0",
+                network: "mainnet"
+            }, "0");
+            
+            blockchain.push(genesisBlock);
+
+            // Add sample blocks with complex data
+            addAdvancedBlock({
+                type: "asset_registration",
+                assetId: "NFT-" + generateRandomId(),
+                name: "Premium Coffee Beans",
+                manufacturer: "Fair Trade Global Corp",
+                location: { lat: 4.7110, lng: -74.0721, name: "Colombia" },
+                certifications: ["Organic", "Fair Trade", "Rainforest Alliance"],
+                value: 50000,
+                timestamp: Date.now()
+            });
+
+            addAdvancedBlock({
+                type: "quality_verification",
+                assetId: "NFT-" + generateRandomId(),
+                inspector: "QualityPro International",
+                score: 96.7,
+                standards: ["ISO 9001", "HACCP", "FDA"],
+                tests: ["Chemical Analysis", "Microbial Testing", "Sensory Evaluation"],
+                result: "PASSED"
+            });
+
+            updateBlockchainVisualization();
+        }
+
+        function addAdvancedBlock(data) {
+            const latestBlock = blockchain[blockchain.length - 1];
+            const newBlock = new AdvancedBlock(
+                blockchain.length,
+                Date.now(),
+                data,
+                latestBlock.hash
+            );
+            
+            // Simulate mining with visual feedback
+            showNotification("Mining new block...", "info");
+            setTimeout(() => {
+                newBlock.mineBlock();
+                blockchain.push(newBlock);
+                updateBlockchainVisualization();
+                updateDashboardMetrics();
+                addNetworkMessage(`Block #${newBlock.index} mined by ${newBlock.validator}`);
+                showNotification("Block mined successfully!", "success");
+            }, 1000);
+        }
+
+        function mineNewBlock() {
+            const blockData = {
+                type: "transaction_batch",
+                transactions: generateRandomTransactions(Math.floor(Math.random() * 10) + 1),
+                totalValue: Math.floor(Math.random() * 1000000),
+                gasUsed: Math.floor(Math.random() * 500000) + 100000,
+                timestamp: Date.now()
+            };
+            
+            addAdvancedBlock(blockData);
+        }
+
+        function generateRandomTransactions(count) {
+            const transactions = [];
+            for (let i = 0; i < count; i++) {
+                transactions.push({
+                    from: generateRandomAddress(),
+                    to: generateRandomAddress(),
+                    value: Math.floor(Math.random() * 100000),
+                    type: getRandomTransactionType(),
+                    nonce: Math.floor(Math.random() * 1000)
+                });
+            }
+            return transactions;
+        }
+
+        function updateBlockchainVisualization() {
+            const chainContainer = document.getElementById('blockchainChain');
+            chainContainer.innerHTML = '';
+            
+            blockchain.slice(-5).forEach((block, index) => {
+                const blockElement = document.createElement('div');
+                blockElement.className = `block-3d ${block.index === 0 ? 'genesis' : 'validated'}`;
+                blockElement.innerHTML = `
+                    <h4>Block #${block.index}</h4>
+                    <div style="font-size: 12px; margin: 8px 0;">
+                        <strong>Hash:</strong> ${block.hash.substring(0, 12)}...<br>
+                        <strong>Validator:</strong> ${block.validator}<br>
+                        <strong>Merkle Root:</strong> ${block.merkleRoot.substring(0, 12)}...<br>
+                        <strong>Transactions:</strong> ${Array.isArray(block.data.transactions) ? block.data.transactions.length : 1}<br>
+                        <strong>Time:</strong> ${new Date(block.timestamp).toLocaleTimeString()}
+                    </div>
+                `;
+                chainContainer.appendChild(blockElement);
+            });
+
+            // Update blockchain stats
+            document.getElementById('blockHeight').textContent = blockchain.length;
+        }
+
+        function initializeIoTSensors() {
+            iotSensors = {
+                temperature: { value: 22, unit: '°C', status: 'normal', lastUpdate: Date.now() },
+                humidity: { value: 45, unit: '%', status: 'optimal', lastUpdate: Date.now() },
+                gps: { lat: 25.7617, lng: -80.1918, speed: 23, status: 'active' },
+                security: { sealed: true, tamperCount: 0, status: 'secure' },
+                battery: { level: 87, voltage: 3.7, status: 'good' },
+                signal: { strength: -78, quality: 'fair', provider: '5G Global' }
+            };
+
+            updateIoTDisplay();
+            
+            // Simulate real-time sensor updates
+            setInterval(() => {
+                updateSensorData();
+                updateIoTDisplay();
+            }, 3000);
+        }
+
+        function updateSensorData() {
+            // Simulate realistic sensor fluctuations
+            iotSensors.temperature.value += (Math.random() - 0.5) * 2;
+            iotSensors.humidity.value += (Math.random() - 0.5) * 5;
+            iotSensors.battery.level -= 0.01;
+            iotSensors.signal.strength += (Math.random() - 0.5) * 10;
+            
+            // Update timestamps
+            Object.keys(iotSensors).forEach(sensor => {
+                if (iotSensors[sensor].lastUpdate) {
+                    iotSensors[sensor].lastUpdate = Date.now();
+                }
+            });
+        }
+
+        function updateIoTDisplay() {
+            document.getElementById('tempValue').textContent = `${Math.round(iotSensors.temperature.value)}°C`;
+            document.getElementById('humidityValue').textContent = `${Math.round(iotSensors.humidity.value)}%`;
+            document.getElementById('batteryValue').textContent = `${Math.round(iotSensors.battery.level)}%`;
+            document.getElementById('signalValue').textContent = `${Math.round(iotSensors.signal.strength)}dBm`;
+        }
+
+        function registerAsset(event) {
+            event.preventDefault();
+            
+            const assetData = {
+                id: 'NFT-' + generateRandomId(),
+                name: document.getElementById('assetName').value,
+                category: document.getElementById('assetCategory').value,
+                manufacturer: document.getElementById('manufacturer').value,
+                gpsLocation: document.getElementById('gpsLocation').value,
+                requirements: document.getElementById('requirements').value,
+                timestamp: Date.now(),
+                nftHash: generateNFTHash(),
+                status: 'Active',
+                journey: []
+            };
+
+            digitalAssets.push(assetData);
+
+            // Add to blockchain
+            addAdvancedBlock({
+                type: "nft_mint",
+                assetId: assetData.id,
+                name: assetData.name,
+                manufacturer: assetData.manufacturer,
+                nftHash: assetData.nftHash,
+                metadata: {
+                    category: assetData.category,
+                    location: assetData.gpsLocation,
+                    requirements: assetData.requirements
+                }
+            });
+
+            // Reset form
+            document.getElementById('assetForm').reset();
+            updateAssetsDisplay();
+            showNotification(`Digital Asset "${assetData.name}" registered and NFT minted!`, "success");
+        }
+
+        function trackAsset() {
+            const trackingInput = document.getElementById('trackingInput').value;
+            const asset = digitalAssets.find(a => a.id === trackingInput || a.nftHash === trackingInput);
+            
+            if (asset) {
+                displayAdvancedTracking(asset);
+            } else {
+                document.getElementById('trackingResults').innerHTML = 
+                    '<div class="analytics-widget"><p>Asset not found. Please check the identifier.</p></div>';
+            }
+        }
+
+        function displayAdvancedTracking(asset) {
+            const trackingHtml = `
+                <div class="analytics-widget">
+                    <h4>${asset.name} (${asset.id})</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <div><strong>Category:</strong> ${asset.category}</div>
+                        <div><strong>Manufacturer:</strong> ${asset.manufacturer}</div>
+                        <div><strong>NFT Hash:</strong> ${asset.nftHash.substring(0, 16)}...</div>
+                        <div><strong>Status:</strong> <span style="color: #2ed573;">${asset.status}</span></div>
+                    </div>
+                    
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <h5>🔗 Blockchain Verification</h5>
+                        <p>✅ Asset verified on blockchain</p>
+                        <p>✅ NFT ownership confirmed</p>
+                        <p>✅ Authenticity guaranteed</p>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="updateAssetLocation('${asset.id}')">📍 Update Location</button>
+                    <button class="btn btn-warning" onclick="generateCertificate('${asset.id}')">📜 Generate Certificate</button>
+                    <button class="btn" onclick="viewAssetHistory('${asset.id}')">📊 View History</button>
+                </div>
+            `;
+            
+            document.getElementById('trackingResults').innerHTML = trackingHtml;
+        }
+
+        function updateAssetsDisplay() {
+            const assetsGrid = document.getElementById('assetsGrid');
+            assetsGrid.innerHTML = digitalAssets.map(asset => `
+                <div class="analytics-widget" style="margin: 15px 0;">
+                    <h4>${asset.name}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 15px 0;">
+                        <div><strong>ID:</strong> ${asset.id}</div>
+                        <div><strong>Category:</strong> ${asset.category}</div>
+                        <div><strong>Status:</strong> <span style="color: #2ed573;">${asset.status}</span></div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="document.getElementById('trackingInput').value='${asset.id}'; trackAsset();">🎯 Track</button>
+                        <button class="btn btn-warning" onclick="transferAsset('${asset.id}')">🔄 Transfer</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createFloatingParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function startRealtimeUpdates() {
+            // Update network statistics
+            setInterval(() => {
+                document.getElementById('tps').textContent = Math.floor(Math.random() * 500) + 800;
+                document.getElementById('nodeCount').textContent = Math.floor(Math.random() * 5) + 10;
+                document.getElementById('hashRate').textContent = (Math.random() * 2 + 1.5).toFixed(2) + ' TH/s';
+                document.getElementById('difficulty').textContent = (Math.random() * 5 + 15).toFixed(1) + 'T';
+                document.getElementById('blockTime').textContent = (Math.random() * 5 + 10).toFixed(1) + 's';
+                document.getElementById('mempoolSize').textContent = Math.floor(Math.random() * 1000) + 500;
+            }, 5000);
+
+            // Update dashboard metrics
+            setInterval(() => {
+                updateDashboardMetrics();
+            }, 10000);
+        }
+
+        function simulateNetworkActivity() {
+            setInterval(() => {
+                const activities = [
+                    "New validator joined the network",
+                    "Smart contract executed successfully",
+                    "Cross-chain bridge transaction completed",
+                    "Quality verification completed for asset",
+                    "IoT sensor data uploaded to IPFS",
+                    "Consensus reached for block validation",
+                    "NFT ownership transferred",
+                    "Supply chain milestone achieved"
+                ];
+                
+                const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+                addNetworkMessage(`System: ${randomActivity}`);
+            }, 8000);
+        }
+
+        function addNetworkMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `
+                <strong>${message}</strong>
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Just now</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Keep only last 10 messages
+            while (chatMessages.children.length > 10) {
+                chatMessages.removeChild(chatMessages.firstChild);
+            }
+        }
+
+        function updateDashboardMetrics() {
+            document.getElementById('totalAssets').textContent = digitalAssets.length;
+            document.getElementById('transactionPool').textContent = Math.floor(Math.random() * 100) + 50;
+        }
+
+        // UI Functions
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = 'var(--danger-gradient)';
+            } else if (type === 'success') {
+                notification.style.background = 'var(--success-gradient)';
+            } else if (type === 'warning') {
+                notification.style.background = 'var(--warning-gradient)';
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Utility functions
+        function generateRandomId() {
+            return Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
+        function generateNFTHash() {
+            return '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        }
+
+        function generateRandomAddress() {
+            return '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        }
+
+        function getRandomTransactionType() {
+            const types = ['transfer', 'mint', 'burn', 'stake', 'unstake', 'swap'];
+            return types[Math.floor(Math.random() * types.length)];
+        }
+
+        // Advanced features
+        function validateChain() {
+            showNotification("Validating blockchain integrity...", "info");
+            setTimeout(() => {
+                showNotification("Blockchain validation completed successfully!", "success");
+                addNetworkMessage("Blockchain integrity verified by consensus");
+            }, 2000);
+        }
+
+        function broadcastTransaction() {
+            showNotification("Broadcasting transaction to network...", "info");
+            setTimeout(() => {
+                showNotification("Transaction broadcasted successfully!", "success");
+                addNetworkMessage("New transaction broadcasted to mempool");
+            }, 1500);
+        }
+
+        function simulateAttack() {
+            showNotification("Simulating 51% attack scenario...", "warning");
+            setTimeout(() => {
+                showNotification("Attack simulation completed. Network security verified!", "success");
+                addNetworkMessage("Security test completed - Network resilient");
+            }, 3000);
+        }
+
+        function deployContract() {
+            showNotification("Deploying smart contract...", "info");
+            setTimeout(() => {
+                addAdvancedBlock({
+                    type: "contract_deployment",
+                    contractName: "Advanced Supply Chain Tracker v3.0",
+                    bytecode: "0x608060405234801561001057600080fd5b50...",
+                    gasUsed: 2500000,
+                    deployer: generateRandomAddress()
+                });
+                showNotification("Smart contract deployed successfully!", "success");
+            }, 2000);
+        }
+
+        function executeContract() {
+            showNotification("Executing smart contract function...", "info");
+            setTimeout(() => {
+                addAdvancedBlock({
+                    type: "contract_execution",
+                    function: "verifyAssetQuality",
+                    parameters: { assetId: "NFT-" + generateRandomId(), score: 95.7 },
+                    gasUsed: 150000,
+                    result: "VERIFIED"
+                });
+                showNotification("Contract executed successfully!", "success");
+            }, 1000);
+        }
+
+        function auditContracts() {
+            showNotification("Performing comprehensive smart contract audit...", "info");
+            setTimeout(() => {
+                showNotification("Audit completed. All contracts are secure!", "success");
+                addNetworkMessage("Smart contract security audit passed");
+            }, 2500);
+        }
+
+        function emergencyStop() {
+            showNotification("Emergency stop protocol activated!", "error");
+            addNetworkMessage("EMERGENCY: All contract operations paused");
+        }
+
+        function selectNode(nodeId) {
+            showNotification(`Connected to Node ${nodeId}`, "info");
+            addNetworkMessage(`Direct connection established with Node-${nodeId}`);
+        }
+
+        function sendNetworkMessage() {
+            const input = event.target.previousElementSibling;
+            if (input.value.trim()) {
+                addNetworkMessage(`User: ${input.value}`);
+                input.value = '';
+            }
+        }
+
+        function scanQRCode() {
+            showNotification("QR Scanner activated", "info");
+            setTimeout(() => {
+                const randomAssetId = digitalAssets.length > 0 ? digitalAssets[0].id : 'NFT-DEMO123';
+                document.getElementById('trackingInput').value = randomAssetId;
+                trackAsset();
+                showNotification("QR Code scanned successfully!", "success");
+            }, 1500);
+        }
+
+        function updateAssetLocation(assetId) {
+            showNotification("Updating asset location via GPS...", "info");
+            setTimeout(() => {
+                addAdvancedBlock({
+                    type: "location_update",
+                    assetId: assetId,
+                    newLocation: { lat: Math.random() * 180 - 90, lng: Math.random() * 360 - 180 },
+                    timestamp: Date.now(),
+                    source: "GPS_IOT_SENSOR"
+                });
+                showNotification("Location updated and recorded on blockchain!", "success");
+            }, 1000);
+        }
+
+        function generateCertificate(assetId) {
+            showNotification("Generating blockchain certificate...", "info");
+            setTimeout(() => {
+                addAdvancedBlock({
+                    type: "certificate_issuance",
+                    assetId: assetId,
+                    certificateId: "CERT-" + generateRandomId(),
+                    issuer: "Blockchain Certification Authority",
+                    validUntil: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year
+                });
+                showNotification("Digital certificate generated and secured!", "success");
+            }, 1500);
+        }
+
+        function transferAsset(assetId) {
+            showNotification("Initiating asset transfer...", "info");
+            setTimeout(() => {
+                addAdvancedBlock({
+                    type: "asset_transfer",
+                    assetId: assetId,
+                    from: generateRandomAddress(),
+                    to: generateRandomAddress(),
+                    transferValue: Math.floor(Math.random() * 100000),
+                    timestamp: Date.now()
+                });
+                showNotification("Asset transfer completed successfully!", "success");
+            }, 1200);
+        }
+
+        // Initialize with sample data
+        setTimeout(() => {
+            digitalAssets.push({
+                id: 'NFT-SAMPLE001',
+                name: 'Premium Electronics Package',
+                category: 'electronics',
+                manufacturer: 'TechCorp International',
+                gpsLocation: '37.7749, -122.4194',
+                requirements: 'ESD protection, temperature controlled',
+                timestamp: Date.now() - 86400000,
+                nftHash: generateNFTHash(),
+                status: 'In Transit',
+                journey: []
+            });
+
+            updateAssetsDisplay();
+            updateDashboardMetrics();
+        }, 3000);
+    </script>
+</body>
+</html>

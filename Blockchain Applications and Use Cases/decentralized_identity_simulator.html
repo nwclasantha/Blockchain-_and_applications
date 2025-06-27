@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Decentralized Identity Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.1);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            color: white;
+            width: 280px;
+            min-width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            position: relative;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .nav-item .icon {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+            padding-bottom: 50px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .network-status {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: visible;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .grid-2 { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 25px; 
+            align-items: start;
+        }
+        .grid-3 { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 25px; 
+            align-items: start;
+        }
+        .grid-4 { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 25px; 
+            align-items: start;
+        }
+
+        .card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .metric {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 44px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn.secondary { background: linear-gradient(135deg, #64748b, #475569); }
+        .btn.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn.danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid #334155;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .credential-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .credential-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.1);
+        }
+
+        .credential-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .credential-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .credential-status {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-valid { background: #dcfce7; color: #166534; }
+        .status-expired { background: #fef2f2; color: #991b1b; }
+        .status-revoked { background: #fefce8; color: #a16207; }
+        .status-pending { background: #eff6ff; color: #1e40af; }
+
+        .zkp-proof {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .network-graph {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            transform-origin: left center;
+        }
+
+        .biometric-scanner {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .scanner-animation {
+            width: 120px;
+            height: 120px;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            position: relative;
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        .governance-panel {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin: 15px 0;
+        }
+
+        .proposal {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .audit-trail {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .audit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .risk-meter {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .risk-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: all 0.5s ease;
+        }
+
+        .risk-low { background: linear-gradient(90deg, #10b981, #059669); }
+        .risk-medium { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .risk-high { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--success);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                order: 2;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateY(0);
+            }
+            .content-area {
+                order: 1;
+                width: 100%;
+            }
+            .grid-4 { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 20px;
+            }
+            .grid-3 { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { 
+                grid-template-columns: 1fr; 
+                gap: 20px;
+            }
+            .grid-3 { 
+                grid-template-columns: 1fr; 
+                gap: 20px;
+            }
+            .grid-4 { 
+                grid-template-columns: 1fr; 
+                gap: 20px;
+            }
+            .header h1 { 
+                font-size: 1.8rem; 
+            }
+            .content-area {
+                padding: 15px;
+            }
+            .panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Advanced Sidebar Navigation -->
+        <div class="sidebar" id="sidebar">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🔐 DID Enterprise</h2>
+                <button id="closeSidebar" style="display: none; background: none; border: none; color: white; font-size: 24px; cursor: pointer;" onclick="toggleSidebar()">&times;</button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Core Identity</h3>
+                <div class="nav-item active" onclick="showPage('dashboard')">
+                    <span class="icon">📊</span> Dashboard
+                </div>
+                <div class="nav-item" onclick="showPage('wallet')">
+                    <span class="icon">👤</span> Identity Wallet
+                </div>
+                <div class="nav-item" onclick="showPage('credentials')">
+                    <span class="icon">🎫</span> Credentials
+                </div>
+                <div class="nav-item" onclick="showPage('verification')">
+                    <span class="icon">✅</span> Verification
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Advanced Features</h3>
+                <div class="nav-item" onclick="showPage('zkp')">
+                    <span class="icon">🔮</span> Zero-Knowledge
+                </div>
+                <div class="nav-item" onclick="showPage('biometric')">
+                    <span class="icon">👁️</span> Biometric Auth
+                </div>
+                <div class="nav-item" onclick="showPage('selective')">
+                    <span class="icon">🎯</span> Selective Disclosure
+                </div>
+                <div class="nav-item" onclick="showPage('delegation')">
+                    <span class="icon">🔗</span> Delegation
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Network & Security</h3>
+                <div class="nav-item" onclick="showPage('network')">
+                    <span class="icon">🌐</span> Network Topology
+                </div>
+                <div class="nav-item" onclick="showPage('consensus')">
+                    <span class="icon">⚡</span> Consensus Engine
+                </div>
+                <div class="nav-item" onclick="showPage('privacy')">
+                    <span class="icon">🛡️</span> Privacy Engine
+                </div>
+                <div class="nav-item" onclick="showPage('quantum')">
+                    <span class="icon">⚛️</span> Quantum Resistance
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Enterprise</h3>
+                <div class="nav-item" onclick="showPage('governance')">
+                    <span class="icon">🏛️</span> Governance
+                </div>
+                <div class="nav-item" onclick="showPage('compliance')">
+                    <span class="icon">📋</span> Compliance
+                </div>
+                <div class="nav-item" onclick="showPage('analytics')">
+                    <span class="icon">📈</span> Analytics
+                </div>
+                <div class="nav-item" onclick="showPage('audit')">
+                    <span class="icon">🔍</span> Audit Trail
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Protocols</h3>
+                <div class="nav-item" onclick="showPage('didcomm')">
+                    <span class="icon">💬</span> DIDComm Messaging
+                </div>
+                <div class="nav-item" onclick="showPage('exchange')">
+                    <span class="icon">🔄</span> Credential Exchange
+                </div>
+                <div class="nav-item" onclick="showPage('interop')">
+                    <span class="icon">🔌</span> Interoperability
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <button id="menuToggle" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 1001; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 8px; padding: 10px; cursor: pointer;" onclick="toggleSidebar()">☰</button>
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="header">
+                    <h1>Enterprise Identity Dashboard</h1>
+                    <p>Advanced decentralized identity management and zero-knowledge proof system</p>
+                    <div class="network-status">
+                        <div class="status-item">
+                            <div class="status-dot"></div>
+                            <span>Network: Connected</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-dot"></div>
+                            <span>Consensus: Active</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-dot"></div>
+                            <span>ZKP Engine: Ready</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-dot"></div>
+                            <span>Quantum Safe: Enabled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-4">
+                    <div class="card">
+                        <h3>Active DIDs</h3>
+                        <div class="metric" id="activeDIDs">2,847</div>
+                        <p>+12% from last week</p>
+                    </div>
+                    <div class="card">
+                        <h3>Credentials Issued</h3>
+                        <div class="metric" id="credentialsIssued">15,293</div>
+                        <p>+28% from last week</p>
+                    </div>
+                    <div class="card">
+                        <h3>ZK Proofs Generated</h3>
+                        <div class="metric" id="zkProofs">8,492</div>
+                        <p>+45% from last week</p>
+                    </div>
+                    <div class="card">
+                        <h3>Network TPS</h3>
+                        <div class="metric" id="networkTPS">4,821</div>
+                        <p>Real-time throughput</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🚀 Quick Actions</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <button class="btn" onclick="quickCreateDID()">
+                                <span>⚡</span> Create DID
+                            </button>
+                            <button class="btn secondary" onclick="quickIssueCredential()">
+                                <span>🎫</span> Issue Credential
+                            </button>
+                            <button class="btn success" onclick="quickVerify()">
+                                <span>✅</span> Verify Credential
+                            </button>
+                            <button class="btn warning" onclick="quickZKP()">
+                                <span>🔮</span> Generate ZK Proof
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>⚡ Network Performance</h2>
+                        <div class="card" style="margin-bottom: 15px;">
+                            <h3>Consensus Latency</h3>
+                            <div class="metric">127ms</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>DID Resolution Time</h3>
+                            <div class="metric">43ms</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🔍 Recent Activity</h2>
+                    <div class="audit-trail" id="recentActivity">
+                        <!-- Activity items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Wallet Page -->
+            <div id="wallet" class="page">
+                <div class="header">
+                    <h1>Advanced Identity Wallet</h1>
+                    <p>Multi-signature, hierarchical deterministic wallet with quantum-resistant cryptography</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchWalletTab('create')">Create Identity</button>
+                    <button class="tab" onclick="switchWalletTab('manage')">Manage Keys</button>
+                    <button class="tab" onclick="switchWalletTab('recovery')">Recovery</button>
+                    <button class="tab" onclick="switchWalletTab('multisig')">Multi-Signature</button>
+                </div>
+
+                <div id="wallet-create" class="tab-content active">
+                    <div class="grid-2">
+                        <div class="panel">
+                            <h2>🔐 Advanced DID Generation</h2>
+                            <div class="input-group">
+                                <label>Identity Type</label>
+                                <select id="identityType">
+                                    <option value="individual">Individual Identity</option>
+                                    <option value="organization">Organization Identity</option>
+                                    <option value="device">Device Identity</option>
+                                    <option value="service">Service Identity</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Cryptographic Suite</label>
+                                <select id="cryptoSuite">
+                                    <option value="ed25519">Ed25519 (Recommended)</option>
+                                    <option value="secp256k1">secp256k1 (Bitcoin/Ethereum)</option>
+                                    <option value="rsa2048">RSA-2048</option>
+                                    <option value="dilithium">Dilithium (Post-Quantum)</option>
+                                    <option value="falcon">Falcon (Post-Quantum)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>DID Method</label>
+                                <select id="didMethodAdvanced">
+                                    <option value="did:key">did:key (Self-Sovereign)</option>
+                                    <option value="did:ethr">did:ethr (Ethereum)</option>
+                                    <option value="did:ion">did:ion (Bitcoin/ION)</option>
+                                    <option value="did:web">did:web (Web-based)</option>
+                                    <option value="did:sov">did:sov (Sovrin)</option>
+                                    <option value="did:peer">did:peer (Peer-to-Peer)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Security Level</label>
+                                <select id="securityLevel">
+                                    <option value="standard">Standard (128-bit)</option>
+                                    <option value="high">High (256-bit)</option>
+                                    <option value="quantum">Quantum Resistant (512-bit)</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="generateAdvancedDID()">
+                                <span>🚀</span> Generate Advanced DID
+                            </button>
+                        </div>
+
+                        <div class="panel">
+                            <h2>📊 Key Derivation Hierarchy</h2>
+                            <div class="code-block" id="keyHierarchy">
+                                <div>Master Key (m)</div>
+                                <div>├── Authentication Key (m/0')</div>
+                                <div>├── Assertion Key (m/1')</div>
+                                <div>├── Key Agreement Key (m/2')</div>
+                                <div>└── Capability Invocation Key (m/3')</div>
+                            </div>
+                            <div class="input-group">
+                                <label>Master Seed (BIP39 Mnemonic)</label>
+                                <textarea id="mnemonicSeed" rows="3" readonly></textarea>
+                            </div>
+                            <button class="btn secondary" onclick="exportSeed()">Export Seed</button>
+                            <button class="btn warning" onclick="backupWallet()">Secure Backup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="wallet-manage" class="tab-content">
+                    <div class="panel">
+                        <h2>🔑 Key Management</h2>
+                        <div class="grid-3">
+                            <div class="card">
+                                <h3>Authentication Keys</h3>
+                                <div class="metric">4</div>
+                                <p>Active signing keys</p>
+                                <button class="btn">Rotate Keys</button>
+                            </div>
+                            <div class="card">
+                                <h3>Encryption Keys</h3>
+                                <div class="metric">2</div>
+                                <p>Key agreement pairs</p>
+                                <button class="btn">Add Key</button>
+                            </div>
+                            <div class="card">
+                                <h3>Delegation Keys</h3>
+                                <div class="metric">1</div>
+                                <p>Capability invocation</p>
+                                <button class="btn">Delegate</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="wallet-recovery" class="tab-content">
+                    <div class="panel">
+                        <h2>🔄 Social Recovery</h2>
+                        <p>Configure trusted guardians for wallet recovery using Shamir's Secret Sharing</p>
+                        <div class="input-group">
+                            <label>Recovery Threshold (M of N)</label>
+                            <div class="grid-2">
+                                <input type="number" id="threshold" min="2" max="10" value="3" placeholder="Required signatures">
+                                <input type="number" id="totalGuardians" min="3" max="15" value="5" placeholder="Total guardians">
+                            </div>
+                        </div>
+                        <div id="guardiansList">
+                            <!-- Guardian addresses will be added here -->
+                        </div>
+                        <button class="btn" onclick="setupSocialRecovery()">Setup Social Recovery</button>
+                    </div>
+                </div>
+
+                <div id="wallet-multisig" class="tab-content">
+                    <div class="panel">
+                        <h2>👥 Multi-Signature Configuration</h2>
+                        <div class="input-group">
+                            <label>Signature Scheme</label>
+                            <select id="multisigScheme">
+                                <option value="threshold">Threshold Signatures</option>
+                                <option value="ring">Ring Signatures</option>
+                                <option value="bls">BLS Aggregate Signatures</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Required Signatures</label>
+                            <input type="number" id="requiredSigs" min="2" max="10" value="2">
+                        </div>
+                        <div class="input-group">
+                            <label>Co-signers</label>
+                            <textarea id="cosigners" rows="4" placeholder="Enter co-signer DIDs, one per line"></textarea>
+                        </div>
+                        <button class="btn" onclick="createMultisigWallet()">Create Multi-Sig Wallet</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credentials Page -->
+            <div id="credentials" class="page">
+                <div class="header">
+                    <h1>Credential Management</h1>
+                    <p>Issue, manage, and revoke verifiable credentials across multiple formats</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchCredentialTab('issue')">Issue Credentials</button>
+                    <button class="tab" onclick="switchCredentialTab('manage')">Manage</button>
+                    <button class="tab" onclick="switchCredentialTab('schemas')">Schemas</button>
+                    <button class="tab" onclick="switchCredentialTab('revocation')">Revocation</button>
+                </div>
+
+                <div id="credential-issue" class="tab-content active">
+                    <div class="grid-2">
+                        <div class="panel">
+                            <h2>🎫 Credential Issuance</h2>
+                            <div class="input-group">
+                                <label>Credential Type</label>
+                                <select id="credentialTypeSelect">
+                                    <option value="education">Education Certificate</option>
+                                    <option value="employment">Employment Verification</option>
+                                    <option value="identity">Identity Document</option>
+                                    <option value="license">Professional License</option>
+                                    <option value="membership">Membership Card</option>
+                                    <option value="vaccination">Vaccination Record</option>
+                                    <option value="financial">Financial Statement</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Subject DID</label>
+                                <input type="text" id="subjectDID" placeholder="did:key:z6Mk...">
+                            </div>
+                            <div class="input-group">
+                                <label>Credential Data (JSON)</label>
+                                <textarea id="credentialData" rows="6" placeholder='{"degree": "Bachelor of Science", "university": "MIT"}'></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label>Expiration Date</label>
+                                <input type="date" id="credentialExpiry">
+                            </div>
+                            <button class="btn" onclick="issueNewCredential()">Issue Credential</button>
+                        </div>
+
+                        <div class="panel">
+                            <h2>📋 Credential Templates</h2>
+                            <div id="credentialTemplates">
+                                <div class="credential-item">
+                                    <div class="credential-header">
+                                        <div class="credential-title">University Diploma</div>
+                                        <span class="credential-status status-valid">Active</span>
+                                    </div>
+                                    <p>Standard university degree certificate with GPA and honors</p>
+                                    <button class="btn secondary">Use Template</button>
+                                </div>
+                                <div class="credential-item">
+                                    <div class="credential-header">
+                                        <div class="credential-title">Employment Verification</div>
+                                        <span class="credential-status status-valid">Active</span>
+                                    </div>
+                                    <p>Employee status, position, and tenure verification</p>
+                                    <button class="btn secondary">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="credential-manage" class="tab-content">
+                    <div class="panel">
+                        <h2>📊 Issued Credentials</h2>
+                        <div class="grid-4">
+                            <div class="card">
+                                <h3>Total Issued</h3>
+                                <div class="metric">1,247</div>
+                                <p>All-time credentials</p>
+                            </div>
+                            <div class="card">
+                                <h3>Active</h3>
+                                <div class="metric">1,156</div>
+                                <p>Currently valid</p>
+                            </div>
+                            <div class="card">
+                                <h3>Revoked</h3>
+                                <div class="metric">23</div>
+                                <p>Manually revoked</p>
+                            </div>
+                            <div class="card">
+                                <h3>Expired</h3>
+                                <div class="metric">68</div>
+                                <p>Naturally expired</p>
+                            </div>
+                        </div>
+                        <div id="credentialList">
+                            <!-- Credential list will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="credential-schemas" class="tab-content">
+                    <div class="panel">
+                        <h2>📝 Credential Schemas</h2>
+                        <p>Define and manage JSON schemas for different credential types</p>
+                        <div class="code-block">
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "degree": {"type": "string"},
+    "university": {"type": "string"},
+    "graduationDate": {"type": "string", "format": "date"},
+    "gpa": {"type": "number", "minimum": 0, "maximum": 4}
+  },
+  "required": ["degree", "university", "graduationDate"]
+}
+                        </div>
+                        <button class="btn">Create New Schema</button>
+                        <button class="btn secondary">Import Schema</button>
+                    </div>
+                </div>
+
+                <div id="credential-revocation" class="tab-content">
+                    <div class="panel">
+                        <h2>🚫 Revocation Registry</h2>
+                        <div class="input-group">
+                            <label>Credential ID to Revoke</label>
+                            <input type="text" placeholder="credential-id-12345">
+                        </div>
+                        <div class="input-group">
+                            <label>Revocation Reason</label>
+                            <select>
+                                <option>Superseded</option>
+                                <option>Privilege Withdrawn</option>
+                                <option>Compromised</option>
+                                <option>Affiliation Changed</option>
+                            </select>
+                        </div>
+                        <button class="btn danger">Revoke Credential</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Page -->
+            <div id="verification" class="page">
+                <div class="header">
+                    <h1>Advanced Verification Engine</h1>
+                    <p>Multi-protocol credential verification with trust frameworks</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>✅ Credential Verification</h2>
+                        <div class="input-group">
+                            <label>Verification Method</label>
+                            <select id="verificationMethod">
+                                <option value="direct">Direct Verification</option>
+                                <option value="presentation">Presentation Request</option>
+                                <option value="zkp">Zero-Knowledge Proof</option>
+                                <option value="batch">Batch Verification</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Credential/Presentation</label>
+                            <textarea id="verificationInput" rows="8" placeholder="Paste credential or presentation JSON"></textarea>
+                        </div>
+                        <button class="btn" onclick="performVerification()">Verify Credential</button>
+                        <div id="verificationResults"></div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>🔗 Trust Framework</h2>
+                        <div class="card">
+                            <h3>Trusted Issuers</h3>
+                            <div class="metric">147</div>
+                            <p>Registered authorities</p>
+                        </div>
+                        <div class="card">
+                            <h3>Trust Score</h3>
+                            <div class="metric">96.8%</div>
+                            <p>Network reliability</p>
+                        </div>
+                        <button class="btn secondary">Manage Trust List</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selective Disclosure Page -->
+            <div id="selective" class="page">
+                <div class="header">
+                    <h1>Selective Disclosure Engine</h1>
+                    <p>Privacy-preserving credential sharing with BBS+ signatures</p>
+                </div>
+
+                <div class="panel">
+                    <h2>🎯 Selective Disclosure Configuration</h2>
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3>Original Credential</h3>
+                            <div class="code-block">
+{
+  "name": "John Doe",
+  "age": 25,
+  "university": "MIT",
+  "degree": "Computer Science",
+  "gpa": 3.8,
+  "graduationDate": "2023-05-15"
+}
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Disclosed Fields</h3>
+                            <div style="margin: 15px 0;">
+                                <label><input type="checkbox" checked> University</label><br>
+                                <label><input type="checkbox" checked> Degree</label><br>
+                                <label><input type="checkbox"> Name</label><br>
+                                <label><input type="checkbox"> Age (≥18 proof)</label><br>
+                                <label><input type="checkbox"> GPA</label><br>
+                                <label><input type="checkbox"> Graduation Date</label>
+                            </div>
+                            <button class="btn" onclick="generateSelectiveDisclosure()">Generate Presentation</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delegation Page -->
+            <div id="delegation" class="page">
+                <div class="header">
+                    <h1>Capability Delegation System</h1>
+                    <p>Decentralized authorization and delegation chains</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🔗 Create Delegation</h2>
+                        <div class="input-group">
+                            <label>Delegate To (DID)</label>
+                            <input type="text" placeholder="did:key:z6Mk...">
+                        </div>
+                        <div class="input-group">
+                            <label>Capability</label>
+                            <select>
+                                <option>Issue Credentials</option>
+                                <option>Revoke Credentials</option>
+                                <option>Verify Presentations</option>
+                                <option>Manage Schema</option>
+                                <option>Update DID Document</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Expiration</label>
+                            <input type="datetime-local">
+                        </div>
+                        <button class="btn">Create Delegation</button>
+                    </div>
+
+                    <div class="panel">
+                        <h2>📋 Active Delegations</h2>
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <div class="credential-title">Credential Issuance</div>
+                                <span class="credential-status status-valid">Active</span>
+                            </div>
+                            <p><strong>Delegate:</strong> did:key:z6Mk4dz...xyz</p>
+                            <p><strong>Expires:</strong> 2024-12-31</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consensus Engine Page -->
+            <div id="consensus" class="page">
+                <div class="header">
+                    <h1>Consensus Engine</h1>
+                    <p>Distributed consensus mechanisms for DID network integrity</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>Current Algorithm</h3>
+                        <div class="metric">PBFT</div>
+                        <p>Byzantine Fault Tolerant</p>
+                    </div>
+                    <div class="card">
+                        <h3>Active Validators</h3>
+                        <div class="metric">127</div>
+                        <p>Network participants</p>
+                    </div>
+                    <div class="card">
+                        <h3>Finality Time</h3>
+                        <div class="metric">2.3s</div>
+                        <p>Average consensus time</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>⚡ Consensus Simulation</h2>
+                    <button class="btn" onclick="simulateConsensusRound()">Start Consensus Round</button>
+                    <div id="consensusLog" class="audit-trail" style="margin-top: 20px;">
+                        <!-- Consensus log entries -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Engine Page -->
+            <div id="privacy" class="page">
+                <div class="header">
+                    <h1>Privacy Engine</h1>
+                    <p>Advanced privacy-preserving technologies and differential privacy</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🛡️ Privacy Mechanisms</h2>
+                        <div class="card">
+                            <h3>Differential Privacy</h3>
+                            <p>ε = 0.1 (privacy budget)</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 10%"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Homomorphic Encryption</h3>
+                            <p>Enabled for sensitive computations</p>
+                            <span class="credential-status status-valid">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>🔒 Privacy Controls</h2>
+                        <div class="input-group">
+                            <label>Data Minimization Level</label>
+                            <select>
+                                <option>Standard</option>
+                                <option>Enhanced</option>
+                                <option>Maximum</option>
+                            </select>
+                        </div>
+                        <button class="btn">Apply Privacy Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantum Resistance Page -->
+            <div id="quantum" class="page">
+                <div class="header">
+                    <h1>Quantum-Resistant Cryptography</h1>
+                    <p>Post-quantum cryptographic algorithms for future-proof security</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>Current Algorithm</h3>
+                        <div class="metric">Dilithium</div>
+                        <p>NIST-approved PQC</p>
+                    </div>
+                    <div class="card">
+                        <h3>Key Size</h3>
+                        <div class="metric">1312 bytes</div>
+                        <p>Public key length</p>
+                    </div>
+                    <div class="card">
+                        <h3>Security Level</h3>
+                        <div class="metric">Level 3</div>
+                        <p>192-bit equivalent</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>⚛️ Algorithm Selection</h2>
+                    <div class="input-group">
+                        <label>Post-Quantum Algorithm</label>
+                        <select id="pqcAlgorithm">
+                            <option value="dilithium">Dilithium (Digital Signatures)</option>
+                            <option value="falcon">Falcon (Compact Signatures)</option>
+                            <option value="kyber">Kyber (Key Encapsulation)</option>
+                            <option value="sphincs">SPHINCS+ (Hash-based)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="migrateToQuantumSafe()">Migrate to Quantum-Safe</button>
+                </div>
+            </div>
+
+            <!-- Audit Trail Page -->
+            <div id="audit" class="page">
+                <div class="header">
+                    <h1>Comprehensive Audit Trail</h1>
+                    <p>Immutable logging and compliance reporting for all system activities</p>
+                </div>
+
+                <div class="grid-4">
+                    <div class="card">
+                        <h3>Total Events</h3>
+                        <div class="metric">45,293</div>
+                        <p>All-time audit logs</p>
+                    </div>
+                    <div class="card">
+                        <h3>Critical Events</h3>
+                        <div class="metric">127</div>
+                        <p>High-priority alerts</p>
+                    </div>
+                    <div class="card">
+                        <h3>Compliance Score</h3>
+                        <div class="metric">98.7%</div>
+                        <p>Regulatory adherence</p>
+                    </div>
+                    <div class="card">
+                        <h3>Retention Period</h3>
+                        <div class="metric">7 years</div>
+                        <p>Data retention policy</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🔍 Audit Log Viewer</h2>
+                    <div class="audit-trail">
+                        <div class="audit-item">
+                            <div>
+                                <strong>DID Creation</strong><br>
+                                New identity created with quantum-resistant keys
+                            </div>
+                            <div style="text-align: right;">
+                                <div>2 minutes ago</div>
+                                <span class="credential-status status-valid">Success</span>
+                            </div>
+                        </div>
+                        <div class="audit-item">
+                            <div>
+                                <strong>Credential Issuance</strong><br>
+                                Education credential issued to subject
+                            </div>
+                            <div style="text-align: right;">
+                                <div>5 minutes ago</div>
+                                <span class="credential-status status-valid">Success</span>
+                            </div>
+                        </div>
+                        <div class="audit-item">
+                            <div>
+                                <strong>Failed Verification</strong><br>
+                                Invalid signature detected during verification
+                            </div>
+                            <div style="text-align: right;">
+                                <div>8 minutes ago</div>
+                                <span class="credential-status status-expired">Failed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIDComm Messaging Page -->
+            <div id="didcomm" class="page">
+                <div class="header">
+                    <h1>DIDComm Messaging Protocol</h1>
+                    <p>Secure, private communication between decentralized identities</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>💬 Send Message</h2>
+                        <div class="input-group">
+                            <label>Recipient DID</label>
+                            <input type="text" placeholder="did:key:z6Mk...">
+                        </div>
+                        <div class="input-group">
+                            <label>Message Type</label>
+                            <select>
+                                <option>Basic Message</option>
+                                <option>Credential Offer</option>
+                                <option>Proof Request</option>
+                                <option>Connection Invite</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Message Content</label>
+                            <textarea rows="4" placeholder="Enter your message"></textarea>
+                        </div>
+                        <button class="btn">Send Encrypted Message</button>
+                    </div>
+
+                    <div class="panel">
+                        <h2>📬 Message Inbox</h2>
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <div class="credential-title">Connection Request</div>
+                                <span class="credential-status status-pending">New</span>
+                            </div>
+                            <p>From: did:key:z6Mk2eB...</p>
+                            <p>Would like to establish a secure connection</p>
+                            <button class="btn success">Accept</button>
+                            <button class="btn danger">Decline</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credential Exchange Page -->
+            <div id="exchange" class="page">
+                <div class="header">
+                    <h1>Credential Exchange Protocol</h1>
+                    <p>Standardized credential issuance and presentation flows</p>
+                </div>
+
+                <div class="panel">
+                    <h2>🔄 Exchange Flows</h2>
+                    <div class="grid-3">
+                        <div class="card">
+                            <h3>Issuance Flow</h3>
+                            <p>Credential Offer → Request → Issuance</p>
+                            <button class="btn">Start Issuance</button>
+                        </div>
+                        <div class="card">
+                            <h3>Presentation Flow</h3>
+                            <p>Proof Request → Presentation → Verification</p>
+                            <button class="btn">Request Proof</button>
+                        </div>
+                        <div class="card">
+                            <h3>Revocation Flow</h3>
+                            <p>Revocation Notice → Registry Update</p>
+                            <button class="btn">Revoke Credential</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interoperability Page -->
+            <div id="interop" class="page">
+                <div class="header">
+                    <h1>Cross-Chain Interoperability</h1>
+                    <p>Seamless integration across multiple blockchain networks and DID methods</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🔌 Supported Networks</h2>
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <div class="credential-title">Ethereum</div>
+                                <span class="credential-status status-valid">Connected</span>
+                            </div>
+                            <p>did:ethr support with ENS integration</p>
+                        </div>
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <div class="credential-title">Bitcoin/ION</div>
+                                <span class="credential-status status-valid">Connected</span>
+                            </div>
+                            <p>Sidetree protocol implementation</p>
+                        </div>
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <div class="credential-title">Sovrin</div>
+                                <span class="credential-status status-pending">Syncing</span>
+                            </div>
+                            <p>Hyperledger Indy integration</p>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>🌉 Bridge Operations</h2>
+                        <div class="input-group">
+                            <label>Source Network</label>
+                            <select>
+                                <option>Ethereum</option>
+                                <option>Bitcoin/ION</option>
+                                <option>Sovrin</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Target Network</label>
+                            <select>
+                                <option>Ethereum</option>
+                                <option>Bitcoin/ION</option>
+                                <option>Sovrin</option>
+                            </select>
+                        </div>
+                        <button class="btn">Bridge DID Identity</button>
+                    </div>
+                </div>
+            </div>
+            <div id="zkp" class="page">
+                <div class="header">
+                    <h1>Zero-Knowledge Proof Engine</h1>
+                    <p>Generate and verify privacy-preserving proofs without revealing sensitive data</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🔮 Proof Generation</h2>
+                        <div class="input-group">
+                            <label>Proof Type</label>
+                            <select id="proofType">
+                                <option value="age">Age Verification (18+)</option>
+                                <option value="citizenship">Citizenship Proof</option>
+                                <option value="education">Education Level Proof</option>
+                                <option value="income">Income Range Proof</option>
+                                <option value="membership">Membership Proof</option>
+                                <option value="custom">Custom Predicate</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>ZK Protocol</label>
+                            <select id="zkProtocol">
+                                <option value="zk-snark">zk-SNARKs (Groth16)</option>
+                                <option value="zk-stark">zk-STARKs</option>
+                                <option value="bulletproof">Bulletproofs</option>
+                                <option value="plonk">PLONK</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Private Inputs</label>
+                            <textarea id="privateInputs" rows="4" placeholder="Enter private data (will not be revealed)"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Public Constraints</label>
+                            <textarea id="publicConstraints" rows="3" placeholder="Define verification constraints"></textarea>
+                        </div>
+                        <button class="btn" onclick="generateZKProof()">
+                            <span>🔮</span> Generate ZK Proof
+                        </button>
+                    </div>
+
+                    <div class="panel">
+                        <h2>✅ Proof Verification</h2>
+                        <div class="input-group">
+                            <label>ZK Proof</label>
+                            <textarea id="zkProofInput" rows="8" placeholder="Paste ZK proof for verification"></textarea>
+                        </div>
+                        <button class="btn success" onclick="verifyZKProof()">
+                            <span>✅</span> Verify Proof
+                        </button>
+                        <div id="zkVerificationResult"></div>
+                    </div>
+                </div>
+
+                <div class="zkp-proof" id="generatedProof" style="display: none;">
+                    <h3>🔮 Generated Zero-Knowledge Proof</h3>
+                    <div id="proofDetails"></div>
+                    <button class="copy-btn" onclick="copyZKProof()">Copy Proof</button>
+                </div>
+
+                <div class="panel">
+                    <h2>📊 ZK Proof Statistics</h2>
+                    <div class="grid-4">
+                        <div class="card">
+                            <h3>Proof Generation Time</h3>
+                            <div class="metric">2.3s</div>
+                            <p>Average time</p>
+                        </div>
+                        <div class="card">
+                            <h3>Proof Size</h3>
+                            <div class="metric">248 bytes</div>
+                            <p>Compressed proof</p>
+                        </div>
+                        <div class="card">
+                            <h3>Verification Time</h3>
+                            <div class="metric">45ms</div>
+                            <p>Average time</p>
+                        </div>
+                        <div class="card">
+                            <h3>Success Rate</h3>
+                            <div class="metric">99.8%</div>
+                            <p>Verification rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Topology Page -->
+            <div id="network" class="page">
+                <div class="header">
+                    <h1>Decentralized Network Topology</h1>
+                    <p>Real-time visualization of DID network nodes and consensus state</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>🌐 Network Graph</h2>
+                        <div class="network-graph" id="networkGraph">
+                            <!-- Network nodes will be dynamically generated -->
+                        </div>
+                        <div class="grid-3">
+                            <div class="card">
+                                <h3>Active Nodes</h3>
+                                <div class="metric">127</div>
+                            </div>
+                            <div class="card">
+                                <h3>Network Health</h3>
+                                <div class="metric">98.5%</div>
+                            </div>
+                            <div class="card">
+                                <h3>Avg Latency</h3>
+                                <div class="metric">43ms</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>⚡ Consensus Mechanism</h2>
+                        <div class="input-group">
+                            <label>Consensus Algorithm</label>
+                            <select id="consensusAlgo">
+                                <option value="pbft">Practical Byzantine Fault Tolerance</option>
+                                <option value="raft">Raft Consensus</option>
+                                <option value="pow">Proof of Work</option>
+                                <option value="pos">Proof of Stake</option>
+                                <option value="dpos">Delegated Proof of Stake</option>
+                            </select>
+                        </div>
+                        <div class="card">
+                            <h3>Current Epoch</h3>
+                            <div class="metric">1,247,839</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 72%"></div>
+                            </div>
+                            <p>72% complete (Next epoch in 3m 42s)</p>
+                        </div>
+                        <button class="btn" onclick="simulateConsensus()">Simulate Consensus Round</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>📊 Network Metrics</h2>
+                    <div class="grid-4">
+                        <div class="card">
+                            <h3>Total Transactions</h3>
+                            <div class="metric">2.8M</div>
+                            <p>All-time network transactions</p>
+                        </div>
+                        <div class="card">
+                            <h3>Block Height</h3>
+                            <div class="metric" id="currentBlockHeight">1,247,839</div>
+                            <p>Current blockchain height</p>
+                        </div>
+                        <div class="card">
+                            <h3>Mempool Size</h3>
+                            <div class="metric">1,429</div>
+                            <p>Pending transactions</p>
+                        </div>
+                        <div class="card">
+                            <h3>Network Difficulty</h3>
+                            <div class="metric">4.2T</div>
+                            <p>Current mining difficulty</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biometric Authentication Page -->
+            <div id="biometric" class="page">
+                <div class="header">
+                    <h1>Biometric Authentication System</h1>
+                    <p>Multi-modal biometric verification with privacy-preserving templates</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>👁️ Biometric Enrollment</h2>
+                        <div class="biometric-scanner">
+                            <div class="scanner-animation"></div>
+                            <h3>Multi-Modal Biometric Scanner</h3>
+                            <p>Fingerprint • Face • Iris • Voice • Behavioral</p>
+                            <button class="btn" onclick="startBiometricScan()">Start Enrollment</button>
+                        </div>
+                        <div class="input-group">
+                            <label>Biometric Modalities</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <label><input type="checkbox" checked> Fingerprint</label>
+                                <label><input type="checkbox" checked> Face Recognition</label>
+                                <label><input type="checkbox"> Iris Scan</label>
+                                <label><input type="checkbox"> Voice Print</label>
+                                <label><input type="checkbox"> Behavioral Patterns</label>
+                                <label><input type="checkbox"> Gait Analysis</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>🛡️ Privacy-Preserving Templates</h2>
+                        <div class="card">
+                            <h3>Template Protection</h3>
+                            <p>Biometric templates are protected using:</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Homomorphic encryption</li>
+                                <li>Fuzzy vault algorithms</li>
+                                <li>Cancelable biometrics</li>
+                                <li>Secure multi-party computation</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>Template Statistics</h3>
+                            <div class="grid-2">
+                                <div>
+                                    <strong>Enrolled Templates:</strong> 4
+                                </div>
+                                <div>
+                                    <strong>Accuracy:</strong> 99.97%
+                                </div>
+                                <div>
+                                    <strong>FAR:</strong> 0.001%
+                                </div>
+                                <div>
+                                    <strong>FRR:</strong> 0.1%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>🔐 Biometric Verification</h2>
+                    <div class="grid-3">
+                        <div class="card">
+                            <h3>Liveness Detection</h3>
+                            <div class="metric">Active</div>
+                            <p>Anti-spoofing measures</p>
+                        </div>
+                        <div class="card">
+                            <h3>Match Score</h3>
+                            <div class="metric">98.7%</div>
+                            <p>Confidence level</p>
+                        </div>
+                        <div class="card">
+                            <h3>Response Time</h3>
+                            <div class="metric">247ms</div>
+                            <p>Verification speed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Governance Page -->
+            <div id="governance" class="page">
+                <div class="header">
+                    <h1>Decentralized Governance</h1>
+                    <p>Community-driven protocol upgrades and policy decisions</p>
+                </div>
+
+                <div class="governance-panel">
+                    <h2>🏛️ Active Proposals</h2>
+                    <div class="proposal">
+                        <h3>DIP-0024: Quantum-Resistant Signature Upgrade</h3>
+                        <p>Proposal to integrate post-quantum cryptographic signatures as the default signing method for new DIDs.</p>
+                        <div class="grid-3" style="margin: 15px 0;">
+                            <div><strong>Voting Period:</strong> 7 days remaining</div>
+                            <div><strong>Quorum:</strong> 67% (Required: 60%)</strong></div>
+                            <div><strong>Current Status:</strong> Passing (78% Yes)</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78%; background: var(--success);"></div>
+                        </div>
+                        <div class="vote-buttons">
+                            <button class="btn success">Vote Yes</button>
+                            <button class="btn danger">Vote No</button>
+                            <button class="btn secondary">Abstain</button>
+                        </div>
+                    </div>
+
+                    <div class="proposal">
+                        <h3>DIP-0025: Selective Disclosure Standard</h3>
+                        <p>Implementation of BBS+ signatures for enhanced privacy and selective disclosure capabilities.</p>
+                        <div class="grid-3" style="margin: 15px 0;">
+                            <div><strong>Voting Period:</strong> 3 days remaining</div>
+                            <div><strong>Quorum:</strong> 45% (Required: 60%)</div>
+                            <div><strong>Current Status:</strong> Needs More Votes</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%; background: var(--warning);"></div>
+                        </div>
+                        <div class="vote-buttons">
+                            <button class="btn success">Vote Yes</button>
+                            <button class="btn danger">Vote No</button>
+                            <button class="btn secondary">Abstain</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>📊 Governance Metrics</h2>
+                        <div class="grid-2">
+                            <div class="card">
+                                <h3>Active Voters</h3>
+                                <div class="metric">1,847</div>
+                                <p>Participating in governance</p>
+                            </div>
+                            <div class="card">
+                                <h3>Proposals This Month</h3>
+                                <div class="metric">7</div>
+                                <p>Community submissions</p>
+                            </div>
+                            <div class="card">
+                                <h3>Voting Power</h3>
+                                <div class="metric">2,450</div>
+                                <p>Your governance tokens</p>
+                            </div>
+                            <div class="card">
+                                <h3>Participation Rate</h3>
+                                <div class="metric">73%</div>
+                                <p>Network governance activity</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>📝 Submit Proposal</h2>
+                        <div class="input-group">
+                            <label>Proposal Title</label>
+                            <input type="text" placeholder="Enter proposal title">
+                        </div>
+                        <div class="input-group">
+                            <label>Proposal Type</label>
+                            <select>
+                                <option>Protocol Upgrade</option>
+                                <option>Parameter Change</option>
+                                <option>Treasury Allocation</option>
+                                <option>Policy Amendment</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Description</label>
+                            <textarea rows="4" placeholder="Detailed proposal description"></textarea>
+                        </div>
+                        <button class="btn">Submit Proposal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Page -->
+            <div id="compliance" class="page">
+                <div class="header">
+                    <h1>Regulatory Compliance Suite</h1>
+                    <p>GDPR, CCPA, KYC/AML compliance with privacy-by-design</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>GDPR Compliance</h3>
+                        <div class="metric">✅ Compliant</div>
+                        <p>Right to be forgotten, data portability</p>
+                    </div>
+                    <div class="card">
+                        <h3>KYC/AML Status</h3>
+                        <div class="metric">⚠️ Pending</div>
+                        <p>Enhanced due diligence required</p>
+                    </div>
+                    <div class="card">
+                        <h3>Risk Score</h3>
+                        <div class="metric">Low</div>
+                        <div class="risk-meter">
+                            <div class="risk-fill risk-low" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>📋 Compliance Dashboard</h2>
+                    <div class="audit-trail">
+                        <div class="audit-item">
+                            <div>
+                                <strong>GDPR Data Access Request</strong><br>
+                                User requested personal data export
+                            </div>
+                            <div style="text-align: right;">
+                                <div>2 hours ago</div>
+                                <span class="credential-status status-valid">Completed</span>
+                            </div>
+                        </div>
+                        <div class="audit-item">
+                            <div>
+                                <strong>KYC Verification</strong><br>
+                                Enhanced due diligence initiated
+                            </div>
+                            <div style="text-align: right;">
+                                <div>4 hours ago</div>
+                                <span class="credential-status status-pending">In Progress</span>
+                            </div>
+                        </div>
+                        <div class="audit-item">
+                            <div>
+                                <strong>Data Retention Policy</strong><br>
+                                Automated deletion of expired credentials
+                            </div>
+                            <div style="text-align: right;">
+                                <div>1 day ago</div>
+                                <span class="credential-status status-valid">Executed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analytics" class="page">
+                <div class="header">
+                    <h1>Advanced Analytics Dashboard</h1>
+                    <p>AI-powered insights and predictive analytics for identity ecosystem</p>
+                </div>
+
+                <div class="grid-4">
+                    <div class="card">
+                        <h3>Identity Adoption Rate</h3>
+                        <div class="metric">+127%</div>
+                        <p>Month-over-month growth</p>
+                    </div>
+                    <div class="card">
+                        <h3>Fraud Prevention</h3>
+                        <div class="metric">99.94%</div>
+                        <p>Accuracy rate</p>
+                    </div>
+                    <div class="card">
+                        <h3>User Satisfaction</h3>
+                        <div class="metric">4.8/5</div>
+                        <p>Average rating</p>
+                    </div>
+                    <div class="card">
+                        <h3>Cost Reduction</h3>
+                        <div class="metric">68%</div>
+                        <p>vs traditional systems</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>📈 Usage Trends</h2>
+                        <div class="code-block">
+                            <pre id="analyticsChart">
+DID Creation Trend (Last 30 Days)
+    
+Week 1: ████████████████████████████████████████ 2,847
+Week 2: ██████████████████████████████████████████████ 3,294  
+Week 3: ███████████████████████████████████████████████████ 3,891
+Week 4: ████████████████████████████████████████████████████████ 4,523
+
+Credential Verification Success Rate: 99.7%
+Average Response Time: 127ms
+Peak Usage: 14:30 UTC (4,821 TPS)
+            </pre>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>🤖 AI Insights</h2>
+                        <div class="card">
+                            <h3>Predictive Analysis</h3>
+                            <p>Based on current trends, we predict:</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>25% increase in DID adoption next month</li>
+                                <li>Biometric authentication will grow 45%</li>
+                                <li>ZK proofs usage expected to double</li>
+                                <li>Network capacity needs 2x scaling</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>Anomaly Detection</h3>
+                            <div class="metric">3</div>
+                            <p>Suspicious patterns detected</p>
+                            <button class="btn warning">Review Anomalies</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed views -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification system -->
+    <div id="notification" class="notification">
+        <div id="notificationContent"></div>
+    </div>
+
+    <script>
+        // Enhanced global state management
+        class AdvancedDIDSimulator {
+            constructor() {
+                this.state = {
+                    currentDID: null,
+                    wallets: new Map(),
+                    credentials: [],
+                    zkProofs: [],
+                    networkNodes: [],
+                    consensusState: {
+                        epoch: 1247839,
+                        validators: 127,
+                        health: 98.5
+                    },
+                    biometricTemplates: [],
+                    governance: {
+                        proposals: [],
+                        votingPower: 2450
+                    },
+                    analytics: {
+                        tps: 4821,
+                        activeDIDs: 2847,
+                        credentialsIssued: 15293,
+                        zkProofs: 8492
+                    }
+                };
+                this.cryptoEngine = new AdvancedCryptoEngine();
+                this.zkEngine = new ZKProofEngine();
+                this.biometricEngine = new BiometricEngine();
+                this.init();
+            }
+
+            init() {
+                this.updateDashboard();
+                this.startNetworkSimulation();
+                this.initializeNetworkGraph();
+                this.populateRecentActivity();
+            }
+
+            updateDashboard() {
+                document.getElementById('activeDIDs').textContent = this.state.analytics.activeDIDs.toLocaleString();
+                document.getElementById('credentialsIssued').textContent = this.state.analytics.credentialsIssued.toLocaleString();
+                document.getElementById('zkProofs').textContent = this.state.analytics.zkProofs.toLocaleString();
+                document.getElementById('networkTPS').textContent = this.state.analytics.tps.toLocaleString();
+                document.getElementById('currentBlockHeight').textContent = this.state.consensusState.epoch.toLocaleString();
+            }
+
+            startNetworkSimulation() {
+                setInterval(() => {
+                    // Simulate network activity
+                    this.state.analytics.tps += Math.floor(Math.random() * 200 - 100);
+                    this.state.analytics.tps = Math.max(3000, Math.min(6000, this.state.analytics.tps));
+                    
+                    this.state.consensusState.epoch += Math.floor(Math.random() * 3);
+                    this.state.analytics.activeDIDs += Math.floor(Math.random() * 10);
+                    
+                    if (Math.random() < 0.3) {
+                        this.state.analytics.credentialsIssued += Math.floor(Math.random() * 5);
+                    }
+                    
+                    if (Math.random() < 0.2) {
+                        this.state.analytics.zkProofs += Math.floor(Math.random() * 3);
+                    }
+
+                    this.updateDashboard();
+                }, 5000);
+            }
+
+            initializeNetworkGraph() {
+                const graph = document.getElementById('networkGraph');
+                const nodeCount = 25;
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const node = document.createElement('div');
+                    node.className = 'node';
+                    node.style.left = Math.random() * 90 + '%';
+                    node.style.top = Math.random() * 90 + '%';
+                    node.style.animationDelay = Math.random() * 2 + 's';
+                    graph.appendChild(node);
+
+                    // Add connections
+                    if (i > 0 && Math.random() < 0.3) {
+                        const connection = document.createElement('div');
+                        connection.className = 'connection';
+                        connection.style.left = Math.random() * 90 + '%';
+                        connection.style.top = Math.random() * 90 + '%';
+                        connection.style.width = Math.random() * 100 + 50 + 'px';
+                        connection.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                        graph.appendChild(connection);
+                    }
+                }
+            }
+
+            populateRecentActivity() {
+                const activities = [
+                    'DID resolution completed in 43ms',
+                    'Zero-knowledge proof verified successfully',
+                    'New credential issued: EducationCredential',
+                    'Biometric template enrolled',
+                    'Consensus round completed (127 validators)',
+                    'Cross-chain DID transaction processed',
+                    'Privacy-preserving verification performed',
+                    'Quantum-resistant signature validated'
+                ];
+
+                const container = document.getElementById('recentActivity');
+                container.innerHTML = '';
+
+                for (let i = 0; i < 8; i++) {
+                    const activity = activities[Math.floor(Math.random() * activities.length)];
+                    const timestamp = new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString();
+                    
+                    const item = document.createElement('div');
+                    item.className = 'audit-item';
+                    item.innerHTML = `
+                        <div>
+                            <strong>${activity}</strong><br>
+                            <small style="color: #666;">Network activity</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div>${timestamp}</div>
+                            <span class="credential-status status-valid">Completed</span>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                }
+            }
+        }
+
+        // Advanced Cryptographic Engine
+        class AdvancedCryptoEngine {
+            constructor() {
+                this.algorithms = {
+                    'ed25519': { keySize: 256, quantum: false },
+                    'secp256k1': { keySize: 256, quantum: false },
+                    'rsa2048': { keySize: 2048, quantum: false },
+                    'dilithium': { keySize: 1312, quantum: true },
+                    'falcon': { keySize: 897, quantum: true }
+                };
+            }
+
+            generateKeyPair(algorithm = 'ed25519') {
+                const algo = this.algorithms[algorithm];
+                const keySize = algo.keySize;
+                
+                return {
+                    privateKey: this.generateRandomHex(keySize / 8),
+                    publicKey: this.generateRandomHex(keySize / 8),
+                    algorithm: algorithm,
+                    quantumResistant: algo.quantum,
+                    created: new Date().toISOString()
+                };
+            }
+
+            generateRandomHex(bytes) {
+                const array = new Uint8Array(bytes);
+                for (let i = 0; i < bytes; i++) {
+                    array[i] = Math.floor(Math.random() * 256);
+                }
+                return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+
+            generateMnemonic() {
+                const wordlist = [
+                    'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
+                    'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
+                    'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual'
+                ];
+                
+                const words = [];
+                for (let i = 0; i < 12; i++) {
+                    words.push(wordlist[Math.floor(Math.random() * wordlist.length)]);
+                }
+                return words.join(' ');
+            }
+        }
+
+        // Zero-Knowledge Proof Engine
+        class ZKProofEngine {
+            constructor() {
+                this.circuits = new Map();
+                this.setupCircuits();
+            }
+
+            setupCircuits() {
+                this.circuits.set('age', {
+                    name: 'Age Verification',
+                    constraints: 'age >= 18',
+                    privateInputs: ['birthDate'],
+                    publicInputs: ['minimumAge']
+                });
+                
+                this.circuits.set('citizenship', {
+                    name: 'Citizenship Proof',
+                    constraints: 'country in allowedCountries',
+                    privateInputs: ['nationality'],
+                    publicInputs: ['allowedCountries']
+                });
+            }
+
+            generateProof(type, privateInputs, publicConstraints, protocol = 'zk-snark') {
+                const circuit = this.circuits.get(type);
+                if (!circuit) throw new Error('Unknown proof type');
+
+                // Simulate proof generation
+                const proof = {
+                    type: type,
+                    protocol: protocol,
+                    circuit: circuit.name,
+                    proof: this.generateRandomHex(248),
+                    publicSignals: this.hashInputs(publicConstraints),
+                    verificationKey: this.generateRandomHex(64),
+                    created: new Date().toISOString(),
+                    size: 248,
+                    generationTime: Math.random() * 3 + 1
+                };
+
+                return proof;
+            }
+
+            verifyProof(proof) {
+                // Simulate verification process
+                const verificationTime = Math.random() * 100 + 20;
+                const isValid = Math.random() > 0.05; // 95% success rate
+
+                return {
+                    valid: isValid,
+                    verificationTime: verificationTime,
+                    timestamp: new Date().toISOString()
+                };
+            }
+
+            hashInputs(inputs) {
+                return this.generateRandomHex(32);
+            }
+
+            generateRandomHex(bytes) {
+                const array = new Uint8Array(bytes);
+                for (let i = 0; i < bytes; i++) {
+                    array[i] = Math.floor(Math.random() * 256);
+                }
+                return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+        }
+
+        // Biometric Engine
+        class BiometricEngine {
+            constructor() {
+                this.templates = [];
+                this.modalitiesConfig = {
+                    fingerprint: { accuracy: 99.97, far: 0.001, frr: 0.1 },
+                    face: { accuracy: 99.85, far: 0.01, frr: 0.15 },
+                    iris: { accuracy: 99.99, far: 0.0001, frr: 0.05 },
+                    voice: { accuracy: 98.5, far: 0.1, frr: 1.5 },
+                    behavioral: { accuracy: 95.2, far: 2.0, frr: 4.8 }
+                };
+            }
+
+            enrollTemplate(modalities) {
+                const template = {
+                    id: 'bio_' + Date.now(),
+                    modalities: modalities,
+                    encrypted: true,
+                    created: new Date().toISOString(),
+                    accuracy: this.calculateCombinedAccuracy(modalities)
+                };
+                
+                this.templates.push(template);
+                return template;
+            }
+
+            calculateCombinedAccuracy(modalities) {
+                let combinedAccuracy = 0;
+                modalities.forEach(modality => {
+                    const config = this.modalitiesConfig[modality];
+                    if (config) {
+                        combinedAccuracy += config.accuracy;
+                    }
+                });
+                return Math.min(99.99, combinedAccuracy / modalities.length);
+            }
+
+            verify(templateId, scanData) {
+                const template = this.templates.find(t => t.id === templateId);
+                if (!template) return { success: false, error: 'Template not found' };
+
+                const matchScore = Math.random() * 10 + 90; // 90-100% match
+                const responseTime = Math.random() * 200 + 50; // 50-250ms
+
+                return {
+                    success: true,
+                    matchScore: matchScore,
+                    responseTime: responseTime,
+                    livenessDetected: true,
+                    timestamp: new Date().toISOString()
+                };
+            }
+        }
+
+        // Initialize the simulator
+        const simulator = new AdvancedDIDSimulator();
+
+        // Navigation functions
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 1200) {
+                toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Show/hide mobile menu button based on screen size
+        function updateMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            if (window.innerWidth <= 1200) {
+                menuToggle.style.display = 'block';
+                closeSidebar.style.display = 'block';
+                // Hide sidebar by default on mobile
+                document.getElementById('sidebar').classList.remove('open');
+            } else {
+                menuToggle.style.display = 'none';
+                closeSidebar.style.display = 'none';
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        // Call on resize
+        window.addEventListener('resize', updateMobileMenu);
+        window.addEventListener('load', updateMobileMenu);
+
+        function switchWalletTab(tabName) {
+            document.querySelectorAll('#wallet .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#wallet .tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`wallet-${tabName}`).classList.add('active');
+        }
+
+        function switchCredentialTab(tabName) {
+            document.querySelectorAll('#credentials .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#credentials .tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`credential-${tabName}`).classList.add('active');
+        }
+
+        function issueNewCredential() {
+            const type = document.getElementById('credentialTypeSelect').value;
+            const subjectDID = document.getElementById('subjectDID').value;
+            const data = document.getElementById('credentialData').value;
+            const expiry = document.getElementById('credentialExpiry').value;
+
+            if (!subjectDID || !data) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+
+            try {
+                const credentialData = JSON.parse(data);
+                const credential = {
+                    id: 'cred_' + Date.now(),
+                    type: [type + 'Credential'],
+                    issuer: simulator.state.currentDID || 'did:example:issuer',
+                    subject: subjectDID,
+                    data: credentialData,
+                    issuanceDate: new Date().toISOString(),
+                    expirationDate: expiry ? new Date(expiry).toISOString() : null,
+                    status: 'valid'
+                };
+
+                simulator.state.credentials.push(credential);
+                showNotification('Credential issued successfully!', 'success');
+                
+                // Clear form
+                document.getElementById('subjectDID').value = '';
+                document.getElementById('credentialData').value = '';
+                document.getElementById('credentialExpiry').value = '';
+                
+            } catch (error) {
+                showNotification('Invalid JSON in credential data', 'error');
+            }
+        }
+
+        function performVerification() {
+            const input = document.getElementById('verificationInput').value;
+            const method = document.getElementById('verificationMethod').value;
+            
+            if (!input.trim()) {
+                showNotification('Please provide credential data to verify', 'warning');
+                return;
+            }
+
+            try {
+                const credential = JSON.parse(input);
+                const isValid = Math.random() > 0.1; // 90% success rate
+                const verificationTime = Math.random() * 100 + 50;
+                
+                const resultContainer = document.getElementById('verificationResults');
+                resultContainer.innerHTML = `
+                    <div class="verification-result ${isValid ? 'success' : 'failure'}">
+                        <h4>${isValid ? '✅ Credential is valid' : '❌ Verification failed'}</h4>
+                        <p><strong>Method:</strong> ${method}</p>
+                        <p><strong>Verification Time:</strong> ${verificationTime.toFixed(2)}ms</p>
+                        <p><strong>Issuer:</strong> ${credential.issuer || 'Unknown'}</p>
+                    </div>
+                `;
+                
+                showNotification(
+                    isValid ? 'Credential verified successfully!' : 'Credential verification failed',
+                    isValid ? 'success' : 'error'
+                );
+            } catch (error) {
+                showNotification('Invalid credential format', 'error');
+            }
+        }
+
+        function generateSelectiveDisclosure() {
+            const checkboxes = document.querySelectorAll('#selective input[type="checkbox"]:checked');
+            const disclosedFields = Array.from(checkboxes).map(cb => cb.parentElement.textContent.trim());
+            
+            const presentation = {
+                type: 'SelectiveDisclosurePresentation',
+                disclosed: disclosedFields,
+                proof: simulator.cryptoEngine.generateRandomHex(64),
+                timestamp: new Date().toISOString()
+            };
+            
+            showNotification(`Selective disclosure generated with ${disclosedFields.length} fields`, 'success');
+        }
+
+        function simulateConsensusRound() {
+            const log = document.getElementById('consensusLog');
+            if (!log) return;
+            
+            const phases = [
+                'Pre-prepare phase initiated',
+                'Prepare messages sent to validators',
+                'Commit phase started',
+                'Consensus achieved (127/127 validators)',
+                'Block finalized and committed'
+            ];
+            
+            phases.forEach((phase, index) => {
+                setTimeout(() => {
+                    const item = document.createElement('div');
+                    item.className = 'audit-item';
+                    item.innerHTML = `
+                        <div><strong>${phase}</strong></div>
+                        <div style="text-align: right;">
+                            <div>${new Date().toLocaleTimeString()}</div>
+                            <span class="credential-status status-valid">Success</span>
+                        </div>
+                    `;
+                    log.insertBefore(item, log.firstChild);
+                }, index * 500);
+            });
+            
+            showNotification('Consensus simulation started', 'info');
+        }
+
+        // Additional utility functions for new pages
+        function exportSeed() {
+            const mnemonic = document.getElementById('mnemonicSeed').value;
+            if (!mnemonic) {
+                showNotification('No mnemonic seed to export', 'warning');
+                return;
+            }
+            
+            const seedData = {
+                mnemonic: mnemonic,
+                exported: new Date().toISOString(),
+                warning: 'Keep this seed phrase secure and private'
+            };
+            
+            const dataStr = JSON.stringify(seedData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'seed-backup.json';
+            link.click();
+            
+            showNotification('Seed phrase exported successfully', 'success');
+        }
+
+        function backupWallet() {
+            if (!simulator.state.currentDID) {
+                showNotification('No wallet to backup', 'warning');
+                return;
+            }
+            
+            const backupData = {
+                did: simulator.state.currentDID,
+                wallets: Object.fromEntries(simulator.state.wallets),
+                credentials: simulator.state.credentials,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'wallet-backup.json';
+            link.click();
+            
+            showNotification('Wallet backup created successfully', 'success');
+        }
+
+        function setupSocialRecovery() {
+            const threshold = document.getElementById('threshold').value;
+            const total = document.getElementById('totalGuardians').value;
+            
+            if (parseInt(threshold) > parseInt(total)) {
+                showNotification('Threshold cannot be greater than total guardians', 'error');
+                return;
+            }
+            
+            showNotification(`Social recovery configured: ${threshold} of ${total} guardians`, 'success');
+        }
+
+        function createMultisigWallet() {
+            const scheme = document.getElementById('multisigScheme').value;
+            const requiredSigs = document.getElementById('requiredSigs').value;
+            const cosigners = document.getElementById('cosigners').value;
+            
+            if (!cosigners.trim()) {
+                showNotification('Please add co-signer DIDs', 'warning');
+                return;
+            }
+            
+            const cosignerList = cosigners.split('\n').filter(did => did.trim());
+            
+            if (cosignerList.length < parseInt(requiredSigs)) {
+                showNotification('Number of co-signers must be at least equal to required signatures', 'error');
+                return;
+            }
+            
+            showNotification(`Multi-sig wallet created with ${scheme} scheme (${requiredSigs}/${cosignerList.length})`, 'success');
+        }
+
+        function copyZKProof() {
+            const proofElement = document.getElementById('proofDetails');
+            const proofText = proofElement.querySelector('.code-block').textContent;
+            
+            navigator.clipboard.writeText(proofText).then(() => {
+                showNotification('ZK proof copied to clipboard', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy proof', 'error');
+            });
+        }
+
+        function migrateToQuantumSafe() {
+            const algorithm = document.getElementById('pqcAlgorithm').value;
+            showNotification(`Migrating to ${algorithm} quantum-safe algorithm...`, 'info');
+            
+            setTimeout(() => {
+                showNotification('Successfully migrated to quantum-safe cryptography!', 'success');
+            }, 2000);
+        }
+
+        // Quick action functions
+        function quickCreateDID() {
+            const keyPair = simulator.cryptoEngine.generateKeyPair('ed25519');
+            const did = `did:key:z6Mk${simulator.cryptoEngine.generateRandomHex(22)}`;
+            
+            simulator.state.currentDID = did;
+            simulator.state.wallets.set(did, keyPair);
+            
+            showNotification('DID created successfully!', 'success');
+            simulator.state.analytics.activeDIDs++;
+            simulator.updateDashboard();
+        }
+
+        function quickIssueCredential() {
+            if (!simulator.state.currentDID) {
+                showNotification('Please create a DID first', 'warning');
+                return;
+            }
+
+            const credential = {
+                id: 'cred_' + Date.now(),
+                type: 'QuickCredential',
+                issuer: simulator.state.currentDID,
+                subject: simulator.state.currentDID,
+                issuanceDate: new Date().toISOString(),
+                status: 'valid'
+            };
+
+            simulator.state.credentials.push(credential);
+            showNotification('Credential issued successfully!', 'success');
+            simulator.state.analytics.credentialsIssued++;
+            simulator.updateDashboard();
+        }
+
+        function quickVerify() {
+            if (simulator.state.credentials.length === 0) {
+                showNotification('No credentials to verify', 'warning');
+                return;
+            }
+
+            const success = Math.random() > 0.05; // 95% success rate
+            showNotification(
+                success ? 'Credential verified successfully!' : 'Credential verification failed',
+                success ? 'success' : 'error'
+            );
+        }
+
+        function quickZKP() {
+            const proof = simulator.zkEngine.generateProof('age', ['1990-01-01'], ['18'], 'zk-snark');
+            simulator.state.zkProofs.push(proof);
+            
+            showNotification('Zero-knowledge proof generated!', 'success');
+            simulator.state.analytics.zkProofs++;
+            simulator.updateDashboard();
+        }
+
+        // Advanced functions
+        function generateAdvancedDID() {
+            const identityType = document.getElementById('identityType').value;
+            const cryptoSuite = document.getElementById('cryptoSuite').value;
+            const didMethod = document.getElementById('didMethodAdvanced').value;
+            const securityLevel = document.getElementById('securityLevel').value;
+
+            const keyPair = simulator.cryptoEngine.generateKeyPair(cryptoSuite);
+            const mnemonic = simulator.cryptoEngine.generateMnemonic();
+            
+            let did;
+            switch(didMethod) {
+                case 'did:key':
+                    did = `did:key:z6Mk${simulator.cryptoEngine.generateRandomHex(22)}`;
+                    break;
+                case 'did:ethr':
+                    did = `did:ethr:0x${simulator.cryptoEngine.generateRandomHex(20)}`;
+                    break;
+                case 'did:ion':
+                    did = `did:ion:EiA${simulator.cryptoEngine.generateRandomHex(30)}`;
+                    break;
+                default:
+                    did = `did:key:z6Mk${simulator.cryptoEngine.generateRandomHex(22)}`;
+            }
+
+            simulator.state.currentDID = did;
+            simulator.state.wallets.set(did, {
+                ...keyPair,
+                mnemonic: mnemonic,
+                identityType: identityType,
+                securityLevel: securityLevel
+            });
+
+            document.getElementById('mnemonicSeed').value = mnemonic;
+            
+            showNotification(`Advanced DID created with ${cryptoSuite} cryptography!`, 'success');
+        }
+
+        function generateZKProof() {
+            const proofType = document.getElementById('proofType').value;
+            const zkProtocol = document.getElementById('zkProtocol').value;
+            const privateInputs = document.getElementById('privateInputs').value;
+            const publicConstraints = document.getElementById('publicConstraints').value;
+
+            if (!privateInputs || !publicConstraints) {
+                showNotification('Please provide both private inputs and public constraints', 'warning');
+                return;
+            }
+
+            const proof = simulator.zkEngine.generateProof(proofType, privateInputs, publicConstraints, zkProtocol);
+            
+            document.getElementById('generatedProof').style.display = 'block';
+            document.getElementById('proofDetails').innerHTML = `
+                <div><strong>Proof Type:</strong> ${proof.circuit}</div>
+                <div><strong>Protocol:</strong> ${proof.protocol}</div>
+                <div><strong>Generation Time:</strong> ${proof.generationTime.toFixed(2)}s</div>
+                <div><strong>Proof Size:</strong> ${proof.size} bytes</div>
+                <div class="code-block" style="margin-top: 15px;">
+${JSON.stringify(proof, null, 2)}
+                </div>
+            `;
+
+            showNotification('Zero-knowledge proof generated successfully!', 'success');
+        }
+
+        function verifyZKProof() {
+            const proofInput = document.getElementById('zkProofInput').value;
+            if (!proofInput.trim()) {
+                showNotification('Please provide a proof to verify', 'warning');
+                return;
+            }
+
+            try {
+                const proof = JSON.parse(proofInput);
+                const result = simulator.zkEngine.verifyProof(proof);
+                
+                const resultContainer = document.getElementById('zkVerificationResult');
+                resultContainer.innerHTML = `
+                    <div class="verification-result ${result.valid ? 'success' : 'failure'}">
+                        <h4>${result.valid ? '✅ Proof is valid' : '❌ Proof verification failed'}</h4>
+                        <p><strong>Verification Time:</strong> ${result.verificationTime.toFixed(2)}ms</p>
+                        <p><strong>Timestamp:</strong> ${result.timestamp}</p>
+                    </div>
+                `;
+                
+                showNotification(
+                    result.valid ? 'Proof verified successfully!' : 'Proof verification failed',
+                    result.valid ? 'success' : 'error'
+                );
+            } catch (error) {
+                showNotification('Invalid proof format', 'error');
+            }
+        }
+
+        function startBiometricScan() {
+            const scannerEl = document.querySelector('.scanner-animation');
+            scannerEl.style.animation = 'scan 1s infinite';
+            
+            setTimeout(() => {
+                const modalities = ['fingerprint', 'face'];
+                const template = simulator.biometricEngine.enrollTemplate(modalities);
+                
+                scannerEl.style.animation = 'scan 3s infinite';
+                showNotification(`Biometric template enrolled with ${template.accuracy.toFixed(2)}% accuracy!`, 'success');
+            }, 3000);
+        }
+
+        function simulateConsensus() {
+            showNotification('Consensus round initiated...', 'info');
+            
+            setTimeout(() => {
+                simulator.state.consensusState.epoch++;
+                document.getElementById('currentBlockHeight').textContent = simulator.state.consensusState.epoch.toLocaleString();
+                showNotification('Consensus round completed successfully!', 'success');
+            }, 2000);
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.className = `notification show`;
+            
+            // Set border color based on type
+            const colors = {
+                'success': '#10b981',
+                'error': '#ef4444',
+                'warning': '#f59e0b',
+                'info': '#6366f1'
+            };
+            
+            notification.style.borderLeftColor = colors[type] || colors.info;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function openModal(content) {
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add any additional initialization here
+            console.log('Advanced DID Simulator initialized');
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        showPage('dashboard');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        showPage('wallet');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        showPage('zkp');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

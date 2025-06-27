@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Bitcoin Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #f7931a, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 150px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, #f7931a, #ffb347);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247, 147, 26, 0.3);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #f7931a;
+        }
+
+        .input-field input, .input-field select {
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field input:focus, .input-field select:focus {
+            outline: none;
+            border-color: #f7931a;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #f7931a, #ffb347);
+            border: none;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(247, 147, 26, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #8d9499);
+        }
+
+        .transaction-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .tx-box {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #f7931a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .blockchain-visual {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 20px 0;
+            margin: 20px 0;
+        }
+
+        .block {
+            min-width: 200px;
+            background: linear-gradient(45deg, #6f42c1, #8a63d2);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #8a63d2;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(111, 66, 193, 0.4);
+        }
+
+        .block::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 15px solid #8a63d2;
+        }
+
+        .block:first-child::before {
+            display: none;
+        }
+
+        .utxo-pool {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .utxo {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .utxo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(23, 162, 184, 0.4);
+        }
+
+        .utxo.selected {
+            border-color: #f7931a;
+            transform: scale(1.05);
+        }
+
+        .mining-visual {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .hash-display {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            word-break: break-all;
+            border-left: 4px solid #f7931a;
+        }
+
+        .difficulty-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .difficulty-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .wallet-address {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            border: 2px solid #28a745;
+            margin: 10px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #495057, #6c757d);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #f7931a;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .output-area {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #f7931a;
+            background: rgba(247, 147, 26, 0.1);
+        }
+
+        .success { border-left-color: #28a745; background: rgba(40, 167, 69, 0.1); }
+        .error { border-left-color: #dc3545; background: rgba(220, 53, 69, 0.1); }
+        .info { border-left-color: #17a2b8; background: rgba(23, 162, 184, 0.1); }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .nav-tabs { flex-direction: column; }
+            .transaction-visual { flex-direction: column; }
+            .blockchain-visual { flex-direction: column; align-items: center; }
+            .input-group { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🟠 Advanced Bitcoin Simulator</h1>
+            <p>Interactive Educational Platform for Understanding Bitcoin Technology</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="intro">Introduction</button>
+            <button class="nav-tab" data-tab="transactions">Transactions</button>
+            <button class="nav-tab" data-tab="utxo">UTXO Model</button>
+            <button class="nav-tab" data-tab="mining">Mining</button>
+            <button class="nav-tab" data-tab="wallets">Wallets</button>
+            <button class="nav-tab" data-tab="fees">Transaction Fees</button>
+        </div>
+
+        <!-- Introduction Tab -->
+        <div class="tab-content active" id="intro">
+            <div class="card">
+                <h2>🚀 Welcome to Bitcoin Simulator</h2>
+                <p>This advanced simulator provides hands-on experience with Bitcoin's core concepts:</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">21M</div>
+                        <div>Total Bitcoin Supply</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">10min</div>
+                        <div>Average Block Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">6.25</div>
+                        <div>Block Reward (BTC)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">~1MB</div>
+                        <div>Block Size Limit</div>
+                    </div>
+                </div>
+
+                <h3>📚 What You'll Learn:</h3>
+                <ul style="margin: 20px 0; line-height: 1.8;">
+                    <li><strong>Transaction Creation:</strong> Build and broadcast Bitcoin transactions</li>
+                    <li><strong>UTXO Management:</strong> Understand unspent transaction outputs</li>
+                    <li><strong>Mining Process:</strong> Experience proof-of-work mining simulation</li>
+                    <li><strong>Wallet Operations:</strong> Generate addresses and manage keys</li>
+                    <li><strong>Fee Calculation:</strong> Optimize transaction fees for faster confirmation</li>
+                </ul>
+
+                <button class="btn" onclick="switchTab('transactions')">Start Learning →</button>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="tab-content" id="transactions">
+            <div class="card">
+                <h2>💸 Bitcoin Transaction Creator</h2>
+                
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>From Address</label>
+                        <input type="text" id="fromAddress" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">
+                    </div>
+                    <div class="input-field">
+                        <label>To Address</label>
+                        <input type="text" id="toAddress" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy">
+                    </div>
+                    <div class="input-field">
+                        <label>Amount (BTC)</label>
+                        <input type="number" id="amount" placeholder="0.001" step="0.00000001" min="0">
+                    </div>
+                    <div class="input-field">
+                        <label>Fee (BTC)</label>
+                        <input type="number" id="fee" placeholder="0.00001" step="0.00000001" min="0">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="createTransaction()">Create Transaction</button>
+                <button class="btn btn-secondary" onclick="generateSampleTransaction()">Generate Sample</button>
+
+                <div class="transaction-visual" id="transactionVisual" style="display: none;">
+                    <div class="tx-box">
+                        <h4>Input</h4>
+                        <div id="inputDisplay">-</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="tx-box">
+                        <h4>Transaction</h4>
+                        <div id="txHashDisplay">-</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="tx-box">
+                        <h4>Output</h4>
+                        <div id="outputDisplay">-</div>
+                    </div>
+                </div>
+
+                <div class="output-area" id="transactionOutput"></div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Transaction Structure</h3>
+                <div class="hash-display" id="rawTransaction">
+                    Raw transaction data will appear here...
+                </div>
+            </div>
+        </div>
+
+        <!-- UTXO Tab -->
+        <div class="tab-content" id="utxo">
+            <div class="card">
+                <h2>🎯 UTXO Pool Management</h2>
+                <p>Click on UTXOs to select them for spending. Watch how the UTXO set changes with each transaction.</p>
+                
+                <button class="btn" onclick="generateUTXOs()">Generate Sample UTXOs</button>
+                <button class="btn btn-secondary" onclick="clearUTXOs()">Clear Pool</button>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalUTXOs">0</div>
+                        <div>Total UTXOs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="selectedUTXOs">0</div>
+                        <div>Selected UTXOs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalValue">0</div>
+                        <div>Total Value (BTC)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="selectedValue">0</div>
+                        <div>Selected Value (BTC)</div>
+                    </div>
+                </div>
+
+                <h3>Available UTXOs (Click to Select)</h3>
+                <div class="utxo-pool" id="utxoPool"></div>
+
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Spend To Address</label>
+                        <input type="text" id="spendToAddress" placeholder="Recipient address">
+                    </div>
+                    <div class="input-field">
+                        <label>Spend Amount (BTC)</label>
+                        <input type="number" id="spendAmount" placeholder="0.001" step="0.00000001">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="spendUTXOs()">Spend Selected UTXOs</button>
+                
+                <div class="output-area" id="utxoOutput"></div>
+            </div>
+        </div>
+
+        <!-- Mining Tab -->
+        <div class="tab-content" id="mining">
+            <div class="card">
+                <h2>⛏️ Bitcoin Mining Simulator</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentDifficulty">1</div>
+                        <div>Current Difficulty</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="hashRate">0</div>
+                        <div>Hash Rate (H/s)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="blocksFound">0</div>
+                        <div>Blocks Mined</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalReward">0</div>
+                        <div>Total Reward (BTC)</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Target Difficulty (Leading Zeros)</label>
+                        <select id="difficulty">
+                            <option value="1">1 (Easy)</option>
+                            <option value="2">2 (Medium)</option>
+                            <option value="3">3 (Hard)</option>
+                            <option value="4">4 (Very Hard)</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Block Data</label>
+                        <input type="text" id="blockData" placeholder="Enter transaction data">
+                    </div>
+                </div>
+
+                <button class="btn" id="mineBtn" onclick="toggleMining()">Start Mining</button>
+                <button class="btn btn-secondary" onclick="resetMining()">Reset</button>
+
+                <div class="mining-visual">
+                    <h3>🔍 Current Mining Attempt</h3>
+                    <div><strong>Nonce:</strong> <span id="currentNonce">0</span></div>
+                    <div><strong>Hash:</strong></div>
+                    <div class="hash-display" id="currentHash">Click 'Start Mining' to begin</div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="miningProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="blockchain-visual" id="minedBlocks"></div>
+                
+                <div class="output-area" id="miningOutput"></div>
+            </div>
+        </div>
+
+        <!-- Wallets Tab -->
+        <div class="tab-content" id="wallets">
+            <div class="card">
+                <h2>👛 Bitcoin Wallet Generator</h2>
+                
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Address Type</label>
+                        <select id="addressType">
+                            <option value="legacy">Legacy (P2PKH)</option>
+                            <option value="segwit">SegWit (P2WPKH)</option>
+                            <option value="native">Native SegWit (Bech32)</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Number of Addresses</label>
+                        <input type="number" id="addressCount" value="1" min="1" max="10">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateWallet()">Generate New Wallet</button>
+                <button class="btn btn-secondary" onclick="importWallet()">Import Wallet</button>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="walletCount">0</div>
+                        <div>Generated Wallets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBalance">0.00000000</div>
+                        <div>Total Balance (BTC)</div>
+                    </div>
+                </div>
+
+                <div id="walletList"></div>
+                
+                <div class="card">
+                    <h3>🔑 Wallet Operations</h3>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label>From Wallet</label>
+                            <select id="fromWallet"></select>
+                        </div>
+                        <div class="input-field">
+                            <label>To Address</label>
+                            <input type="text" id="toWalletAddress" placeholder="Recipient address">
+                        </div>
+                        <div class="input-field">
+                            <label>Amount (BTC)</label>
+                            <input type="number" id="sendAmount" placeholder="0.001" step="0.00000001">
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="sendTransaction()">Send Transaction</button>
+                </div>
+
+                <div class="output-area" id="walletOutput"></div>
+            </div>
+        </div>
+
+        <!-- Transaction Fees Tab -->
+        <div class="tab-content" id="fees">
+            <div class="card">
+                <h2>💰 Transaction Fee Calculator</h2>
+                
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Transaction Size (bytes)</label>
+                        <input type="number" id="txSize" value="250" min="100">
+                    </div>
+                    <div class="input-field">
+                        <label>Fee Rate (sat/byte)</label>
+                        <input type="number" id="feeRate" value="20" min="1">
+                    </div>
+                    <div class="input-field">
+                        <label>Priority</label>
+                        <select id="priority" onchange="updateFeeRate()">
+                            <option value="low">Low (1-3 blocks)</option>
+                            <option value="medium">Medium (3-6 blocks)</option>
+                            <option value="high">High (1-2 blocks)</option>
+                            <option value="urgent">Urgent (Next block)</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Number of Inputs</label>
+                        <input type="number" id="inputCount" value="2" min="1" onchange="calculateTxSize()">
+                    </div>
+                    <div class="input-field">
+                        <label>Number of Outputs</label>
+                        <input type="number" id="outputCount" value="2" min="1" onchange="calculateTxSize()">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calculateFee()">Calculate Fee</button>
+                <button class="btn btn-secondary" onclick="optimizeFee()">Optimize Fee</button>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="calculatedFee">0</div>
+                        <div>Fee (Satoshis)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="calculatedFeeBTC">0.00000000</div>
+                        <div>Fee (BTC)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="feePercentage">0.00</div>
+                        <div>Fee Percentage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="confirmationTime">~30 min</div>
+                        <div>Est. Confirmation</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Fee Comparison</h3>
+                    <div id="feeComparison"></div>
+                </div>
+
+                <div class="output-area" id="feeOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let state = {
+            utxos: [],
+            selectedUTXOs: [],
+            wallets: [],
+            blockchain: [],
+            mining: {
+                isActive: false,
+                nonce: 0,
+                difficulty: 1,
+                hashRate: 0,
+                blocksFound: 0,
+                totalReward: 0,
+                startTime: null
+            }
+        };
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Tab event listeners
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
+
+        // Utility functions
+        function randomHash() {
+            return Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        }
+
+        function randomAddress(type = 'legacy') {
+            const prefixes = {
+                legacy: '1',
+                segwit: '3',
+                native: 'bc1'
+            };
+            const prefix = prefixes[type] || '1';
+            const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let address = prefix;
+            const length = type === 'native' ? 42 : 34;
+            
+            for (let i = prefix.length; i < length; i++) {
+                address += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return address;
+        }
+
+        function formatBTC(satoshis) {
+            return (satoshis / 100000000).toFixed(8);
+        }
+
+        function satoshisToBTC(satoshis) {
+            return satoshis / 100000000;
+        }
+
+        function BTCToSatoshis(btc) {
+            return Math.round(btc * 100000000);
+        }
+
+        function logMessage(message, type = 'info', targetId = 'transactionOutput') {
+            const output = document.getElementById(targetId);
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            output.appendChild(logEntry);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Transaction functions
+        function generateSampleTransaction() {
+            document.getElementById('fromAddress').value = randomAddress('legacy');
+            document.getElementById('toAddress').value = randomAddress('segwit');
+            document.getElementById('amount').value = (Math.random() * 0.01 + 0.001).toFixed(8);
+            document.getElementById('fee').value = (Math.random() * 0.0001 + 0.00001).toFixed(8);
+        }
+
+        function createTransaction() {
+            const fromAddr = document.getElementById('fromAddress').value;
+            const toAddr = document.getElementById('toAddress').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fee = parseFloat(document.getElementById('fee').value);
+
+            if (!fromAddr || !toAddr || !amount || !fee) {
+                logMessage('Please fill in all transaction fields', 'error');
+                return;
+            }
+
+            const txHash = randomHash();
+            const timestamp = new Date().toISOString();
+            
+            // Show transaction visual
+            document.getElementById('transactionVisual').style.display = 'flex';
+            document.getElementById('inputDisplay').textContent = `${fromAddr.slice(0, 8)}...`;
+            document.getElementById('txHashDisplay').textContent = `${txHash.slice(0, 8)}...`;
+            document.getElementById('outputDisplay').textContent = `${toAddr.slice(0, 8)}...`;
+
+            // Create raw transaction structure
+            const rawTx = {
+                version: 1,
+                inputs: [{
+                    prevTxHash: randomHash(),
+                    outputIndex: 0,
+                    scriptSig: "304502210...",
+                    sequence: 0xffffffff
+                }],
+                outputs: [{
+                    value: BTCToSatoshis(amount),
+                    scriptPubKey: `OP_DUP OP_HASH160 ${randomHash().slice(0, 40)} OP_EQUALVERIFY OP_CHECKSIG`
+                }, {
+                    value: BTCToSatoshis(fee),
+                    scriptPubKey: `OP_DUP OP_HASH160 ${randomHash().slice(0, 40)} OP_EQUALVERIFY OP_CHECKSIG`
+                }],
+                lockTime: 0
+            };
+
+            document.getElementById('rawTransaction').textContent = JSON.stringify(rawTx, null, 2);
+
+            logMessage(`✅ Transaction created successfully!`);
+            logMessage(`📍 Transaction Hash: ${txHash}`);
+            logMessage(`💸 Amount: ${amount} BTC`);
+            logMessage(`💰 Fee: ${fee} BTC`);
+            logMessage(`⏰ Timestamp: ${timestamp}`);
+            logMessage(`📤 From: ${fromAddr}`);
+            logMessage(`📥 To: ${toAddr}`);
+        }
+
+        // UTXO functions
+        function generateUTXOs() {
+            const count = Math.floor(Math.random() * 8) + 5;
+            state.utxos = [];
+            
+            for (let i = 0; i < count; i++) {
+                const utxo = {
+                    id: randomHash().slice(0, 16),
+                    value: Math.floor(Math.random() * 100000000) + 10000, // 0.0001 to 1 BTC in satoshis
+                    address: randomAddress(),
+                    confirmations: Math.floor(Math.random() * 100) + 1
+                };
+                state.utxos.push(utxo);
+            }
+            
+            renderUTXOs();
+            updateUTXOStats();
+            logMessage(`Generated ${count} new UTXOs`, 'success', 'utxoOutput');
+        }
+
+        function renderUTXOs() {
+            const pool = document.getElementById('utxoPool');
+            pool.innerHTML = '';
+            
+            state.utxos.forEach((utxo, index) => {
+                const utxoDiv = document.createElement('div');
+                utxoDiv.className = `utxo ${state.selectedUTXOs.includes(index) ? 'selected' : ''}`;
+                utxoDiv.onclick = () => toggleUTXO(index);
+                utxoDiv.innerHTML = `
+                    <div><strong>${formatBTC(utxo.value)} BTC</strong></div>
+                    <div>${utxo.id}</div>
+                    <div>${utxo.confirmations} conf.</div>
+                `;
+                pool.appendChild(utxoDiv);
+            });
+        }
+
+        function toggleUTXO(index) {
+            const selectedIndex = state.selectedUTXOs.indexOf(index);
+            if (selectedIndex > -1) {
+                state.selectedUTXOs.splice(selectedIndex, 1);
+            } else {
+                state.selectedUTXOs.push(index);
+            }
+            renderUTXOs();
+            updateUTXOStats();
+        }
+
+        function updateUTXOStats() {
+            const totalValue = state.utxos.reduce((sum, utxo) => sum + utxo.value, 0);
+            const selectedValue = state.selectedUTXOs.reduce((sum, index) => sum + state.utxos[index].value, 0);
+            
+            document.getElementById('totalUTXOs').textContent = state.utxos.length;
+            document.getElementById('selectedUTXOs').textContent = state.selectedUTXOs.length;
+            document.getElementById('totalValue').textContent = formatBTC(totalValue);
+            document.getElementById('selectedValue').textContent = formatBTC(selectedValue);
+        }
+
+        function spendUTXOs() {
+            if (state.selectedUTXOs.length === 0) {
+                logMessage('Please select UTXOs to spend', 'error', 'utxoOutput');
+                return;
+            }
+
+            const toAddr = document.getElementById('spendToAddress').value;
+            const amount = parseFloat(document.getElementById('spendAmount').value);
+
+            if (!toAddr || !amount) {
+                logMessage('Please enter recipient address and amount', 'error', 'utxoOutput');
+                return;
+            }
+
+            const selectedValue = state.selectedUTXOs.reduce((sum, index) => sum + state.utxos[index].value, 0);
+            const amountSatoshis = BTCToSatoshis(amount);
+            const fee = 1000; // Fixed fee for simplicity
+
+            if (selectedValue < amountSatoshis + fee) {
+                logMessage('Insufficient funds in selected UTXOs', 'error', 'utxoOutput');
+                return;
+            }
+
+            // Create new transaction
+            const change = selectedValue - amountSatoshis - fee;
+            const txHash = randomHash();
+
+            logMessage(`✅ Transaction created successfully!`, 'success', 'utxoOutput');
+            logMessage(`🔗 TX Hash: ${txHash}`, 'info', 'utxoOutput');
+            logMessage(`💸 Amount: ${formatBTC(amountSatoshis)} BTC`, 'info', 'utxoOutput');
+            logMessage(`🔄 Change: ${formatBTC(change)} BTC`, 'info', 'utxoOutput');
+            logMessage(`💰 Fee: ${formatBTC(fee)} BTC`, 'info', 'utxoOutput');
+
+            // Remove spent UTXOs and add change UTXO
+            state.selectedUTXOs.sort((a, b) => b - a);
+            state.selectedUTXOs.forEach(index => state.utxos.splice(index, 1));
+            
+            if (change > 0) {
+                state.utxos.push({
+                    id: randomHash().slice(0, 16),
+                    value: change,
+                    address: randomAddress(),
+                    confirmations: 0
+                });
+            }
+
+            state.selectedUTXOs = [];
+            renderUTXOs();
+            updateUTXOStats();
+        }
+
+        function clearUTXOs() {
+            state.utxos = [];
+            state.selectedUTXOs = [];
+            renderUTXOs();
+            updateUTXOStats();
+            logMessage('UTXO pool cleared', 'info', 'utxoOutput');
+        }
+
+        // Mining functions
+        function toggleMining() {
+            if (state.mining.isActive) {
+                stopMining();
+            } else {
+                startMining();
+            }
+        }
+
+        function startMining() {
+            const difficulty = parseInt(document.getElementById('difficulty').value);
+            const blockData = document.getElementById('blockData').value || 'Sample transaction data';
+            
+            state.mining.isActive = true;
+            state.mining.difficulty = difficulty;
+            state.mining.nonce = 0;
+            state.mining.startTime = Date.now();
+            
+            document.getElementById('mineBtn').textContent = 'Stop Mining';
+            document.getElementById('currentDifficulty').textContent = difficulty;
+            
+            logMessage(`🚀 Mining started with difficulty ${difficulty}`, 'success', 'miningOutput');
+            logMessage(`📦 Block data: ${blockData}`, 'info', 'miningOutput');
+            
+            mineBlock(blockData, difficulty);
+        }
+
+        function stopMining() {
+            state.mining.isActive = false;
+            document.getElementById('mineBtn').textContent = 'Start Mining';
+            logMessage('⏹️ Mining stopped', 'info', 'miningOutput');
+        }
+
+        function mineBlock(blockData, difficulty) {
+            if (!state.mining.isActive) return;
+
+            const target = '0'.repeat(difficulty);
+            let attempts = 0;
+            const maxAttempts = 1000; // Limit per batch to prevent blocking
+
+            const mineStep = () => {
+                while (attempts < maxAttempts && state.mining.isActive) {
+                    const hash = simpleHash(blockData + state.mining.nonce);
+                    attempts++;
+                    state.mining.nonce++;
+                    
+                    // Update UI
+                    document.getElementById('currentNonce').textContent = state.mining.nonce.toLocaleString();
+                    document.getElementById('currentHash').textContent = hash;
+                    
+                    // Calculate hash rate
+                    const elapsed = (Date.now() - state.mining.startTime) / 1000;
+                    state.mining.hashRate = Math.round(state.mining.nonce / elapsed);
+                    document.getElementById('hashRate').textContent = state.mining.hashRate.toLocaleString();
+                    
+                    // Update progress (visual effect)
+                    const progress = (state.mining.nonce % 10000) / 100;
+                    document.getElementById('miningProgress').style.width = progress + '%';
+
+                    if (hash.startsWith(target)) {
+                        // Block found!
+                        foundBlock(hash, blockData);
+                        return;
+                    }
+                }
+
+                if (state.mining.isActive) {
+                    setTimeout(mineStep, 10); // Continue mining
+                }
+            };
+
+            mineStep();
+        }
+
+        function foundBlock(hash, blockData) {
+            state.mining.blocksFound++;
+            state.mining.totalReward += 6.25; // Current block reward
+            
+            const block = {
+                height: state.blockchain.length,
+                hash: hash,
+                data: blockData,
+                nonce: state.mining.nonce,
+                timestamp: new Date().toISOString(),
+                reward: 6.25
+            };
+            
+            state.blockchain.push(block);
+            
+            // Update stats
+            document.getElementById('blocksFound').textContent = state.mining.blocksFound;
+            document.getElementById('totalReward').textContent = state.mining.totalReward.toFixed(2);
+            
+            // Add block to visual
+            addBlockToVisual(block);
+            
+            logMessage(`🎉 Block found! Hash: ${hash}`, 'success', 'miningOutput');
+            logMessage(`💎 Block height: ${block.height}`, 'info', 'miningOutput');
+            logMessage(`🏆 Reward: ${block.reward} BTC`, 'success', 'miningOutput');
+            logMessage(`🔢 Nonce: ${state.mining.nonce.toLocaleString()}`, 'info', 'miningOutput');
+            
+            // Reset for next block
+            state.mining.nonce = 0;
+            state.mining.startTime = Date.now();
+        }
+
+        function addBlockToVisual(block) {
+            const blocksContainer = document.getElementById('minedBlocks');
+            const blockDiv = document.createElement('div');
+            blockDiv.className = 'block';
+            blockDiv.innerHTML = `
+                <div><strong>Block #${block.height}</strong></div>
+                <div>Hash: ${block.hash.slice(0, 12)}...</div>
+                <div>Nonce: ${block.nonce.toLocaleString()}</div>
+                <div>Reward: ${block.reward} BTC</div>
+                <div>${new Date(block.timestamp).toLocaleTimeString()}</div>
+            `;
+            blocksContainer.appendChild(blockDiv);
+            blocksContainer.scrollLeft = blocksContainer.scrollWidth;
+        }
+
+        function simpleHash(input) {
+            let hash = 0;
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash).toString(16).padStart(8, '0') + randomHash().slice(8);
+        }
+
+        function resetMining() {
+            stopMining();
+            state.mining = {
+                isActive: false,
+                nonce: 0,
+                difficulty: 1,
+                hashRate: 0,
+                blocksFound: 0,
+                totalReward: 0,
+                startTime: null
+            };
+            state.blockchain = [];
+            
+            document.getElementById('currentNonce').textContent = '0';
+            document.getElementById('currentHash').textContent = 'Click \'Start Mining\' to begin';
+            document.getElementById('hashRate').textContent = '0';
+            document.getElementById('blocksFound').textContent = '0';
+            document.getElementById('totalReward').textContent = '0';
+            document.getElementById('miningProgress').style.width = '0%';
+            document.getElementById('minedBlocks').innerHTML = '';
+            
+            logMessage('🔄 Mining reset', 'info', 'miningOutput');
+        }
+
+        // Wallet functions
+        function generateWallet() {
+            const type = document.getElementById('addressType').value;
+            const count = parseInt(document.getElementById('addressCount').value);
+            
+            for (let i = 0; i < count; i++) {
+                const wallet = {
+                    id: state.wallets.length + 1,
+                    address: randomAddress(type),
+                    type: type,
+                    balance: Math.floor(Math.random() * 100000000), // Random balance
+                    privateKey: randomHash(),
+                    created: new Date().toISOString()
+                };
+                state.wallets.push(wallet);
+            }
+            
+            renderWallets();
+            updateWalletStats();
+            logMessage(`Generated ${count} new ${type} wallet(s)`, 'success', 'walletOutput');
+        }
+
+        function renderWallets() {
+            const walletList = document.getElementById('walletList');
+            const fromWalletSelect = document.getElementById('fromWallet');
+            
+            walletList.innerHTML = '';
+            fromWalletSelect.innerHTML = '<option value="">Select wallet...</option>';
+            
+            state.wallets.forEach((wallet, index) => {
+                // Wallet display
+                const walletDiv = document.createElement('div');
+                walletDiv.className = 'card';
+                walletDiv.innerHTML = `
+                    <h4>Wallet #${wallet.id} (${wallet.type})</h4>
+                    <div class="wallet-address">${wallet.address}</div>
+                    <p><strong>Balance:</strong> ${formatBTC(wallet.balance)} BTC</p>
+                    <p><strong>Private Key:</strong> ${wallet.privateKey.slice(0, 16)}... (hidden for security)</p>
+                    <p><strong>Created:</strong> ${new Date(wallet.created).toLocaleString()}</p>
+                `;
+                walletList.appendChild(walletDiv);
+                
+                // Add to select dropdown
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Wallet #${wallet.id} (${formatBTC(wallet.balance)} BTC)`;
+                fromWalletSelect.appendChild(option);
+            });
+        }
+
+        function updateWalletStats() {
+            const totalBalance = state.wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+            document.getElementById('walletCount').textContent = state.wallets.length;
+            document.getElementById('totalBalance').textContent = formatBTC(totalBalance);
+        }
+
+        function importWallet() {
+            const privateKey = prompt('Enter private key (64 character hex string):');
+            if (!privateKey || privateKey.length !== 64) {
+                logMessage('Invalid private key format', 'error', 'walletOutput');
+                return;
+            }
+            
+            const wallet = {
+                id: state.wallets.length + 1,
+                address: randomAddress('legacy'),
+                type: 'imported',
+                balance: Math.floor(Math.random() * 50000000),
+                privateKey: privateKey,
+                created: new Date().toISOString()
+            };
+            
+            state.wallets.push(wallet);
+            renderWallets();
+            updateWalletStats();
+            logMessage('Wallet imported successfully', 'success', 'walletOutput');
+        }
+
+        function sendTransaction() {
+            const fromIndex = document.getElementById('fromWallet').value;
+            const toAddr = document.getElementById('toWalletAddress').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            
+            if (!fromIndex || !toAddr || !amount) {
+                logMessage('Please fill in all fields', 'error', 'walletOutput');
+                return;
+            }
+            
+            const fromWallet = state.wallets[fromIndex];
+            const amountSatoshis = BTCToSatoshis(amount);
+            const fee = 1000; // 1000 satoshis fee
+            
+            if (fromWallet.balance < amountSatoshis + fee) {
+                logMessage('Insufficient balance', 'error', 'walletOutput');
+                return;
+            }
+            
+            // Update balance
+            fromWallet.balance -= (amountSatoshis + fee);
+            
+            const txHash = randomHash();
+            logMessage(`✅ Transaction sent successfully!`, 'success', 'walletOutput');
+            logMessage(`🔗 TX Hash: ${txHash}`, 'info', 'walletOutput');
+            logMessage(`📤 From: ${fromWallet.address}`, 'info', 'walletOutput');
+            logMessage(`📥 To: ${toAddr}`, 'info', 'walletOutput');
+            logMessage(`💸 Amount: ${amount} BTC`, 'info', 'walletOutput');
+            logMessage(`💰 Fee: ${formatBTC(fee)} BTC`, 'info', 'walletOutput');
+            
+            renderWallets();
+            updateWalletStats();
+        }
+
+        // Fee calculation functions
+        function updateFeeRate() {
+            const priority = document.getElementById('priority').value;
+            const rates = {
+                low: 5,
+                medium: 20,
+                high: 50,
+                urgent: 100
+            };
+            document.getElementById('feeRate').value = rates[priority];
+        }
+
+        function calculateTxSize() {
+            const inputs = parseInt(document.getElementById('inputCount').value);
+            const outputs = parseInt(document.getElementById('outputCount').value);
+            
+            // Simplified size calculation
+            const baseSize = 10; // Version + locktime
+            const inputSize = 148; // Average input size
+            const outputSize = 34; // Average output size
+            
+            const totalSize = baseSize + (inputs * inputSize) + (outputs * outputSize);
+            document.getElementById('txSize').value = totalSize;
+        }
+
+        function calculateFee() {
+            const txSize = parseInt(document.getElementById('txSize').value);
+            const feeRate = parseInt(document.getElementById('feeRate').value);
+            
+            const feeSatoshis = txSize * feeRate;
+            const feeBTC = satoshisToBTC(feeSatoshis);
+            
+            document.getElementById('calculatedFee').textContent = feeSatoshis.toLocaleString();
+            document.getElementById('calculatedFeeBTC').textContent = feeBTC.toFixed(8);
+            
+            // Calculate percentage (assuming 0.01 BTC transaction)
+            const percentage = (feeBTC / 0.01) * 100;
+            document.getElementById('feePercentage').textContent = percentage.toFixed(2) + '%';
+            
+            // Estimate confirmation time
+            const priority = document.getElementById('priority').value;
+            const times = {
+                low: '~30-60 min',
+                medium: '~20-30 min',
+                high: '~10-20 min',
+                urgent: '~5-10 min'
+            };
+            document.getElementById('confirmationTime').textContent = times[priority];
+            
+            logMessage(`💰 Fee calculated: ${feeSatoshis.toLocaleString()} satoshis (${feeBTC.toFixed(8)} BTC)`, 'success', 'feeOutput');
+            logMessage(`📊 Fee rate: ${feeRate} sat/byte`, 'info', 'feeOutput');
+            logMessage(`📏 Transaction size: ${txSize} bytes`, 'info', 'feeOutput');
+            
+            // Generate fee comparison
+            generateFeeComparison(txSize);
+        }
+
+        function generateFeeComparison(txSize) {
+            const priorities = [
+                { name: 'Low Priority', rate: 5, time: '30-60 min' },
+                { name: 'Medium Priority', rate: 20, time: '20-30 min' },
+                { name: 'High Priority', rate: 50, time: '10-20 min' },
+                { name: 'Urgent', rate: 100, time: '5-10 min' }
+            ];
+            
+            const comparison = document.getElementById('feeComparison');
+            comparison.innerHTML = '';
+            
+            priorities.forEach(priority => {
+                const fee = txSize * priority.rate;
+                const feeBTC = satoshisToBTC(fee);
+                
+                const compDiv = document.createElement('div');
+                compDiv.className = 'card';
+                compDiv.innerHTML = `
+                    <h4>${priority.name}</h4>
+                    <p><strong>Fee:</strong> ${fee.toLocaleString()} sat (${feeBTC.toFixed(8)} BTC)</p>
+                    <p><strong>Rate:</strong> ${priority.rate} sat/byte</p>
+                    <p><strong>Est. Time:</strong> ${priority.time}</p>
+                `;
+                comparison.appendChild(compDiv);
+            });
+        }
+
+        function optimizeFee() {
+            const inputs = parseInt(document.getElementById('inputCount').value);
+            const outputs = parseInt(document.getElementById('outputCount').value);
+            
+            // Suggest optimizations
+            let suggestions = [];
+            
+            if (inputs > 5) {
+                suggestions.push('Consider consolidating UTXOs to reduce input count');
+            }
+            
+            if (outputs > 2) {
+                suggestions.push('Minimize the number of outputs if possible');
+            }
+            
+            suggestions.push('Use SegWit addresses to reduce transaction size');
+            suggestions.push('Consider batching multiple payments into one transaction');
+            
+            logMessage('🔧 Fee Optimization Suggestions:', 'info', 'feeOutput');
+            suggestions.forEach(suggestion => {
+                logMessage(`• ${suggestion}`, 'info', 'feeOutput');
+            });
+            
+            // Calculate optimized size
+            const optimizedSize = Math.max(150, parseInt(document.getElementById('txSize').value) * 0.7);
+            logMessage(`📉 Potential size reduction: ${optimizedSize} bytes`, 'success', 'feeOutput');
+        }
+
+        // Initialize the simulator
+        function initializeSimulator() {
+            // Set default values
+            generateSampleTransaction();
+            calculateTxSize();
+            updateFeeRate();
+            
+            // Generate initial data
+            generateUTXOs();
+            
+            logMessage('🚀 Bitcoin Simulator initialized successfully!', 'success');
+            logMessage('Navigate through the tabs to explore different Bitcoin concepts', 'info');
+        }
+
+        // Start the simulator when page loads
+        document.addEventListener('DOMContentLoaded', initializeSimulator);
+    </script>
+</body>
+</html>

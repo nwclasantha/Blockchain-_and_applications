@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain & Technology Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .sector-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sector-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .sector-button.active {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: #333;
+            font-weight: bold;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .sector-content {
+            display: none;
+        }
+
+        .sector-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sector-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .sector-header h2 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .sector-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .simulation-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .simulation-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .simulation-panel h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+        }
+
+        .results-panel {
+            grid-column: 1 / -1;
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            margin-top: 20px;
+        }
+
+        .results-panel h3 {
+            color: #495057;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 10px;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .metric-card h4 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .metric-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            transition: width 1s ease;
+        }
+
+        .transaction-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success { background: #28a745; }
+        .status-pending { background: #ffc107; }
+        .status-error { background: #dc3545; }
+
+        .network-graph {
+            width: 100%;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            transform: scale(1.2);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: #667eea;
+            transform-origin: left center;
+            opacity: 0.6;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .simulation-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Blockchain & Technology Simulator</h1>
+            <p>Experience the future of decentralized applications across multiple industries</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <h3>Technology Sectors</h3>
+                <button class="sector-button active" data-sector="cryptocurrency">10.1 Beyond Cryptocurrency</button>
+                <button class="sector-button" data-sector="fintech">10.2 Financial Services (FinTech)</button>
+                <button class="sector-button" data-sector="supply-chain">10.3 Supply Chain Management</button>
+                <button class="sector-button" data-sector="healthcare">10.4 Healthcare</button>
+                <button class="sector-button" data-sector="government">10.5 Government and Public Sector</button>
+                <button class="sector-button" data-sector="iot">10.6 Internet of Things (IoT)</button>
+                <button class="sector-button" data-sector="digital-identity">10.7 Digital Identity</button>
+                <button class="sector-button" data-sector="energy">10.8 Energy Sector</button>
+                <button class="sector-button" data-sector="nft">10.9 NFTs and Digital Art</button>
+            </div>
+
+            <div class="main-content">
+                <!-- Cryptocurrency Sector -->
+                <div class="sector-content active" id="cryptocurrency">
+                    <div class="sector-header">
+                        <h2>Beyond Cryptocurrency</h2>
+                        <p>Explore advanced blockchain applications beyond traditional digital currencies, including smart contracts, DeFi protocols, and decentralized governance systems.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>DeFi Protocol Simulator</h3>
+                            <div class="input-group">
+                                <label>Liquidity Amount (ETH)</label>
+                                <input type="number" id="defi-amount" value="10" min="0.1" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Pool Type</label>
+                                <select id="defi-pool">
+                                    <option value="eth-usdc">ETH/USDC</option>
+                                    <option value="eth-dai">ETH/DAI</option>
+                                    <option value="btc-eth">BTC/ETH</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="simulateDeFi()">Provide Liquidity</button>
+                            
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="defi-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Smart Contract Execution</h3>
+                            <div class="input-group">
+                                <label>Contract Function</label>
+                                <select id="contract-function">
+                                    <option value="transfer">Token Transfer</option>
+                                    <option value="mint">NFT Minting</option>
+                                    <option value="vote">Governance Vote</option>
+                                    <option value="stake">Token Staking</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Gas Limit</label>
+                                <input type="number" id="gas-limit" value="21000" min="21000" step="1000">
+                            </div>
+                            <button class="btn btn-success" onclick="executeContract()">Execute Contract</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>DeFi Analytics Dashboard</h3>
+                        <div id="crypto-metrics">
+                            <div class="metric-card">
+                                <h4 id="tvl-value">$0</h4>
+                                <p>Total Value Locked</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="apy-value">0%</h4>
+                                <p>Current APY</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="transactions-value">0</h4>
+                                <p>Transactions</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="crypto-log"></div>
+                    </div>
+                </div>
+
+                <!-- FinTech Sector -->
+                <div class="sector-content" id="fintech">
+                    <div class="sector-header">
+                        <h2>Financial Services (FinTech)</h2>
+                        <p>Revolutionary financial services powered by blockchain technology, including cross-border payments, decentralized lending, and algorithmic trading.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Cross-Border Payment</h3>
+                            <div class="input-group">
+                                <label>Send Amount</label>
+                                <input type="number" id="payment-amount" value="1000" min="1">
+                            </div>
+                            <div class="input-group">
+                                <label>From Currency</label>
+                                <select id="from-currency">
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>To Currency</label>
+                                <select id="to-currency">
+                                    <option value="EUR">EUR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="processPayment()">Send Payment</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Lending Protocol</h3>
+                            <div class="input-group">
+                                <label>Collateral Amount</label>
+                                <input type="number" id="collateral-amount" value="5000" min="100">
+                            </div>
+                            <div class="input-group">
+                                <label>Loan Duration (days)</label>
+                                <input type="number" id="loan-duration" value="30" min="7" max="365">
+                            </div>
+                            <div class="input-group">
+                                <label>Interest Rate (%)</label>
+                                <input type="number" id="interest-rate" value="5.5" min="1" max="20" step="0.1">
+                            </div>
+                            <button class="btn btn-warning" onclick="createLoan()">Create Loan</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>FinTech Metrics</h3>
+                        <div id="fintech-metrics">
+                            <div class="metric-card">
+                                <h4 id="payment-volume">$0</h4>
+                                <p>Payment Volume</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="loan-pool">$0</h4>
+                                <p>Loan Pool</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="savings-rate">0%</h4>
+                                <p>Savings Rate</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="fintech-log"></div>
+                    </div>
+                </div>
+
+                <!-- Supply Chain Sector -->
+                <div class="sector-content" id="supply-chain">
+                    <div class="sector-header">
+                        <h2>Supply Chain Management</h2>
+                        <p>Transparent and traceable supply chains using blockchain technology to ensure authenticity, reduce fraud, and optimize logistics.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Product Tracking</h3>
+                            <div class="input-group">
+                                <label>Product Type</label>
+                                <select id="product-type">
+                                    <option value="food">Food Item</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="pharmaceutical">Pharmaceutical</option>
+                                    <option value="luxury">Luxury Goods</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Origin Location</label>
+                                <input type="text" id="origin-location" value="Factory A, Shanghai">
+                            </div>
+                            <div class="input-group">
+                                <label>Destination</label>
+                                <input type="text" id="destination" value="Warehouse B, New York">
+                            </div>
+                            <button class="btn" onclick="trackProduct()">Start Tracking</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Quality Verification</h3>
+                            <div class="input-group">
+                                <label>Batch ID</label>
+                                <input type="text" id="batch-id" value="BATCH001" readonly>
+                            </div>
+                            <div class="input-group">
+                                <label>Temperature (°C)</label>
+                                <input type="number" id="temperature" value="22" min="-20" max="50">
+                            </div>
+                            <div class="input-group">
+                                <label>Humidity (%)</label>
+                                <input type="number" id="humidity" value="45" min="0" max="100">
+                            </div>
+                            <button class="btn btn-success" onclick="verifyQuality()">Verify Quality</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>Supply Chain Network</h3>
+                        <div class="network-graph" id="supply-network">
+                            <!-- Dynamic network visualization will be generated here -->
+                        </div>
+                        <div class="transaction-log" id="supply-log"></div>
+                    </div>
+                </div>
+
+                <!-- Healthcare Sector -->
+                <div class="sector-content" id="healthcare">
+                    <div class="sector-header">
+                        <h2>Healthcare</h2>
+                        <p>Secure patient data management, drug traceability, and clinical trial transparency using blockchain technology.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Patient Data Management</h3>
+                            <div class="input-group">
+                                <label>Patient ID</label>
+                                <input type="text" id="patient-id" value="PT-2025-001">
+                            </div>
+                            <div class="input-group">
+                                <label>Record Type</label>
+                                <select id="record-type">
+                                    <option value="diagnosis">Diagnosis</option>
+                                    <option value="prescription">Prescription</option>
+                                    <option value="lab-result">Lab Result</option>
+                                    <option value="surgery">Surgery</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Access Level</label>
+                                <select id="access-level">
+                                    <option value="patient">Patient Only</option>
+                                    <option value="doctor">Doctor</option>
+                                    <option value="hospital">Hospital</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="storeHealthRecord()">Store Record</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Drug Authentication</h3>
+                            <div class="input-group">
+                                <label>Drug Name</label>
+                                <input type="text" id="drug-name" value="Aspirin 100mg">
+                            </div>
+                            <div class="input-group">
+                                <label>Manufacturer</label>
+                                <input type="text" id="manufacturer" value="PharmaCorp Ltd">
+                            </div>
+                            <div class="input-group">
+                                <label>Batch Number</label>
+                                <input type="text" id="drug-batch" value="PC2025001">
+                            </div>
+                            <button class="btn btn-warning" onclick="authenticateDrug()">Authenticate</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>Healthcare Metrics</h3>
+                        <div id="healthcare-metrics">
+                            <div class="metric-card">
+                                <h4 id="records-stored">0</h4>
+                                <p>Records Stored</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="drugs-verified">0</h4>
+                                <p>Drugs Verified</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="compliance-rate">100%</h4>
+                                <p>Compliance Rate</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="healthcare-log"></div>
+                    </div>
+                </div>
+
+                <!-- Government Sector -->
+                <div class="sector-content" id="government">
+                    <div class="sector-header">
+                        <h2>Government and Public Sector</h2>
+                        <p>Transparent governance, secure voting systems, and efficient public service delivery through blockchain technology.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Digital Voting System</h3>
+                            <div class="input-group">
+                                <label>Voter ID</label>
+                                <input type="text" id="voter-id" value="VOTER2025001">
+                            </div>
+                            <div class="input-group">
+                                <label>Election Type</label>
+                                <select id="election-type">
+                                    <option value="presidential">Presidential</option>
+                                    <option value="parliamentary">Parliamentary</option>
+                                    <option value="local">Local Council</option>
+                                    <option value="referendum">Referendum</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Candidate/Option</label>
+                                <select id="vote-option">
+                                    <option value="candidate-a">Candidate A</option>
+                                    <option value="candidate-b">Candidate B</option>
+                                    <option value="candidate-c">Candidate C</option>
+                                    <option value="abstain">Abstain</option>
+                                </select>
+                            </div>
+                            <button class="btn" onclick="castVote()">Cast Vote</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Public Service Request</h3>
+                            <div class="input-group">
+                                <label>Service Type</label>
+                                <select id="service-type">
+                                    <option value="permit">Building Permit</option>
+                                    <option value="license">Business License</option>
+                                    <option value="certificate">Birth Certificate</option>
+                                    <option value="tax">Tax Filing</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Citizen ID</label>
+                                <input type="text" id="citizen-id" value="CIT2025001">
+                            </div>
+                            <div class="input-group">
+                                <label>Priority Level</label>
+                                <select id="priority-level">
+                                    <option value="standard">Standard</option>
+                                    <option value="expedited">Expedited</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-success" onclick="submitServiceRequest()">Submit Request</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>Government Dashboard</h3>
+                        <div id="government-metrics">
+                            <div class="metric-card">
+                                <h4 id="votes-cast">0</h4>
+                                <p>Votes Cast</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="services-processed">0</h4>
+                                <p>Services Processed</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="transparency-score">95%</h4>
+                                <p>Transparency Score</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="government-log"></div>
+                    </div>
+                </div>
+
+                <!-- IoT Sector -->
+                <div class="sector-content" id="iot">
+                    <div class="sector-header">
+                        <h2>Internet of Things (IoT)</h2>
+                        <p>Secure device communication, data integrity, and automated smart contracts for IoT ecosystems.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>IoT Device Management</h3>
+                            <div class="input-group">
+                                <label>Device Type</label>
+                                <select id="device-type">
+                                    <option value="sensor">Temperature Sensor</option>
+                                    <option value="camera">Security Camera</option>
+                                    <option value="actuator">Smart Actuator</option>
+                                    <option value="meter">Smart Meter</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Device ID</label>
+                                <input type="text" id="device-id" value="IOT-DEV-001">
+                            </div>
+                            <div class="input-group">
+                                <label>Data Value</label>
+                                <input type="number" id="sensor-value" value="23.5" step="0.1">
+                            </div>
+                            <button class="btn" onclick="sendIoTData()">Send Data</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Smart Contract Automation</h3>
+                            <div class="input-group">
+                                <label>Trigger Condition</label>
+                                <select id="trigger-condition">
+                                    <option value="temperature">Temperature > 30°C</option>
+                                    <option value="motion">Motion Detected</option>
+                                    <option value="humidity">Humidity < 40%</option>
+                                    <option value="power">Power Usage > 100W</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Action</label>
+                                <select id="automation-action">
+                                    <option value="alert">Send Alert</option>
+                                    <option value="adjust">Adjust Settings</option>
+                                    <option value="shutdown">Emergency Shutdown</option>
+                                    <option value="record">Record Event</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-warning" onclick="configureAutomation()">Configure</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>IoT Network Status</h3>
+                        <div class="network-graph" id="iot-network">
+                            <!-- IoT device network visualization -->
+                        </div>
+                        <div id="iot-metrics">
+                            <div class="metric-card">
+                                <h4 id="active-devices">0</h4>
+                                <p>Active Devices</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="data-points">0</h4>
+                                <p>Data Points</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="automations-triggered">0</h4>
+                                <p>Automations Triggered</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="iot-log"></div>
+                    </div>
+                </div>
+
+                <!-- Digital Identity Sector -->
+                <div class="sector-content" id="digital-identity">
+                    <div class="sector-header">
+                        <h2>Digital Identity</h2>
+                        <p>Self-sovereign identity solutions, credential verification, and privacy-preserving authentication systems.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Identity Creation</h3>
+                            <div class="input-group">
+                                <label>Identity Type</label>
+                                <select id="identity-type">
+                                    <option value="personal">Personal ID</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="academic">Academic</option>
+                                    <option value="corporate">Corporate</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Name</label>
+                                <input type="text" id="identity-name" value="John Doe">
+                            </div>
+                            <div class="input-group">
+                                <label>Issuing Authority</label>
+                                <input type="text" id="issuing-authority" value="Government of Techland">
+                            </div>
+                            <button class="btn" onclick="createIdentity()">Create Identity</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Credential Verification</h3>
+                            <div class="input-group">
+                                <label>Credential ID</label>
+                                <input type="text" id="credential-id" value="CRED-2025-001">
+                            </div>
+                            <div class="input-group">
+                                <label>Verification Level</label>
+                                <select id="verification-level">
+                                    <option value="basic">Basic Check</option>
+                                    <option value="enhanced">Enhanced</option>
+                                    <option value="biometric">Biometric</option>
+                                    <option value="multi-factor">Multi-Factor</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-success" onclick="verifyCredential()">Verify</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>Identity Management Dashboard</h3>
+                        <div id="identity-metrics">
+                            <div class="metric-card">
+                                <h4 id="identities-created">0</h4>
+                                <p>Identities Created</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="verifications-completed">0</h4>
+                                <p>Verifications</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="trust-score">98%</h4>
+                                <p>Trust Score</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="identity-log"></div>
+                    </div>
+                </div>
+
+                <!-- Energy Sector -->
+                <div class="sector-content" id="energy">
+                    <div class="sector-header">
+                        <h2>Energy Sector</h2>
+                        <p>Peer-to-peer energy trading, renewable energy certificates, and smart grid management using blockchain technology.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>Energy Trading</h3>
+                            <div class="input-group">
+                                <label>Energy Amount (kWh)</label>
+                                <input type="number" id="energy-amount" value="100" min="1">
+                            </div>
+                            <div class="input-group">
+                                <label>Energy Source</label>
+                                <select id="energy-source">
+                                    <option value="solar">Solar Panel</option>
+                                    <option value="wind">Wind Turbine</option>
+                                    <option value="hydro">Hydroelectric</option>
+                                    <option value="grid">Grid Power</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Price per kWh ($)</label>
+                                <input type="number" id="energy-price" value="0.12" step="0.01" min="0.01">
+                            </div>
+                            <button class="btn" onclick="tradeEnergy()">Trade Energy</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>Carbon Credit Management</h3>
+                            <div class="input-group">
+                                <label>Credit Type</label>
+                                <select id="carbon-credit-type">
+                                    <option value="renewable">Renewable Energy</option>
+                                    <option value="forestry">Forestry</option>
+                                    <option value="efficiency">Energy Efficiency</option>
+                                    <option value="capture">Carbon Capture</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>CO2 Offset (tons)</label>
+                                <input type="number" id="co2-offset" value="10" min="1">
+                            </div>
+                            <button class="btn btn-success" onclick="generateCarbonCredit()">Generate Credit</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>Energy Grid Dashboard</h3>
+                        <div id="energy-metrics">
+                            <div class="metric-card">
+                                <h4 id="energy-traded">0 kWh</h4>
+                                <p>Energy Traded</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="carbon-credits">0</h4>
+                                <p>Carbon Credits</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="renewable-percentage">0%</h4>
+                                <p>Renewable %</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="energy-log"></div>
+                    </div>
+                </div>
+
+                <!-- NFT Sector -->
+                <div class="sector-content" id="nft">
+                    <div class="sector-header">
+                        <h2>NFTs and Digital Art</h2>
+                        <p>Create, trade, and authenticate unique digital assets including art, collectibles, and intellectual property rights.</p>
+                    </div>
+                    
+                    <div class="simulation-area">
+                        <div class="simulation-panel">
+                            <h3>NFT Creation</h3>
+                            <div class="input-group">
+                                <label>Asset Type</label>
+                                <select id="nft-type">
+                                    <option value="artwork">Digital Artwork</option>
+                                    <option value="music">Music Track</option>
+                                    <option value="video">Video Content</option>
+                                    <option value="collectible">Collectible</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Title</label>
+                                <input type="text" id="nft-title" value="Cosmic Dreams #001">
+                            </div>
+                            <div class="input-group">
+                                <label>Creator</label>
+                                <input type="text" id="nft-creator" value="ArtistName">
+                            </div>
+                            <div class="input-group">
+                                <label>Initial Price (ETH)</label>
+                                <input type="number" id="nft-price" value="0.5" step="0.1" min="0.1">
+                            </div>
+                            <button class="btn" onclick="mintNFT()">Mint NFT</button>
+                        </div>
+                        
+                        <div class="simulation-panel">
+                            <h3>NFT Trading</h3>
+                            <div class="input-group">
+                                <label>NFT ID</label>
+                                <input type="text" id="trade-nft-id" value="NFT-001" readonly>
+                            </div>
+                            <div class="input-group">
+                                <label>Trade Type</label>
+                                <select id="trade-type">
+                                    <option value="buy">Buy Now</option>
+                                    <option value="auction">Start Auction</option>
+                                    <option value="offer">Make Offer</option>
+                                    <option value="transfer">Transfer</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Amount (ETH)</label>
+                                <input type="number" id="trade-amount" value="1.0" step="0.1" min="0.1">
+                            </div>
+                            <button class="btn btn-warning" onclick="tradeNFT()">Execute Trade</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-panel">
+                        <h3>NFT Marketplace Analytics</h3>
+                        <div id="nft-metrics">
+                            <div class="metric-card">
+                                <h4 id="nfts-minted">0</h4>
+                                <p>NFTs Minted</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="total-volume">0 ETH</h4>
+                                <p>Trading Volume</p>
+                            </div>
+                            <div class="metric-card">
+                                <h4 id="floor-price">0 ETH</h4>
+                                <p>Floor Price</p>
+                            </div>
+                        </div>
+                        <div class="transaction-log" id="nft-log"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        let globalState = {
+            cryptocurrency: {
+                tvl: 0,
+                apy: 8.5,
+                transactions: 0,
+                logs: []
+            },
+            fintech: {
+                paymentVolume: 0,
+                loanPool: 0,
+                savingsRate: 4.2,
+                logs: []
+            },
+            supplyChain: {
+                trackingRequests: 0,
+                qualityChecks: 0,
+                logs: []
+            },
+            healthcare: {
+                recordsStored: 0,
+                drugsVerified: 0,
+                complianceRate: 100,
+                logs: []
+            },
+            government: {
+                votesCast: 0,
+                servicesProcessed: 0,
+                transparencyScore: 95,
+                logs: []
+            },
+            iot: {
+                activeDevices: 0,
+                dataPoints: 0,
+                automationsTriggered: 0,
+                logs: []
+            },
+            identity: {
+                identitiesCreated: 0,
+                verificationsCompleted: 0,
+                trustScore: 98,
+                logs: []
+            },
+            energy: {
+                energyTraded: 0,
+                carbonCredits: 0,
+                renewablePercentage: 0,
+                logs: []
+            },
+            nft: {
+                nftsMinted: 0,
+                totalVolume: 0,
+                floorPrice: 0.5,
+                logs: []
+            }
+        };
+
+        // Utility functions
+        function generateTransactionHash() {
+            return '0x' + Math.random().toString(16).substr(2, 8);
+        }
+
+        function addToLog(sector, message, status = 'success') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                hash: generateTransactionHash(),
+                status: status
+            };
+            
+            globalState[sector].logs.unshift(logEntry);
+            if (globalState[sector].logs.length > 10) {
+                globalState[sector].logs.pop();
+            }
+            
+            updateTransactionLog(sector);
+        }
+
+        function updateTransactionLog(sector) {
+            const logElement = document.getElementById(`${sector}-log`);
+            if (!logElement) return;
+            
+            logElement.innerHTML = globalState[sector].logs.map(log => 
+                `<div class="transaction-item">
+                    <span class="status-indicator status-${log.status}"></span>
+                    [${log.time}] ${log.message} - ${log.hash}
+                </div>`
+            ).join('');
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const container = document.querySelector('.main-content');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        function animateProgress(elementId, targetPercent) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            let current = 0;
+            const increment = targetPercent / 20;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= targetPercent) {
+                    current = targetPercent;
+                    clearInterval(timer);
+                }
+                element.style.width = current + '%';
+            }, 50);
+        }
+
+        // Sector switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sectorButtons = document.querySelectorAll('.sector-button');
+            const sectorContents = document.querySelectorAll('.sector-content');
+
+            sectorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetSector = this.getAttribute('data-sector');
+                    
+                    // Update button states
+                    sectorButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update content visibility
+                    sectorContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    const targetContent = document.getElementById(targetSector);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Initialize network visualizations
+            initializeNetworkGraphs();
+            
+            // Load initial data
+            updateAllMetrics();
+        });
+
+        // Cryptocurrency functions
+        function simulateDeFi() {
+            const amount = parseFloat(document.getElementById('defi-amount').value);
+            const pool = document.getElementById('defi-pool').value;
+            
+            if (amount < 0.1) {
+                showAlert('Minimum liquidity amount is 0.1 ETH', 'error');
+                return;
+            }
+            
+            globalState.cryptocurrency.tvl += amount * 2000; // Assuming 1 ETH = $2000
+            globalState.cryptocurrency.transactions++;
+            
+            animateProgress('defi-progress', 100);
+            
+            addToLog('cryptocurrency', `Added ${amount} ETH to ${pool} pool`);
+            updateCryptoMetrics();
+            
+            showAlert(`Successfully provided liquidity to ${pool} pool!`);
+        }
+
+        function executeContract() {
+            const func = document.getElementById('contract-function').value;
+            const gasLimit = parseInt(document.getElementById('gas-limit').value);
+            
+            globalState.cryptocurrency.transactions++;
+            
+            const functions = {
+                'transfer': 'Token transfer completed',
+                'mint': 'NFT minted successfully',
+                'vote': 'Governance vote submitted',
+                'stake': 'Tokens staked for rewards'
+            };
+            
+            addToLog('cryptocurrency', functions[func] || 'Contract executed');
+            updateCryptoMetrics();
+            
+            showAlert(`Smart contract executed: ${functions[func]}`);
+        }
+
+        function updateCryptoMetrics() {
+            document.getElementById('tvl-value').textContent = '$' + globalState.cryptocurrency.tvl.toLocaleString();
+            document.getElementById('apy-value').textContent = globalState.cryptocurrency.apy.toFixed(1) + '%';
+            document.getElementById('transactions-value').textContent = globalState.cryptocurrency.transactions;
+        }
+
+        // FinTech functions
+        function processPayment() {
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const fromCurrency = document.getElementById('from-currency').value;
+            const toCurrency = document.getElementById('to-currency').value;
+            
+            if (amount < 1) {
+                showAlert('Minimum payment amount is 1', 'error');
+                return;
+            }
+            
+            globalState.fintech.paymentVolume += amount;
+            
+            addToLog('fintech', `Cross-border payment: ${amount} ${fromCurrency} → ${toCurrency}`);
+            updateFintechMetrics();
+            
+            showAlert(`Payment of ${amount} ${fromCurrency} sent successfully!`);
+        }
+
+        function createLoan() {
+            const collateral = parseFloat(document.getElementById('collateral-amount').value);
+            const duration = parseInt(document.getElementById('loan-duration').value);
+            const rate = parseFloat(document.getElementById('interest-rate').value);
+            
+            const loanAmount = collateral * 0.75; // 75% LTV ratio
+            globalState.fintech.loanPool += loanAmount;
+            
+            addToLog('fintech', `Loan created: $${loanAmount.toLocaleString()} for ${duration} days at ${rate}%`);
+            updateFintechMetrics();
+            
+            showAlert(`Loan approved: $${loanAmount.toLocaleString()}`);
+        }
+
+        function updateFintechMetrics() {
+            document.getElementById('payment-volume').textContent = '$' + globalState.fintech.paymentVolume.toLocaleString();
+            document.getElementById('loan-pool').textContent = '$' + globalState.fintech.loanPool.toLocaleString();
+            document.getElementById('savings-rate').textContent = globalState.fintech.savingsRate.toFixed(1) + '%';
+        }
+
+        // Supply Chain functions
+        function trackProduct() {
+            const productType = document.getElementById('product-type').value;
+            const origin = document.getElementById('origin-location').value;
+            const destination = document.getElementById('destination').value;
+            
+            globalState.supplyChain.trackingRequests++;
+            
+            addToLog('supply-chain', `Tracking ${productType} from ${origin} to ${destination}`);
+            
+            showAlert(`Product tracking initiated successfully!`);
+        }
+
+        function verifyQuality() {
+            const batchId = document.getElementById('batch-id').value;
+            const temp = parseFloat(document.getElementById('temperature').value);
+            const humidity = parseFloat(document.getElementById('humidity').value);
+            
+            globalState.supplyChain.qualityChecks++;
+            
+            const status = (temp >= -5 && temp <= 35 && humidity >= 30 && humidity <= 70) ? 'passed' : 'failed';
+            
+            addToLog('supply-chain', `Quality check for ${batchId}: ${status.toUpperCase()}`);
+            
+            showAlert(`Quality verification ${status}!`, status === 'passed' ? 'success' : 'warning');
+        }
+
+        // Healthcare functions
+        function storeHealthRecord() {
+            const patientId = document.getElementById('patient-id').value;
+            const recordType = document.getElementById('record-type').value;
+            const accessLevel = document.getElementById('access-level').value;
+            
+            globalState.healthcare.recordsStored++;
+            
+            addToLog('healthcare', `Health record stored: ${recordType} for ${patientId} (${accessLevel} access)`);
+            updateHealthcareMetrics();
+            
+            showAlert('Health record stored securely!');
+        }
+
+        function authenticateDrug() {
+            const drugName = document.getElementById('drug-name').value;
+            const manufacturer = document.getElementById('manufacturer').value;
+            const batch = document.getElementById('drug-batch').value;
+            
+            globalState.healthcare.drugsVerified++;
+            
+            addToLog('healthcare', `Drug authenticated: ${drugName} (${batch}) by ${manufacturer}`);
+            updateHealthcareMetrics();
+            
+            showAlert('Drug authentication completed!');
+        }
+
+        function updateHealthcareMetrics() {
+            document.getElementById('records-stored').textContent = globalState.healthcare.recordsStored;
+            document.getElementById('drugs-verified').textContent = globalState.healthcare.drugsVerified;
+            document.getElementById('compliance-rate').textContent = globalState.healthcare.complianceRate + '%';
+        }
+
+        // Government functions
+        function castVote() {
+            const voterId = document.getElementById('voter-id').value;
+            const electionType = document.getElementById('election-type').value;
+            const option = document.getElementById('vote-option').value;
+            
+            globalState.government.votesCast++;
+            
+            addToLog('government', `Vote cast in ${electionType} election by ${voterId}`);
+            updateGovernmentMetrics();
+            
+            showAlert('Vote cast successfully and recorded on blockchain!');
+        }
+
+        function submitServiceRequest() {
+            const serviceType = document.getElementById('service-type').value;
+            const citizenId = document.getElementById('citizen-id').value;
+            const priority = document.getElementById('priority-level').value;
+            
+            globalState.government.servicesProcessed++;
+            
+            addToLog('government', `Service request: ${serviceType} by ${citizenId} (${priority})`);
+            updateGovernmentMetrics();
+            
+            showAlert('Service request submitted successfully!');
+        }
+
+        function updateGovernmentMetrics() {
+            document.getElementById('votes-cast').textContent = globalState.government.votesCast;
+            document.getElementById('services-processed').textContent = globalState.government.servicesProcessed;
+            document.getElementById('transparency-score').textContent = globalState.government.transparencyScore + '%';
+        }
+
+        // IoT functions
+        function sendIoTData() {
+            const deviceType = document.getElementById('device-type').value;
+            const deviceId = document.getElementById('device-id').value;
+            const value = parseFloat(document.getElementById('sensor-value').value);
+            
+            globalState.iot.dataPoints++;
+            if (globalState.iot.activeDevices < 10) {
+                globalState.iot.activeDevices++;
+            }
+            
+            addToLog('iot', `Data from ${deviceType} ${deviceId}: ${value}`);
+            updateIoTMetrics();
+            
+            showAlert('IoT data transmitted and recorded!');
+        }
+
+        function configureAutomation() {
+            const condition = document.getElementById('trigger-condition').value;
+            const action = document.getElementById('automation-action').value;
+            
+            globalState.iot.automationsTriggered++;
+            
+            addToLog('iot', `Automation configured: ${condition} → ${action}`);
+            updateIoTMetrics();
+            
+            showAlert('Smart contract automation configured!');
+        }
+
+        function updateIoTMetrics() {
+            document.getElementById('active-devices').textContent = globalState.iot.activeDevices;
+            document.getElementById('data-points').textContent = globalState.iot.dataPoints;
+            document.getElementById('automations-triggered').textContent = globalState.iot.automationsTriggered;
+        }
+
+        // Digital Identity functions
+        function createIdentity() {
+            const identityType = document.getElementById('identity-type').value;
+            const name = document.getElementById('identity-name').value;
+            const authority = document.getElementById('issuing-authority').value;
+            
+            globalState.identity.identitiesCreated++;
+            
+            addToLog('digital-identity', `Identity created: ${identityType} for ${name} by ${authority}`);
+            updateIdentityMetrics();
+            
+            showAlert('Digital identity created successfully!');
+        }
+
+        function verifyCredential() {
+            const credentialId = document.getElementById('credential-id').value;
+            const level = document.getElementById('verification-level').value;
+            
+            globalState.identity.verificationsCompleted++;
+            
+            addToLog('digital-identity', `Credential verified: ${credentialId} (${level} verification)`);
+            updateIdentityMetrics();
+            
+            showAlert('Credential verification completed!');
+        }
+
+        function updateIdentityMetrics() {
+            document.getElementById('identities-created').textContent = globalState.identity.identitiesCreated;
+            document.getElementById('verifications-completed').textContent = globalState.identity.verificationsCompleted;
+            document.getElementById('trust-score').textContent = globalState.identity.trustScore + '%';
+        }
+
+        // Energy functions
+        function tradeEnergy() {
+            const amount = parseFloat(document.getElementById('energy-amount').value);
+            const source = document.getElementById('energy-source').value;
+            const price = parseFloat(document.getElementById('energy-price').value);
+            
+            globalState.energy.energyTraded += amount;
+            
+            if (['solar', 'wind', 'hydro'].includes(source)) {
+                globalState.energy.renewablePercentage = Math.min(100, 
+                    (globalState.energy.renewablePercentage * (globalState.energy.energyTraded - amount) + amount * 100) / globalState.energy.energyTraded
+                );
+            }
+            
+            addToLog('energy', `Energy trade: ${amount} kWh from ${source} at $${price}/kWh`);
+            updateEnergyMetrics();
+            
+            showAlert('Energy trade completed successfully!');
+        }
+
+        function generateCarbonCredit() {
+            const creditType = document.getElementById('carbon-credit-type').value;
+            const offset = parseFloat(document.getElementById('co2-offset').value);
+            
+            globalState.energy.carbonCredits += offset;
+            
+            addToLog('energy', `Carbon credit generated: ${offset} tons CO2 (${creditType})`);
+            updateEnergyMetrics();
+            
+            showAlert(`Carbon credit for ${offset} tons CO2 generated!`);
+        }
+
+        function updateEnergyMetrics() {
+            document.getElementById('energy-traded').textContent = globalState.energy.energyTraded + ' kWh';
+            document.getElementById('carbon-credits').textContent = globalState.energy.carbonCredits;
+            document.getElementById('renewable-percentage').textContent = globalState.energy.renewablePercentage.toFixed(1) + '%';
+        }
+
+        // NFT functions
+        function mintNFT() {
+            const nftType = document.getElementById('nft-type').value;
+            const title = document.getElementById('nft-title').value;
+            const creator = document.getElementById('nft-creator').value;
+            const price = parseFloat(document.getElementById('nft-price').value);
+            
+            globalState.nft.nftsMinted++;
+            globalState.nft.totalVolume += price;
+            
+            // Update NFT ID for trading
+            document.getElementById('trade-nft-id').value = `NFT-${String(globalState.nft.nftsMinted).padStart(3, '0')}`;
+            
+            addToLog('nft', `NFT minted: "${title}" by ${creator} (${nftType})`);
+            updateNFTMetrics();
+            
+            showAlert(`NFT "${title}" minted successfully!`);
+        }
+
+        function tradeNFT() {
+            const nftId = document.getElementById('trade-nft-id').value;
+            const tradeType = document.getElementById('trade-type').value;
+            const amount = parseFloat(document.getElementById('trade-amount').value);
+            
+            globalState.nft.totalVolume += amount;
+            
+            const tradeTypes = {
+                'buy': 'Purchase completed',
+                'auction': 'Auction started',
+                'offer': 'Offer submitted',
+                'transfer': 'Transfer completed'
+            };
+            
+            addToLog('nft', `${tradeTypes[tradeType]}: ${nftId} for ${amount} ETH`);
+            updateNFTMetrics();
+            
+            showAlert(`NFT trade completed: ${tradeTypes[tradeType]}!`);
+        }
+
+        function updateNFTMetrics() {
+            document.getElementById('nfts-minted').textContent = globalState.nft.nftsMinted;
+            document.getElementById('total-volume').textContent = globalState.nft.totalVolume.toFixed(1) + ' ETH';
+            document.getElementById('floor-price').textContent = globalState.nft.floorPrice.toFixed(1) + ' ETH';
+        }
+
+        // Network graph initialization
+        function initializeNetworkGraphs() {
+            createSupplyChainNetwork();
+            createIoTNetwork();
+        }
+
+        function createSupplyChainNetwork() {
+            const container = document.getElementById('supply-network');
+            if (!container) return;
+            
+            // Create nodes
+            const nodes = [
+                {id: 'factory', x: 50, y: 150, label: 'F'},
+                {id: 'warehouse', x: 200, y: 100, label: 'W'},
+                {id: 'distributor', x: 350, y: 150, label: 'D'},
+                {id: 'retailer', x: 500, y: 200, label: 'R'}
+            ];
+            
+            nodes.forEach(node => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.style.left = node.x + 'px';
+                nodeElement.style.top = node.y + 'px';
+                nodeElement.textContent = node.label;
+                container.appendChild(nodeElement);
+            });
+        }
+
+        function createIoTNetwork() {
+            const container = document.getElementById('iot-network');
+            if (!container) return;
+            
+            // Create IoT device nodes
+            const devices = [
+                {id: 'sensor1', x: 100, y: 50, label: 'S1'},
+                {id: 'sensor2', x: 200, y: 80, label: 'S2'},
+                {id: 'gateway', x: 150, y: 150, label: 'GW'},
+                {id: 'controller', x: 250, y: 200, label: 'C'},
+                {id: 'actuator', x: 300, y: 100, label: 'A'}
+            ];
+            
+            devices.forEach(device => {
+                const deviceElement = document.createElement('div');
+                deviceElement.className = 'node';
+                deviceElement.style.left = device.x + 'px';
+                deviceElement.style.top = device.y + 'px';
+                deviceElement.textContent = device.label;
+                container.appendChild(deviceElement);
+            });
+        }
+
+        // Update all metrics on page load
+        function updateAllMetrics() {
+            updateCryptoMetrics();
+            updateFintechMetrics();
+            updateHealthcareMetrics();
+            updateGovernmentMetrics();
+            updateIoTMetrics();
+            updateIdentityMetrics();
+            updateEnergyMetrics();
+            updateNFTMetrics();
+        }
+    </script>
+</body>
+</html>

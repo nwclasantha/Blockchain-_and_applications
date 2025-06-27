@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Ecosystem Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0b2e 0%, #1a1b4b 50%, #2d1b69 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .simulator-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 320px;
+            grid-template-rows: 80px 1fr;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00d4ff, #ff00d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .network-status {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .main-area {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blockchain-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chain-container {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .block {
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .block.mining {
+            animation: mining 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes mining {
+            from { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            to { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        }
+
+        .block-number {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .block-hash {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .block-connector {
+            position: absolute;
+            top: 50%;
+            right: -17px;
+            width: 15px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateY(-50%);
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+
+        .control-button {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+        }
+
+        .control-button.danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .control-button.success {
+            background: linear-gradient(45deg, #00d4ff, #00a8cc);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .layer2-section {
+            margin-top: 30px;
+        }
+
+        .layer2-chain {
+            position: absolute;
+            top: 20%;
+            left: 50px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .layer2-block {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .nft-marketplace {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nft-item {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #ff00d4, #ff6b00);
+            border-radius: 8px;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .nft-item:hover {
+            transform: scale(1.1);
+        }
+
+        .defi-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .liquidity-pool {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .privacy-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(128, 0, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .privacy-layer.active {
+            opacity: 1;
+        }
+
+        .transaction-pool {
+            position: absolute;
+            top: 80%;
+            right: 50px;
+            width: 200px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pending-tx {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .network-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .network-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .network-btn.active {
+            background: linear-gradient(45deg, #00d4ff, #00a8cc);
+            border-color: #00d4ff;
+        }
+
+        .interop-bridge {
+            position: absolute;
+            top: 40%;
+            right: 100px;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff00d4, #00d4ff);
+            animation: bridge-pulse 2s infinite;
+        }
+
+        @keyframes bridge-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .cbdc-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .gas-tracker {
+            background: rgba(255, 100, 100, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+
+        .gas-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6464;
+        }
+    </style>
+</head>
+<body>
+    <div class="simulator-container">
+        <div class="header">
+            <div class="logo">⚡ BlockSim Advanced</div>
+            <div class="network-status">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span id="networkStatus">Mainnet Active</span>
+                </div>
+                <div class="status-item">
+                    <span>Block Height: <span id="blockHeight">823,456</span></span>
+                </div>
+                <div class="status-item">
+                    <span>TPS: <span id="tpsCounter">45.2</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="section-title">Network Control</div>
+                <div class="network-selector">
+                    <button class="network-btn active" data-network="mainnet">Main</button>
+                    <button class="network-btn" data-network="testnet">Test</button>
+                    <button class="network-btn" data-network="layer2">L2</button>
+                </div>
+                <button class="control-button" id="mineBlock">⛏️ Mine Block</button>
+                <button class="control-button success" id="sendTransaction">💸 Send Transaction</button>
+                <button class="control-button" id="togglePrivacy">🔐 Privacy Mode</button>
+                <button class="control-button" id="deployContract">📜 Deploy Contract</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Network Stats</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBlocks">1,247</div>
+                        <div class="stat-label">Total Blocks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTx">89,432</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="hashRate">2.4 TH/s</div>
+                        <div class="stat-label">Hash Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="difficulty">19.2T</div>
+                        <div class="stat-label">Difficulty</div>
+                    </div>
+                </div>
+
+                <div class="gas-tracker">
+                    <div>Current Gas Price</div>
+                    <div class="gas-price" id="gasPrice">42 Gwei</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">DeFi Protocols</div>
+                <button class="control-button" id="addLiquidity">💧 Add Liquidity</button>
+                <button class="control-button" id="stakeFunds">🔒 Stake Funds</button>
+                <button class="control-button" id="flashLoan">⚡ Flash Loan</button>
+            </div>
+        </div>
+
+        <div class="main-area">
+            <div class="cbdc-indicator" id="cbdcIndicator" style="display: none;">CBDC Active</div>
+            <div class="privacy-layer" id="privacyLayer"></div>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+            </div>
+
+            <div class="blockchain-canvas">
+                <div class="chain-container" id="chainContainer">
+                    <!-- Blocks will be generated here -->
+                </div>
+                <div class="layer2-chain" id="layer2Chain" style="display: none;">
+                    <!-- Layer 2 blocks -->
+                </div>
+                <div class="interop-bridge" id="interopBridge" style="display: none;"></div>
+            </div>
+
+            <div class="nft-marketplace">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">NFT Marketplace</div>
+                <div id="nftGrid">
+                    <!-- NFTs will be generated here -->
+                </div>
+                <button class="control-button" id="mintNFT" style="margin-top: 10px;">🎨 Mint NFT</button>
+            </div>
+
+            <div class="defi-panel">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">DeFi Dashboard</div>
+                <div class="liquidity-pool">
+                    <div>ETH/USDC Pool</div>
+                    <div style="font-size: 12px;">TVL: $2.4M</div>
+                </div>
+                <div class="liquidity-pool">
+                    <div>BTC/ETH Pool</div>
+                    <div style="font-size: 12px;">TVL: $8.7M</div>
+                </div>
+            </div>
+
+            <div class="transaction-pool">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Mempool</div>
+                <div id="pendingTransactions">
+                    <!-- Pending transactions -->
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="section-title">Layer 2 Solutions</div>
+                <button class="control-button" id="toggleLayer2">🚀 Toggle L2</button>
+                <button class="control-button" id="rollupBatch">📦 Submit Rollup</button>
+                <button class="control-button" id="stateChannel">🔄 Open Channel</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Interoperability</div>
+                <button class="control-button" id="crossChain">🌉 Cross-Chain TX</button>
+                <button class="control-button" id="atomicSwap">🔄 Atomic Swap</button>
+                <button class="control-button" id="bridgeAssets">🌊 Bridge Assets</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Enterprise Features</div>
+                <button class="control-button" id="permissionedMode">🏢 Enterprise Mode</button>
+                <button class="control-button" id="regulatoryReport">📊 Compliance Report</button>
+                <button class="control-button" id="cbdcMode">🏛️ CBDC Mode</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Advanced Controls</div>
+                <button class="control-button danger" id="forkNetwork">🍴 Fork Network</button>
+                <button class="control-button danger" id="resetSimulation">🔄 Reset All</button>
+                <button class="control-button" id="exportData">📤 Export Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BlockchainSimulator {
+            constructor() {
+                this.blocks = [];
+                this.blockHeight = 823456;
+                this.transactions = [];
+                this.isPrivacyMode = false;
+                this.isLayer2Active = false;
+                this.isCBDCMode = false;
+                this.gasPrice = 42;
+                this.nftCount = 0;
+                this.isEnterpriseMode = false;
+                
+                this.initializeChain();
+                this.setupEventListeners();
+                this.startAutoMining();
+                this.updateStats();
+                this.generateInitialNFTs();
+            }
+
+            initializeChain() {
+                const chainContainer = document.getElementById('chainContainer');
+                
+                // Create initial blocks
+                for (let i = 0; i < 5; i++) {
+                    this.createBlock(i + this.blockHeight - 4);
+                }
+            }
+
+            createBlock(number, isLayer2 = false) {
+                const block = document.createElement('div');
+                block.className = 'block';
+                block.innerHTML = `
+                    <div class="block-number">#${number}</div>
+                    <div class="block-hash">${this.generateHash()}</div>
+                `;
+
+                if (!isLayer2) {
+                    const connector = document.createElement('div');
+                    connector.className = 'block-connector';
+                    block.appendChild(connector);
+                }
+
+                const container = isLayer2 ? 
+                    document.getElementById('layer2Chain') : 
+                    document.getElementById('chainContainer');
+
+                if (isLayer2) {
+                    block.className = 'layer2-block';
+                    block.innerHTML = `L2-${number}`;
+                }
+
+                container.appendChild(block);
+
+                // Add click event for block details
+                block.addEventListener('click', () => this.showBlockDetails(number));
+
+                this.blocks.push({ number, hash: this.generateHash(), isLayer2 });
+                
+                return block;
+            }
+
+            generateHash() {
+                return '0x' + Math.random().toString(16).substr(2, 8);
+            }
+
+            mineBlock() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.classList.add('active');
+
+                // Simulate mining delay
+                setTimeout(() => {
+                    this.blockHeight++;
+                    const newBlock = this.createBlock(this.blockHeight);
+                    newBlock.classList.add('mining');
+                    
+                    // Remove oldest block if more than 6 blocks
+                    const chainContainer = document.getElementById('chainContainer');
+                    if (chainContainer.children.length > 6) {
+                        chainContainer.removeChild(chainContainer.firstChild);
+                    }
+
+                    // Update chain position
+                    const chainContainer2 = document.getElementById('chainContainer');
+                    chainContainer2.style.transform = `translateY(-50%) translateX(-${(this.blocks.length - 5) * 135}px)`;
+
+                    setTimeout(() => {
+                        newBlock.classList.remove('mining');
+                        loadingOverlay.classList.remove('active');
+                    }, 1000);
+
+                    this.updateStats();
+                    this.addTransactionToMempool(`Block #${this.blockHeight} mined`);
+                }, 2000);
+            }
+
+            sendTransaction() {
+                const txTypes = ['Transfer', 'Contract Call', 'NFT Mint', 'DeFi Swap', 'Stake'];
+                const txType = txTypes[Math.floor(Math.random() * txTypes.length)];
+                const amount = (Math.random() * 10).toFixed(2);
+                
+                this.addTransactionToMempool(`${txType}: ${amount} ETH`);
+                this.updateGasPrice();
+            }
+
+            addTransactionToMempool(txText) {
+                const mempoolContainer = document.getElementById('pendingTransactions');
+                const tx = document.createElement('div');
+                tx.className = 'pending-tx';
+                tx.textContent = txText;
+                
+                mempoolContainer.insertBefore(tx, mempoolContainer.firstChild);
+                
+                // Remove after a few seconds
+                setTimeout(() => {
+                    if (tx.parentNode) {
+                        tx.parentNode.removeChild(tx);
+                    }
+                }, 5000);
+
+                // Keep only last 5 transactions
+                while (mempoolContainer.children.length > 5) {
+                    mempoolContainer.removeChild(mempoolContainer.lastChild);
+                }
+            }
+
+            togglePrivacyMode() {
+                this.isPrivacyMode = !this.isPrivacyMode;
+                const privacyLayer = document.getElementById('privacyLayer');
+                const privacyBtn = document.getElementById('togglePrivacy');
+                
+                if (this.isPrivacyMode) {
+                    privacyLayer.classList.add('active');
+                    privacyBtn.textContent = '🔐 Privacy: ON';
+                    privacyBtn.style.background = 'linear-gradient(45deg, #8B5CF6, #A855F7)';
+                } else {
+                    privacyLayer.classList.remove('active');
+                    privacyBtn.textContent = '🔐 Privacy Mode';
+                    privacyBtn.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                }
+            }
+
+            toggleLayer2() {
+                this.isLayer2Active = !this.isLayer2Active;
+                const layer2Chain = document.getElementById('layer2Chain');
+                const layer2Btn = document.getElementById('toggleLayer2');
+                const interopBridge = document.getElementById('interopBridge');
+                
+                if (this.isLayer2Active) {
+                    layer2Chain.style.display = 'flex';
+                    interopBridge.style.display = 'block';
+                    layer2Btn.textContent = '🚀 L2: Active';
+                    layer2Btn.style.background = 'linear-gradient(45deg, #00d4ff, #00a8cc)';
+                    
+                    // Create L2 blocks
+                    for (let i = 0; i < 3; i++) {
+                        this.createBlock(this.blockHeight + i + 1, true);
+                    }
+                } else {
+                    layer2Chain.style.display = 'none';
+                    interopBridge.style.display = 'none';
+                    layer2Btn.textContent = '🚀 Toggle L2';
+                    layer2Btn.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                    layer2Chain.innerHTML = '';
+                }
+            }
+
+            toggleCBDCMode() {
+                this.isCBDCMode = !this.isCBDCMode;
+                const cbdcIndicator = document.getElementById('cbdcIndicator');
+                const cbdcBtn = document.getElementById('cbdcMode');
+                
+                if (this.isCBDCMode) {
+                    cbdcIndicator.style.display = 'block';
+                    cbdcBtn.textContent = '🏛️ CBDC: ON';
+                    cbdcBtn.style.background = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                    cbdcBtn.style.color = '#000';
+                } else {
+                    cbdcIndicator.style.display = 'none';
+                    cbdcBtn.textContent = '🏛️ CBDC Mode';
+                    cbdcBtn.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                    cbdcBtn.style.color = '#fff';
+                }
+            }
+
+            mintNFT() {
+                this.nftCount++;
+                const nftGrid = document.getElementById('nftGrid');
+                const nft = document.createElement('div');
+                nft.className = 'nft-item';
+                nft.title = `NFT #${this.nftCount}`;
+                
+                // Random gradient
+                const colors = ['#ff00d4', '#00d4ff', '#00ff88', '#ffed4e', '#ff6b6b'];
+                const color1 = colors[Math.floor(Math.random() * colors.length)];
+                const color2 = colors[Math.floor(Math.random() * colors.length)];
+                nft.style.background = `linear-gradient(45deg, ${color1}, ${color2})`;
+                
+                nftGrid.appendChild(nft);
+                this.addTransactionToMempool(`NFT #${this.nftCount} minted`);
+            }
+
+            generateInitialNFTs() {
+                for (let i = 0; i < 6; i++) {
+                    this.mintNFT();
+                }
+            }
+
+            updateStats() {
+                document.getElementById('blockHeight').textContent = this.blockHeight.toLocaleString();
+                document.getElementById('totalBlocks').textContent = this.blocks.length.toLocaleString();
+                document.getElementById('totalTx').textContent = (89432 + this.blocks.length * 100).toLocaleString();
+                document.getElementById('tpsCounter').textContent = (40 + Math.random() * 20).toFixed(1);
+            }
+
+            updateGasPrice() {
+                this.gasPrice = Math.max(15, this.gasPrice + (Math.random() - 0.5) * 10);
+                document.getElementById('gasPrice').textContent = `${Math.round(this.gasPrice)} Gwei`;
+            }
+
+            showBlockDetails(blockNumber) {
+                alert(`Block #${blockNumber}\nHash: ${this.generateHash()}\nTimestamp: ${new Date().toLocaleString()}\nTransactions: ${Math.floor(Math.random() * 200 + 50)}\nSize: ${(Math.random() * 500 + 100).toFixed(2)} KB`);
+            }
+
+            crossChainTransaction() {
+                this.addTransactionToMempool('Cross-chain bridge: 2.5 ETH → BSC');
+                const bridge = document.getElementById('interopBridge');
+                if (bridge.style.display === 'block') {
+                    bridge.style.animation = 'none';
+                    setTimeout(() => {
+                        bridge.style.animation = 'bridge-pulse 0.5s ease-in-out 3';
+                    }, 10);
+                }
+            }
+
+            deployContract() {
+                const contractTypes = ['DeFi', 'NFT', 'DAO', 'Game', 'Oracle'];
+                const contractType = contractTypes[Math.floor(Math.random() * contractTypes.length)];
+                this.addTransactionToMempool(`Deploy ${contractType} contract`);
+                
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.classList.add('active');
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('active');
+                    alert(`${contractType} contract deployed successfully!\nAddress: ${this.generateHash()}`);
+                }, 3000);
+            }
+
+            addLiquidity() {
+                this.addTransactionToMempool('Add 10 ETH + 20,000 USDC to pool');
+            }
+
+            stakeFunds() {
+                this.addTransactionToMempool('Stake 32 ETH for validation');
+            }
+
+            flashLoan() {
+                this.addTransactionToMempool('Flash loan: 1000 ETH executed');
+            }
+
+            rollupBatch() {
+                this.addTransactionToMempool('Rollup batch: 100 txs submitted');
+            }
+
+            stateChannel() {
+                this.addTransactionToMempool('Payment channel opened');
+            }
+
+            atomicSwap() {
+                this.addTransactionToMempool('Atomic swap: BTC ↔ ETH');
+            }
+
+            bridgeAssets() {
+                this.addTransactionToMempool('Bridge 5 ETH to Polygon');
+            }
+
+            toggleEnterpriseMode() {
+                this.isEnterpriseMode = !this.isEnterpriseMode;
+                const btn = document.getElementById('permissionedMode');
+                
+                if (this.isEnterpriseMode) {
+                    btn.textContent = '🏢 Enterprise: ON';
+                    btn.style.background = 'linear-gradient(45deg, #4ade80, #22c55e)';
+                    document.body.style.filter = 'sepia(10%)';
+                } else {
+                    btn.textContent = '🏢 Enterprise Mode';
+                    btn.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                    document.body.style.filter = 'none';
+                }
+            }
+
+            generateComplianceReport() {
+                const reportData = {
+                    totalTransactions: this.blocks.length * 100,
+                    complianceScore: Math.floor(Math.random() * 20 + 80),
+                    flaggedTransactions: Math.floor(Math.random() * 5),
+                    kycCompliant: Math.floor(Math.random() * 90 + 95)
+                };
+                
+                alert(`Compliance Report Generated:\n\nTotal Transactions: ${reportData.totalTransactions}\nCompliance Score: ${reportData.complianceScore}%\nFlagged Transactions: ${reportData.flaggedTransactions}\nKYC Compliant: ${reportData.kycCompliant}%`);
+            }
+
+            forkNetwork() {
+                if (confirm('This will create a fork of the current network. Continue?')) {
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    loadingOverlay.classList.add('active');
+                    
+                    setTimeout(() => {
+                        loadingOverlay.classList.remove('active');
+                        document.getElementById('networkStatus').textContent = 'Forked Network';
+                        alert('Network forked successfully! You are now on a separate chain.');
+                    }, 3000);
+                }
+            }
+
+            resetSimulation() {
+                if (confirm('This will reset the entire simulation. Continue?')) {
+                    location.reload();
+                }
+            }
+
+            exportData() {
+                const data = {
+                    blocks: this.blocks,
+                    blockHeight: this.blockHeight,
+                    isPrivacyMode: this.isPrivacyMode,
+                    isLayer2Active: this.isLayer2Active,
+                    isCBDCMode: this.isCBDCMode,
+                    nftCount: this.nftCount,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'blockchain_simulation_data.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            switchNetwork(network) {
+                const buttons = document.querySelectorAll('.network-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                const networkStatus = document.getElementById('networkStatus');
+                switch(network) {
+                    case 'mainnet':
+                        networkStatus.textContent = 'Mainnet Active';
+                        break;
+                    case 'testnet':
+                        networkStatus.textContent = 'Testnet Active';
+                        break;
+                    case 'layer2':
+                        networkStatus.textContent = 'Layer 2 Active';
+                        this.toggleLayer2();
+                        break;
+                }
+            }
+
+            startAutoMining() {
+                // Auto-mine blocks every 15 seconds
+                setInterval(() => {
+                    if (Math.random() > 0.7) { // 30% chance
+                        this.mineBlock();
+                    }
+                }, 15000);
+
+                // Auto-generate transactions
+                setInterval(() => {
+                    if (Math.random() > 0.5) { // 50% chance
+                        this.sendTransaction();
+                    }
+                }, 8000);
+
+                // Update gas prices
+                setInterval(() => {
+                    this.updateGasPrice();
+                }, 10000);
+            }
+
+            setupEventListeners() {
+                document.getElementById('mineBlock').addEventListener('click', () => this.mineBlock());
+                document.getElementById('sendTransaction').addEventListener('click', () => this.sendTransaction());
+                document.getElementById('togglePrivacy').addEventListener('click', () => this.togglePrivacyMode());
+                document.getElementById('deployContract').addEventListener('click', () => this.deployContract());
+                document.getElementById('toggleLayer2').addEventListener('click', () => this.toggleLayer2());
+                document.getElementById('rollupBatch').addEventListener('click', () => this.rollupBatch());
+                document.getElementById('stateChannel').addEventListener('click', () => this.stateChannel());
+                document.getElementById('crossChain').addEventListener('click', () => this.crossChainTransaction());
+                document.getElementById('atomicSwap').addEventListener('click', () => this.atomicSwap());
+                document.getElementById('bridgeAssets').addEventListener('click', () => this.bridgeAssets());
+                document.getElementById('permissionedMode').addEventListener('click', () => this.toggleEnterpriseMode());
+                document.getElementById('regulatoryReport').addEventListener('click', () => this.generateComplianceReport());
+                document.getElementById('cbdcMode').addEventListener('click', () => this.toggleCBDCMode());
+                document.getElementById('forkNetwork').addEventListener('click', () => this.forkNetwork());
+                document.getElementById('resetSimulation').addEventListener('click', () => this.resetSimulation());
+                document.getElementById('exportData').addEventListener('click', () => this.exportData());
+                document.getElementById('mintNFT').addEventListener('click', () => this.mintNFT());
+                document.getElementById('addLiquidity').addEventListener('click', () => this.addLiquidity());
+                document.getElementById('stakeFunds').addEventListener('click', () => this.stakeFunds());
+                document.getElementById('flashLoan').addEventListener('click', () => this.flashLoan());
+
+                // Network selector
+                document.querySelectorAll('.network-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.switchNetwork(e.target.dataset.network);
+                    });
+                });
+            }
+        }
+
+        // Initialize the simulator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BlockchainSimulator();
+        });
+    </script>
+</body>
+</html>

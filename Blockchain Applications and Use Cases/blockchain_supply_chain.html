@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Supply Chain Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 60px;
+            padding: 8px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 15px 25px;
+            margin: 4px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 0.95em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #8338ec, #3a86ff);
+            box-shadow: 0 8px 32px rgba(131, 56, 236, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .content-section {
+            display: none;
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .grid {
+            display: grid;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-color: rgba(131, 56, 236, 0.5);
+        }
+
+        .card h3 {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #06ffa5;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(131, 56, 236, 0.2), rgba(58, 134, 255, 0.2));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.6s ease;
+        }
+
+        .stat-card:hover::after {
+            transform: scale(1);
+        }
+
+        .stat-value {
+            font-size: 2.8em;
+            font-weight: 800;
+            color: #06ffa5;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 0.95em;
+            opacity: 0.9;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .blockchain-viewer {
+            display: flex;
+            overflow-x: auto;
+            padding: 30px 0;
+            gap: 25px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(131, 56, 236, 0.5) transparent;
+        }
+
+        .blockchain-viewer::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .blockchain-viewer::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .blockchain-viewer::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #8338ec, #3a86ff);
+            border-radius: 10px;
+        }
+
+        .block {
+            min-width: 280px;
+            background: linear-gradient(135deg, rgba(131, 56, 236, 0.3), rgba(58, 134, 255, 0.3));
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(131, 56, 236, 0.5);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            animation: blockAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes blockAppear {
+            from {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(131, 56, 236, 0.4);
+        }
+
+        .block::after {
+            content: '▶';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #06ffa5;
+            font-size: 1.5em;
+            z-index: 2;
+        }
+
+        .block:last-child::after {
+            display: none;
+        }
+
+        .block-header {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #06ffa5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .block-content {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .block-content p {
+            margin: 5px 0;
+        }
+
+        .hash-display {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            word-break: break-all;
+        }
+
+        .form-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #06ffa5;
+            font-size: 0.95em;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #8338ec;
+            box-shadow: 0 0 20px rgba(131, 56, 236, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8338ec, #3a86ff);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #06ffa5, #00b386);
+            color: #000;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffbe0b, #fb8500);
+            color: #000;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff006e, #c77dff);
+            color: white;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(-1px);
+        }
+
+        .supply-chain-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .supply-stage {
+            background: linear-gradient(135deg, rgba(131, 56, 236, 0.2), rgba(58, 134, 255, 0.2));
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            min-width: 160px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .supply-stage:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(131, 56, 236, 0.3);
+        }
+
+        .supply-stage.active {
+            background: linear-gradient(135deg, #8338ec, #3a86ff);
+            box-shadow: 0 0 30px rgba(131, 56, 236, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(131, 56, 236, 0.6); }
+            50% { box-shadow: 0 0 50px rgba(131, 56, 236, 0.8); }
+        }
+
+        .supply-stage::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #06ffa5;
+            font-weight: bold;
+        }
+
+        .supply-stage:last-child::after {
+            display: none;
+        }
+
+        .supply-stage h4 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #06ffa5;
+            font-weight: 700;
+        }
+
+        .supply-stage p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .product-list {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(131, 56, 236, 0.5) transparent;
+        }
+
+        .product-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .product-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .product-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8338ec, #3a86ff);
+            border-radius: 10px;
+        }
+
+        .product-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #8338ec;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(8px);
+            border-left-color: #06ffa5;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .product-id {
+            font-weight: 700;
+            color: #06ffa5;
+            font-size: 1.1em;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-manufacturing { background: linear-gradient(135deg, #ff006e, #c77dff); }
+        .status-shipped { background: linear-gradient(135deg, #06ffa5, #00b386); color: #000; }
+        .status-delivered { background: linear-gradient(135deg, #3a86ff, #8338ec); }
+        .status-retail { background: linear-gradient(135deg, #ffbe0b, #fb8500); color: #000; }
+
+        .transaction-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #06ffa5;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .smart-contract {
+            background: linear-gradient(135deg, rgba(131, 56, 236, 0.2), rgba(255, 0, 110, 0.2));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid rgba(131, 56, 236, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .smart-contract:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(131, 56, 236, 0.3);
+        }
+
+        .contract-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-active { background: linear-gradient(135deg, #06ffa5, #00b386); color: #000; }
+        .status-pending { background: linear-gradient(135deg, #ffbe0b, #fb8500); color: #000; }
+        .status-completed { background: linear-gradient(135deg, #3a86ff, #8338ec); }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #8338ec;
+            box-shadow: 0 0 20px rgba(131, 56, 236, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #0f0f23, #1a1a3e);
+            padding: 40px;
+            border-radius: 20px;
+            min-width: 500px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: modalSlide 0.4s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #06ffa5;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #ff006e;
+            transform: scale(1.2);
+        }
+
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 25px;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .analytics-chart {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8338ec, #3a86ff);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .supply-chain-flow {
+                flex-direction: column;
+            }
+            
+            .supply-stage::after {
+                content: '↓';
+                right: 50%;
+                transform: translateX(50%);
+                bottom: -25px;
+                top: auto;
+            }
+            
+            .blockchain-viewer {
+                flex-direction: column;
+            }
+            
+            .block::after {
+                content: '↓';
+                right: 50%;
+                transform: translateX(50%);
+                bottom: -20px;
+                top: auto;
+            }
+            
+            .modal-content {
+                min-width: 90%;
+                margin: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #06ffa5;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1>🔗 Blockchain Supply Chain Management</h1>
+            <p>Next-Generation Transparency & Security Platform</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <button class="nav-btn active" onclick="switchSection('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="switchSection('blockchain')">⛓️ Blockchain</button>
+            <button class="nav-btn" onclick="switchSection('products')">📦 Products</button>
+            <button class="nav-btn" onclick="switchSection('tracking')">🔍 Tracking</button>
+            <button class="nav-btn" onclick="switchSection('contracts')">📄 Smart Contracts</button>
+            <button class="nav-btn" onclick="switchSection('analytics')">📈 Analytics</button>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalBlocks">0</div>
+                    <div class="stat-label">Blockchain Blocks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalProducts">0</div>
+                    <div class="stat-label">Products Tracked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTransactions">0</div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeContracts">0</div>
+                    <div class="stat-label">Active Contracts</div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>🏭 Supply Chain Overview</h3>
+                    <div class="supply-chain-flow">
+                        <div class="supply-stage" id="stage-supplier">
+                            <h4>Supplier</h4>
+                            <p>Raw Materials</p>
+                        </div>
+                        <div class="supply-stage" id="stage-manufacturer">
+                            <h4>Manufacturer</h4>
+                            <p>Production</p>
+                        </div>
+                        <div class="supply-stage" id="stage-distributor">
+                            <h4>Distributor</h4>
+                            <p>Logistics</p>
+                        </div>
+                        <div class="supply-stage" id="stage-retailer">
+                            <h4>Retailer</h4>
+                            <p>Sales</p>
+                        </div>
+                        <div class="supply-stage" id="stage-consumer">
+                            <h4>Consumer</h4>
+                            <p>End User</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⚡ Quick Actions</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <button class="button btn-success" onclick="quickAddProduct()">
+                            ➕ Add New Product
+                        </button>
+                        <button class="button btn-primary" onclick="quickMineBlock()">
+                            ⛏️ Mine New Block
+                        </button>
+                        <button class="button btn-warning" onclick="quickCreateContract()">
+                            📋 Create Contract
+                        </button>
+                        <button class="button btn-danger" onclick="validateBlockchain()">
+                            ✅ Validate Chain
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>📊 Recent Activity</h3>
+                    <div class="transaction-history" id="recentActivity">
+                        <p>No recent activity</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 System Status</h3>
+                    <div id="systemStatus">
+                        <div style="margin: 10px 0;">
+                            <strong>Blockchain Status:</strong>
+                            <span style="color: #06ffa5;">✅ Operational</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Smart Contracts:</strong>
+                            <span style="color: #06ffa5;">✅ Active</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Network:</strong>
+                            <span style="color: #06ffa5;">✅ Connected</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Security Level:</strong>
+                            <span style="color: #06ffa5;">✅ Maximum</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blockchain Section -->
+        <section id="blockchain" class="content-section">
+            <div class="card">
+                <h3>⛓️ Blockchain Visualization</h3>
+                <div class="blockchain-viewer" id="blockchainViewer">
+                    <!-- Blocks will be rendered here -->
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3>⚡ Mining Control</h3>
+                    <div class="form-container">
+                        <button class="button btn-success" onclick="mineNewBlock()">
+                            <span class="loading-spinner" id="miningSpinner" style="display: none;"></span>
+                            Mine Block
+                        </button>
+                        <button class="button btn-warning" onclick="validateBlockchain()">Validate Chain</button>
+                        <button class="button btn-danger" onclick="resetBlockchain()">Reset Chain</button>
+                        
+                        <div class="form-group">
+                            <label>Mining Difficulty: <span id="difficultyValue">4</span></label>
+                            <input type="range" id="difficultySlider" min="1" max="6" value="4" 
+                                   class="form-input" onchange="updateDifficulty()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Chain Statistics</h3>
+                    <div id="chainStats">
+                        <p><strong>Chain Length:</strong> <span id="chainLength">1</span></p>
+                        <p><strong>Total Hash Power:</strong> <span id="hashPower">0</span> TH/s</p>
+                        <p><strong>Average Block Time:</strong> <span id="avgBlockTime">0</span>s</p>
+                        <p><strong>Chain Validity:</strong> <span id="chainValidity">✅ Valid</span></p>
+                        <p><strong>Pending Transactions:</strong> <span id="pendingTx">0</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔍 Block Explorer</h3>
+                    <div class="form-group">
+                        <input type="number" id="blockSearch" placeholder="Enter block number" 
+                               class="form-input" min="0">
+                        <button class="button btn-primary" onclick="searchBlock()">Search Block</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="content-section">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>➕ Add New Product</h3>
+                    <form class="form-container" onsubmit="addProduct(); return false;">
+                        <div class="form-group">
+                            <label>Product Name *</label>
+                            <input type="text" id="productName" class="form-input" 
+                                   placeholder="Enter product name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="productCategory" class="form-select">
+                                <option value="electronics">📱 Electronics</option>
+                                <option value="clothing">👕 Clothing</option>
+                                <option value="food">🍎 Food & Beverage</option>
+                                <option value="automotive">🚗 Automotive</option>
+                                <option value="pharmaceuticals">💊 Pharmaceuticals</option>
+                                <option value="machinery">🔧 Machinery</option>
+                                <option value="textiles">🧵 Textiles</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Supplier *</label>
+                            <input type="text" id="productSupplier" class="form-input" 
+                                   placeholder="Supplier company name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Batch ID *</label>
+                            <input type="text" id="productBatch" class="form-input" 
+                                   placeholder="Unique batch identifier" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="productDescription" class="form-textarea" rows="3"
+                                      placeholder="Product description and specifications"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="button btn-success">Add Product</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>📦 Product Inventory</h3>
+                    <input type="text" id="productSearch" class="search-input" 
+                           placeholder="🔍 Search products by name, ID, or batch..." 
+                           onkeyup="filterProducts()">
+                    
+                    <div class="product-list" id="productList">
+                        <p>No products available. Add some products to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tracking Section -->
+        <section id="tracking" class="content-section">
+            <div class="card">
+                <h3>🔍 Product Tracking System</h3>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Enter Product ID, Batch ID, or Product Name</label>
+                        <input type="text" id="trackingInput" class="form-input" 
+                               placeholder="e.g., PRD-001, BCH-001, or iPhone">
+                    </div>
+                    <button class="button btn-primary" onclick="trackProduct()">🔍 Track Product</button>
+                </div>
+            </div>
+
+            <div class="card" id="trackingResults" style="display: none;">
+                <h3>📍 Tracking Results</h3>
+                <div id="trackingData">
+                    <!-- Tracking results will appear here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Smart Contracts Section -->
+        <section id="contracts" class="content-section">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>📄 Create Smart Contract</h3>
+                    <form class="form-container" onsubmit="createSmartContract(); return false;">
+                        <div class="form-group">
+                            <label>Contract Type</label>
+                            <select id="contractType" class="form-select">
+                                <option value="delivery">🚚 Delivery Contract</option>
+                                <option value="quality">🏆 Quality Assurance</option>
+                                <option value="payment">💰 Payment Terms</option>
+                                <option value="compliance">📋 Compliance Check</option>
+                                <option value="warranty">🛡️ Warranty Agreement</option>
+                                <option value="insurance">🔒 Insurance Policy</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Parties Involved *</label>
+                            <input type="text" id="contractParties" class="form-input" 
+                                   placeholder="e.g., Supplier, Manufacturer, Distributor" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contract Value</label>
+                            <input type="number" id="contractValue" class="form-input" 
+                                   placeholder="Contract value in USD" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Terms & Conditions *</label>
+                            <textarea id="contractTerms" class="form-textarea" rows="4"
+                                      placeholder="Detailed contract terms and conditions" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Execution Trigger</label>
+                            <select id="contractTrigger" class="form-select">
+                                <option value="delivery">📦 On Delivery Confirmation</option>
+                                <option value="payment">💰 On Payment Received</option>
+                                <option value="quality">✅ Quality Check Passed</option>
+                                <option value="time">⏰ Time-based Trigger</option>
+                                <option value="manual">👤 Manual Execution</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="button btn-success">Create Contract</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>📋 Contract Management</h3>
+                    <div id="contractsList">
+                        <p>No smart contracts created yet.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="avgDeliveryTime">0</div>
+                    <div class="stat-label">Avg Delivery Time (days)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="efficiencyScore">0%</div>
+                    <div class="stat-label">Supply Chain Efficiency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="qualityRating">0%</div>
+                    <div class="stat-label">Quality Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="costSavings">$0</div>
+                    <div class="stat-label">Cost Savings</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>📊 Performance Analytics</h3>
+                    <div class="analytics-chart">
+                        <canvas id="performanceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🏆 Top Performers</h3>
+                    <div id="topPerformers">
+                        <!-- Top performers will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3>📈 Supply Chain Metrics</h3>
+                    <div>
+                        <p><strong>On-Time Delivery:</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 87%"></div>
+                        </div>
+                        <p>87%</p>
+                        
+                        <p><strong>Product Quality:</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 94%"></div>
+                        </div>
+                        <p>94%</p>
+                        
+                        <p><strong>Cost Efficiency:</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78%"></div>
+                        </div>
+                        <p>78%</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🌍 Global Distribution</h3>
+                    <div>
+                        <p><strong>Active Regions:</strong> 15</p>
+                        <p><strong>Total Partners:</strong> 342</p>
+                        <p><strong>Products Shipped:</strong> 12,847</p>
+                        <p><strong>Revenue Generated:</strong> $2.4M</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⚠️ Risk Assessment</h3>
+                    <div>
+                        <p><strong>Supply Risk:</strong> <span style="color: #06ffa5;">Low</span></p>
+                        <p><strong>Quality Risk:</strong> <span style="color: #06ffa5;">Low</span></p>
+                        <p><strong>Delivery Risk:</strong> <span style="color: #ffbe0b;">Medium</span></p>
+                        <p><strong>Security Risk:</strong> <span style="color: #06ffa5;">Very Low</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Enhanced Blockchain Implementation
+        class AdvancedBlock {
+            constructor(index, data, previousHash) {
+                this.index = index;
+                this.timestamp = new Date().toISOString();
+                this.data = data;
+                this.previousHash = previousHash;
+                this.nonce = 0;
+                this.merkleRoot = this.calculateMerkleRoot();
+                this.hash = this.calculateHash();
+            }
+
+            calculateHash() {
+                const hashInput = this.index + this.previousHash + this.timestamp + 
+                                JSON.stringify(this.data) + this.nonce + this.merkleRoot;
+                return this.sha256(hashInput);
+            }
+
+            calculateMerkleRoot() {
+                // Simplified merkle root calculation
+                return this.sha256(JSON.stringify(this.data)).substring(0, 16);
+            }
+
+            sha256(input) {
+                // Simplified hash function for demo purposes
+                let hash = 0;
+                for (let i = 0; i < input.length; i++) {
+                    const char = input.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32-bit integer
+                }
+                return Math.abs(hash).toString(16).padStart(16, '0');
+            }
+
+            mineBlock(difficulty) {
+                const target = Array(difficulty + 1).join("0");
+                console.log(`Mining block ${this.index}... Target: ${target}`);
+                
+                const startTime = Date.now();
+                while (this.hash.substring(0, difficulty) !== target) {
+                    this.nonce++;
+                    this.hash = this.calculateHash();
+                }
+                const endTime = Date.now();
+                
+                console.log(`Block mined in ${endTime - startTime}ms! Hash: ${this.hash}`);
+                return endTime - startTime;
+            }
+        }
+
+        class AdvancedBlockchain {
+            constructor() {
+                this.chain = [this.createGenesisBlock()];
+                this.difficulty = 4;
+                this.pendingTransactions = [];
+                this.miningReward = 100;
+                this.blockTime = 0;
+            }
+
+            createGenesisBlock() {
+                const genesisData = {
+                    type: "Genesis Block",
+                    message: "Advanced Blockchain Supply Chain Initialized",
+                    version: "2.0.0",
+                    creator: "System"
+                };
+                return new AdvancedBlock(0, genesisData, "0");
+            }
+
+            getLatestBlock() {
+                return this.chain[this.chain.length - 1];
+            }
+
+            addBlock(newBlock) {
+                newBlock.previousHash = this.getLatestBlock().hash;
+                this.blockTime = newBlock.mineBlock(this.difficulty);
+                this.chain.push(newBlock);
+                this.updateChainStats();
+            }
+
+            isChainValid() {
+                for (let i = 1; i < this.chain.length; i++) {
+                    const currentBlock = this.chain[i];
+                    const previousBlock = this.chain[i - 1];
+
+                    if (currentBlock.hash !== currentBlock.calculateHash()) {
+                        return false;
+                    }
+
+                    if (currentBlock.previousHash !== previousBlock.hash) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            updateChainStats() {
+                document.getElementById('totalBlocks').textContent = this.chain.length;
+                document.getElementById('chainLength').textContent = this.chain.length;
+                document.getElementById('hashPower').textContent = (Math.random() * 100 + 50).toFixed(1);
+                document.getElementById('avgBlockTime').textContent = this.blockTime ? (this.blockTime / 1000).toFixed(1) : '0';
+                document.getElementById('chainValidity').textContent = this.isChainValid() ? '✅ Valid' : '❌ Invalid';
+                document.getElementById('pendingTx').textContent = this.pendingTransactions.length;
+            }
+        }
+
+        // Enhanced Product Class
+        class EnhancedProduct {
+            constructor(name, category, supplier, batch, description) {
+                this.id = 'PRD-' + String(products.length + 1).padStart(3, '0');
+                this.name = name;
+                this.category = category;
+                this.supplier = supplier;
+                this.batch = batch;
+                this.description = description;
+                this.status = 'manufacturing';
+                this.location = 'Supplier Facility';
+                this.timestamp = new Date().toISOString();
+                this.qrCode = this.generateQRCode();
+                this.temperature = this.generateSensorData('temperature');
+                this.humidity = this.generateSensorData('humidity');
+                this.gps = this.generateGPS();
+                this.history = [{
+                    stage: 'manufacturing',
+                    location: 'Supplier Facility',
+                    timestamp: this.timestamp,
+                    details: 'Product created and manufacturing initiated',
+                    actor: this.supplier,
+                    sensors: {
+                        temperature: this.temperature,
+                        humidity: this.humidity,
+                        gps: this.gps
+                    }
+                }];
+            }
+
+            generateQRCode() {
+                return `QR-${this.id}-${Date.now().toString(36)}`;
+            }
+
+            generateSensorData(type) {
+                switch(type) {
+                    case 'temperature':
+                        return Math.floor(Math.random() * 30) + 15; // 15-45°C
+                    case 'humidity':
+                        return Math.floor(Math.random() * 40) + 30; // 30-70%
+                    default:
+                        return 0;
+                }
+            }
+
+            generateGPS() {
+                return {
+                    lat: (Math.random() * 180 - 90).toFixed(6),
+                    lng: (Math.random() * 360 - 180).toFixed(6)
+                };
+            }
+
+            updateStatus(newStatus, location, details, actor = 'System') {
+                this.status = newStatus;
+                this.location = location;
+                this.temperature = this.generateSensorData('temperature');
+                this.humidity = this.generateSensorData('humidity');
+                this.gps = this.generateGPS();
+                
+                this.history.push({
+                    stage: newStatus,
+                    location: location,
+                    timestamp: new Date().toISOString(),
+                    details: details,
+                    actor: actor,
+                    sensors: {
+                        temperature: this.temperature,
+                        humidity: this.humidity,
+                        gps: this.gps
+                    }
+                });
+            }
+        }
+
+        // Enhanced Smart Contract Class
+        class EnhancedSmartContract {
+            constructor(type, parties, terms, trigger, value = 0) {
+                this.id = 'SC-' + String(contracts.length + 1).padStart(3, '0');
+                this.type = type;
+                this.parties = parties;
+                this.terms = terms;
+                this.trigger = trigger;
+                this.value = value;
+                this.status = 'active';
+                this.createdAt = new Date().toISOString();
+                this.executed = false;
+                this.gasUsed = 0;
+                this.events = [];
+            }
+
+            addEvent(eventType, description) {
+                this.events.push({
+                    type: eventType,
+                    description: description,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            execute() {
+                this.executed = true;
+                this.status = 'completed';
+                this.executedAt = new Date().toISOString();
+                this.gasUsed = Math.floor(Math.random() * 50000) + 21000;
+                this.addEvent('Contract Executed', 'Smart contract executed successfully');
+            }
+
+            cancel() {
+                this.status = 'cancelled';
+                this.cancelledAt = new Date().toISOString();
+                this.addEvent('Contract Cancelled', 'Smart contract was cancelled');
+            }
+        }
+
+        // Global Variables
+        let blockchain = new AdvancedBlockchain();
+        let products = [];
+        let contracts = [];
+        let transactions = [];
+        let currentSection = 'dashboard';
+
+        // System Initialization
+        function initializeSystem() {
+            console.log('🚀 Initializing Advanced Blockchain Supply Chain System...');
+            
+            // Create sample products
+            const sampleProducts = [
+                new EnhancedProduct('iPhone 15 Pro Max', 'electronics', 'Apple Inc.', 'APL-2024-001', 'Latest flagship smartphone with titanium design'),
+                new EnhancedProduct('Organic Cotton Hoodie', 'clothing', 'EcoFashion Ltd.', 'ECO-2024-001', 'Sustainable organic cotton apparel'),
+                new EnhancedProduct('Premium Coffee Beans', 'food', 'Mountain Coffee Co.', 'MTC-2024-001', 'Single origin Ethiopian arabica beans'),
+                new EnhancedProduct('Electric Vehicle Battery', 'automotive', 'TechBattery Corp.', 'TBC-2024-001', 'High-capacity lithium-ion battery pack'),
+                new EnhancedProduct('Medical Grade Vaccine', 'pharmaceuticals', 'MedPharm Inc.', 'MPI-2024-001', 'COVID-19 mRNA vaccine doses')
+            ];
+
+            sampleProducts.forEach(product => {
+                products.push(product);
+                
+                // Add product creation to blockchain
+                const blockData = {
+                    type: 'Product Registration',
+                    productId: product.id,
+                    productName: product.name,
+                    supplier: product.supplier,
+                    batch: product.batch,
+                    category: product.category,
+                    qrCode: product.qrCode,
+                    timestamp: product.timestamp
+                };
+                
+                const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+                blockchain.addBlock(newBlock);
+            });
+
+            // Create sample smart contracts
+            const sampleContracts = [
+                new EnhancedSmartContract('delivery', 'Apple Inc., GlobalLogistics', 'Delivery within 3 business days with temperature monitoring', 'delivery', 25000),
+                new EnhancedSmartContract('quality', 'EcoFashion Ltd., CertifyOrg', 'Organic certification validation required', 'quality', 5000),
+                new EnhancedSmartContract('payment', 'Mountain Coffee Co., RetailChain', 'Payment on delivery confirmation within 48 hours', 'payment', 15000),
+                new EnhancedSmartContract('compliance', 'TechBattery Corp., SafetyAudit', 'Safety compliance check and certification', 'manual', 8000),
+                new EnhancedSmartContract('warranty', 'MedPharm Inc., HealthSystem', '2-year warranty with cold chain maintenance', 'time', 50000)
+            ];
+
+            sampleContracts.forEach(contract => {
+                contracts.push(contract);
+                
+                // Add contract creation to blockchain
+                const blockData = {
+                    type: 'Smart Contract Deployment',
+                    contractId: contract.id,
+                    contractType: contract.type,
+                    parties: contract.parties,
+                    value: contract.value,
+                    trigger: contract.trigger
+                };
+                
+                const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+                blockchain.addBlock(newBlock);
+            });
+
+            // Initialize displays
+            updateDashboard();
+            renderBlockchain();
+            renderProducts();
+            renderContracts();
+            updateAnalytics();
+
+            // Start background processes
+            startBackgroundProcesses();
+            
+            showNotification('🚀 System initialized successfully!', 'success');
+            console.log('✅ System initialization complete');
+        }
+
+        // Background Processes
+        function startBackgroundProcesses() {
+            // Auto-update analytics every 30 seconds
+            setInterval(() => {
+                if (currentSection === 'analytics') {
+                    updateAnalytics();
+                }
+                
+                // Simulate random product movements
+                if (Math.random() < 0.2 && products.length > 0) {
+                    simulateRandomProductMovement();
+                }
+                
+                // Auto-execute eligible contracts
+                autoExecuteContracts();
+                
+            }, 30000);
+
+            // Update dashboard stats every 10 seconds
+            setInterval(() => {
+                updateDashboard();
+            }, 10000);
+        }
+
+        // Navigation Functions
+        function switchSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+
+            // Add active class to clicked nav button
+            event.target.classList.add('active');
+
+            currentSection = sectionName;
+
+            // Update section-specific content
+            switch(sectionName) {
+                case 'blockchain':
+                    renderBlockchain();
+                    break;
+                case 'products':
+                    renderProducts();
+                    break;
+                case 'contracts':
+                    renderContracts();
+                    break;
+                case 'analytics':
+                    updateAnalytics();
+                    break;
+            }
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            document.getElementById('totalBlocks').textContent = blockchain.chain.length;
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('totalTransactions').textContent = transactions.length;
+            document.getElementById('activeContracts').textContent = contracts.filter(c => c.status === 'active').length;
+
+            // Update recent activity
+            const recentActivity = document.getElementById('recentActivity');
+            const recentTx = transactions.slice(-5).reverse();
+            
+            if (recentTx.length === 0) {
+                recentActivity.innerHTML = '<p>No recent activity</p>';
+            } else {
+                recentActivity.innerHTML = recentTx.map(tx => 
+                    `<div class="transaction-item">
+                        <strong>${tx.type}</strong><br>
+                        ${tx.description}<br>
+                        <small>${formatDate(tx.timestamp)}</small>
+                    </div>`
+                ).join('');
+            }
+
+            // Update supply chain flow animation
+            updateSupplyChainFlow();
+        }
+
+        function updateSupplyChainFlow() {
+            const stages = ['supplier', 'manufacturer', 'distributor', 'retailer', 'consumer'];
+            const randomStage = stages[Math.floor(Math.random() * stages.length)];
+            
+            // Remove all active classes
+            stages.forEach(stage => {
+                document.getElementById(`stage-${stage}`).classList.remove('active');
+            });
+            
+            // Add active class to random stage
+            document.getElementById(`stage-${randomStage}`).classList.add('active');
+        }
+
+        // Blockchain Functions
+        function renderBlockchain() {
+            const container = document.getElementById('blockchainViewer');
+            container.innerHTML = '';
+
+            blockchain.chain.forEach((block, index) => {
+                const blockElement = document.createElement('div');
+                blockElement.className = 'block';
+                blockElement.innerHTML = `
+                    <div class="block-header">Block #${block.index}</div>
+                    <div class="block-content">
+                        <p><strong>Hash:</strong></p>
+                        <div class="hash-display">${block.hash.substring(0, 20)}...</div>
+                        <p><strong>Previous Hash:</strong></p>
+                        <div class="hash-display">${block.previousHash.substring(0, 20)}...</div>
+                        <p><strong>Merkle Root:</strong> ${block.merkleRoot}</p>
+                        <p><strong>Timestamp:</strong> ${formatDate(block.timestamp)}</p>
+                        <p><strong>Nonce:</strong> ${block.nonce.toLocaleString()}</p>
+                        <p><strong>Data Type:</strong> ${block.data.type || 'Genesis'}</p>
+                    </div>
+                `;
+                blockElement.onclick = () => showBlockDetails(block);
+                container.appendChild(blockElement);
+            });
+        }
+
+        function mineNewBlock() {
+            const miningSpinner = document.getElementById('miningSpinner');
+            const button = event.target;
+            
+            // Show loading state
+            miningSpinner.style.display = 'inline-block';
+            button.disabled = true;
+            button.textContent = 'Mining...';
+            
+            showNotification('⛏️ Mining new block... Please wait!', 'warning');
+
+            setTimeout(() => {
+                const blockData = {
+                    type: 'Manual Mining',
+                    message: 'Block mined by user',
+                    timestamp: new Date().toISOString(),
+                    miner: 'User',
+                    transactions: blockchain.pendingTransactions.length
+                };
+
+                const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+                blockchain.addBlock(newBlock);
+                
+                addTransaction('Block Mining', `New block #${newBlock.index} mined successfully with ${newBlock.nonce.toLocaleString()} nonce`);
+                
+                renderBlockchain();
+                updateDashboard();
+                
+                // Reset button state
+                miningSpinner.style.display = 'none';
+                button.disabled = false;
+                button.innerHTML = '<span class="loading-spinner" id="miningSpinner" style="display: none;"></span> Mine Block';
+                
+                showNotification('✅ Block mined successfully!', 'success');
+            }, Math.random() * 3000 + 1000); // Random delay 1-4 seconds
+        }
+
+        function validateBlockchain() {
+            const isValid = blockchain.isChainValid();
+            const message = isValid ? '✅ Blockchain validation passed!' : '❌ Blockchain validation failed!';
+            const type = isValid ? 'success' : 'error';
+            
+            showNotification(message, type);
+            addTransaction('Chain Validation', `Blockchain validation result: ${isValid ? 'VALID' : 'INVALID'}`);
+            updateDashboard();
+        }
+
+        function resetBlockchain() {
+            if (confirm('⚠️ Are you sure you want to reset the entire blockchain? This action cannot be undone.')) {
+                blockchain = new AdvancedBlockchain();
+                products = [];
+                contracts = [];
+                transactions = [];
+                
+                renderBlockchain();
+                renderProducts();
+                renderContracts();
+                updateDashboard();
+                
+                showNotification('🔄 Blockchain reset successfully!', 'success');
+            }
+        }
+
+        function updateDifficulty() {
+            const difficulty = document.getElementById('difficultySlider').value;
+            blockchain.difficulty = parseInt(difficulty);
+            document.getElementById('difficultyValue').textContent = difficulty;
+            
+            showNotification(`⚙️ Mining difficulty set to ${difficulty}`, 'info');
+        }
+
+        function searchBlock() {
+            const blockNumber = parseInt(document.getElementById('blockSearch').value);
+            
+            if (isNaN(blockNumber) || blockNumber < 0 || blockNumber >= blockchain.chain.length) {
+                showNotification('❌ Invalid block number!', 'error');
+                return;
+            }
+            
+            const block = blockchain.chain[blockNumber];
+            showBlockDetails(block);
+        }
+
+        // Product Functions
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const supplier = document.getElementById('productSupplier').value.trim();
+            const batch = document.getElementById('productBatch').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+
+            if (!name || !supplier || !batch) {
+                showNotification('❌ Please fill in all required fields!', 'error');
+                return;
+            }
+
+            // Check for duplicate batch ID
+            if (products.find(p => p.batch === batch)) {
+                showNotification('❌ Batch ID already exists!', 'error');
+                return;
+            }
+
+            const product = new EnhancedProduct(name, category, supplier, batch, description);
+            products.push(product);
+
+            // Add to blockchain
+            const blockData = {
+                type: 'Product Registration',
+                productId: product.id,
+                productName: product.name,
+                supplier: product.supplier,
+                batch: product.batch,
+                category: product.category,
+                qrCode: product.qrCode
+            };
+
+            const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+            blockchain.addBlock(newBlock);
+
+            addTransaction('Product Created', `New product "${product.name}" (${product.id}) registered in system`);
+
+            // Clear form
+            document.getElementById('productName').value = '';
+            document.getElementById('productSupplier').value = '';
+            document.getElementById('productBatch').value = '';
+            document.getElementById('productDescription').value = '';
+
+            renderProducts();
+            updateDashboard();
+            showNotification('✅ Product added successfully!', 'success');
+        }
+
+        function renderProducts() {
+            const productList = document.getElementById('productList');
+            
+            if (products.length === 0) {
+                productList.innerHTML = '<p>No products in the system. Add some products to get started!</p>';
+                return;
+            }
+
+            productList.innerHTML = products.map(product => `
+                <div class="product-item" onclick="showProductDetails('${product.id}')">
+                    <div class="product-header">
+                        <span class="product-id">${product.id}</span>
+                        <span class="status-badge status-${product.status}">${product.status}</span>
+                    </div>
+                    <h4>${product.name}</h4>
+                    <p><strong>Category:</strong> ${getCategoryIcon(product.category)} ${product.category}</p>
+                    <p><strong>Supplier:</strong> ${product.supplier}</p>
+                    <p><strong>Batch:</strong> ${product.batch}</p>
+                    <p><strong>Location:</strong> 📍 ${product.location}</p>
+                    <p><strong>Temperature:</strong> 🌡️ ${product.temperature}°C</p>
+                    <p><strong>Created:</strong> ${formatDate(product.timestamp)}</p>
+                </div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const productItems = document.querySelectorAll('.product-item');
+
+            productItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        function trackProduct() {
+            const trackingInput = document.getElementById('trackingInput').value.trim().toLowerCase();
+            
+            if (!trackingInput) {
+                showNotification('❌ Please enter a Product ID, Batch ID, or Product Name!', 'error');
+                return;
+            }
+
+            const product = products.find(p => 
+                p.id.toLowerCase().includes(trackingInput) || 
+                p.batch.toLowerCase().includes(trackingInput) ||
+                p.name.toLowerCase().includes(trackingInput)
+            );
+
+            if (!product) {
+                showNotification('❌ Product not found!', 'error');
+                document.getElementById('trackingResults').style.display = 'none';
+                return;
+            }
+
+            // Show tracking results
+            const trackingData = document.getElementById('trackingData');
+            trackingData.innerHTML = `
+                <div class="product-item">
+                    <div class="product-header">
+                        <span class="product-id">${product.id}</span>
+                        <span class="status-badge status-${product.status}">${product.status}</span>
+                    </div>
+                    <h4>${product.name}</h4>
+                    <p><strong>Current Location:</strong> 📍 ${product.location}</p>
+                    <p><strong>Category:</strong> ${getCategoryIcon(product.category)} ${product.category}</p>
+                    <p><strong>Supplier:</strong> ${product.supplier}</p>
+                    <p><strong>Batch ID:</strong> ${product.batch}</p>
+                    <p><strong>QR Code:</strong> ${product.qrCode}</p>
+                    <p><strong>Current Temperature:</strong> 🌡️ ${product.temperature}°C</p>
+                    <p><strong>Current Humidity:</strong> 💧 ${product.humidity}%</p>
+                    <p><strong>GPS:</strong> 🌍 ${product.gps.lat}, ${product.gps.lng}</p>
+                </div>
+                
+                <h4>📍 Complete Journey Timeline</h4>
+                ${product.history.map(entry => `
+                    <div class="transaction-item">
+                        <strong>${entry.stage.toUpperCase()}</strong> - ${entry.location}<br>
+                        ${entry.details}<br>
+                        <strong>Actor:</strong> ${entry.actor}<br>
+                        <strong>Sensors:</strong> 🌡️ ${entry.sensors.temperature}°C, 💧 ${entry.sensors.humidity}%, 🌍 ${entry.sensors.gps.lat}, ${entry.sensors.gps.lng}<br>
+                        <small>${formatDate(entry.timestamp)}</small>
+                    </div>
+                `).join('')}
+            `;
+
+            document.getElementById('trackingResults').style.display = 'block';
+            addTransaction('Product Tracking', `Product ${product.id} tracked by user`);
+            showNotification('✅ Product tracking completed!', 'success');
+        }
+
+        // Smart Contract Functions
+        function createSmartContract() {
+            const type = document.getElementById('contractType').value;
+            const parties = document.getElementById('contractParties').value.trim();
+            const terms = document.getElementById('contractTerms').value.trim();
+            const trigger = document.getElementById('contractTrigger').value;
+            const value = parseFloat(document.getElementById('contractValue').value) || 0;
+
+            if (!parties || !terms) {
+                showNotification('❌ Please fill in all required fields!', 'error');
+                return;
+            }
+
+            const contract = new EnhancedSmartContract(type, parties, terms, trigger, value);
+            contracts.push(contract);
+
+            // Add to blockchain
+            const blockData = {
+                type: 'Smart Contract Deployment',
+                contractId: contract.id,
+                contractType: contract.type,
+                parties: contract.parties,
+                value: contract.value,
+                trigger: contract.trigger,
+                gasEstimate: Math.floor(Math.random() * 100000) + 50000
+            };
+
+            const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+            blockchain.addBlock(newBlock);
+
+            addTransaction('Contract Created', `Smart contract ${contract.id} deployed for ${contract.parties}`);
+
+            // Clear form
+            document.getElementById('contractParties').value = '';
+            document.getElementById('contractTerms').value = '';
+            document.getElementById('contractValue').value = '';
+
+            renderContracts();
+            updateDashboard();
+            showNotification('✅ Smart contract created successfully!', 'success');
+        }
+
+        function renderContracts() {
+            const contractsList = document.getElementById('contractsList');
+            
+            if (contracts.length === 0) {
+                contractsList.innerHTML = '<p>No smart contracts created yet.</p>';
+                return;
+            }
+
+            contractsList.innerHTML = contracts.map(contract => `
+                <div class="smart-contract" onclick="showContractDetails('${contract.id}')">
+                    <h4>${contract.id} - ${contract.type.toUpperCase()}
+                        <span class="contract-status status-${contract.status}">${contract.status}</span>
+                    </h4>
+                    <p><strong>Parties:</strong> ${contract.parties}</p>
+                    <p><strong>Value:</strong> $${contract.value.toLocaleString()}</p>
+                    <p><strong>Trigger:</strong> ${getEmojiForTrigger(contract.trigger)} ${contract.trigger}</p>
+                    <p><strong>Status:</strong> ${contract.executed ? 'Executed' : 'Pending'}</p>
+                    <p><strong>Created:</strong> ${formatDate(contract.createdAt)}</p>
+                    <p><strong>Events:</strong> ${contract.events.length}</p>
+                    ${!contract.executed && contract.status === 'active' ? 
+                        `<button class="button btn-success" onclick="executeContract('${contract.id}'); event.stopPropagation();">
+                            Execute Contract
+                        </button>` : ''
+                    }
+                </div>
+            `).join('');
+        }
+
+        function executeContract(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (contract && !contract.executed && contract.status === 'active') {
+                contract.execute();
+
+                // Add to blockchain
+                const blockData = {
+                    type: 'Contract Execution',
+                    contractId: contract.id,
+                    executedAt: contract.executedAt,
+                    parties: contract.parties,
+                    gasUsed: contract.gasUsed,
+                    value: contract.value
+                };
+
+                const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+                blockchain.addBlock(newBlock);
+
+                addTransaction('Contract Executed', `Smart contract ${contract.id} executed successfully. Gas used: ${contract.gasUsed.toLocaleString()}`);
+                renderContracts();
+                updateDashboard();
+                showNotification('✅ Contract executed successfully!', 'success');
+            }
+        }
+
+        // Analytics Functions
+        function updateAnalytics() {
+            // Calculate realistic metrics
+            const avgDelivery = Math.floor(Math.random() * 5) + 3; // 3-8 days
+            const efficiency = Math.floor(Math.random() * 20) + 80; // 80-100%
+            const quality = Math.floor(Math.random() * 15) + 85; // 85-100%
+            const savings = Math.floor(Math.random() * 100000) + 50000; // $50k-$150k
+
+            document.getElementById('avgDeliveryTime').textContent = avgDelivery;
+            document.getElementById('efficiencyScore').textContent = efficiency + '%';
+            document.getElementById('qualityRating').textContent = quality + '%';
+            document.getElementById('costSavings').textContent = '$' + savings.toLocaleString();
+
+            // Update top performers
+            updateTopPerformers();
+            
+            // Draw performance chart
+            drawAdvancedChart();
+        }
+
+        function updateTopPerformers() {
+            const topPerformers = document.getElementById('topPerformers');
+            
+            if (products.length === 0) {
+                topPerformers.innerHTML = '<p>No products to analyze yet.</p>';
+                return;
+            }
+
+            const topProducts = products.slice(0, 3);
+            
+            topPerformers.innerHTML = topProducts.map((product, index) => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <span class="product-id">${['🥇', '🥈', '🥉'][index]} ${product.name}</span>
+                        <span class="status-badge status-${product.status}">${getPerformanceScore()}%</span>
+                    </div>
+                    <p>${product.category} - Batch ${product.batch}</p>
+                    <p>Supplier: ${product.supplier}</p>
+                </div>
+            `).join('');
+        }
+
+        function drawAdvancedChart() {
+            const canvas = document.getElementById('performanceChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Sample performance data
+            const data = [
+                { month: 'Jan', efficiency: 75, quality: 88, delivery: 82 },
+                { month: 'Feb', efficiency: 82, quality: 91, delivery: 79 },
+                { month: 'Mar', efficiency: 78, quality: 89, delivery: 85 },
+                { month: 'Apr', efficiency: 88, quality: 94, delivery: 88 },
+                { month: 'May', efficiency: 91, quality: 96, delivery: 92 },
+                { month: 'Jun', efficiency: 94, quality: 98, delivery: 95 }
+            ];
+            
+            const padding = 50;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+            
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i * chartHeight / 5);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + chartWidth, y);
+                ctx.stroke();
+            }
+            
+            // Draw efficiency line
+            drawLine(ctx, data, 'efficiency', '#8338ec', padding, chartWidth, chartHeight);
+            
+            // Draw quality line
+            drawLine(ctx, data, 'quality', '#06ffa5', padding, chartWidth, chartHeight);
+            
+            // Draw delivery line
+            drawLine(ctx, data, 'delivery', '#3a86ff', padding, chartWidth, chartHeight);
+            
+            // Draw legend
+            drawLegend(ctx, canvas.width, padding);
+            
+            // Draw labels
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            
+            data.forEach((item, index) => {
+                const x = padding + (index * chartWidth / (data.length - 1));
+                ctx.fillText(item.month, x, canvas.height - 15);
+            });
+        }
+
+        function drawLine(ctx, data, property, color, padding, chartWidth, chartHeight) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            data.forEach((item, index) => {
+                const x = padding + (index * chartWidth / (data.length - 1));
+                const y = padding + chartHeight - ((item[property] - 50) / 50 * chartHeight);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Draw point
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            ctx.stroke();
+        }
+
+        function drawLegend(ctx, canvasWidth, padding) {
+            const legendItems = [
+                { label: 'Efficiency', color: '#8338ec' },
+                { label: 'Quality', color: '#06ffa5' },
+                { label: 'Delivery', color: '#3a86ff' }
+            ];
+            
+            const legendX = canvasWidth - 150;
+            const legendY = padding + 20;
+            
+            legendItems.forEach((item, index) => {
+                const y = legendY + (index * 25);
+                
+                // Draw color indicator
+                ctx.fillStyle = item.color;
+                ctx.fillRect(legendX, y, 15, 15);
+                
+                // Draw label
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(item.label, legendX + 25, y + 12);
+            });
+        }
+
+        // Utility Functions
+        function addTransaction(type, description) {
+            transactions.push({
+                id: 'TXN-' + String(transactions.length + 1).padStart(3, '0'),
+                type: type,
+                description: description,
+                timestamp: new Date().toISOString(),
+                hash: generateTransactionHash()
+            });
+        }
+
+        function generateTransactionHash() {
+            return Math.random().toString(16).substr(2, 16);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show';
+            
+            const colors = {
+                success: 'linear-gradient(135deg, #06ffa5, #00b386)',
+                error: 'linear-gradient(135deg, #ff006e, #c77dff)',
+                warning: 'linear-gradient(135deg, #ffbe0b, #fb8500)',
+                info: 'linear-gradient(135deg, #3a86ff, #8338ec)'
+            };
+            
+            notification.style.background = colors[type] || colors.success;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString() + ' ' + 
+                   new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                electronics: '📱',
+                clothing: '👕',
+                food: '🍎',
+                automotive: '🚗',
+                pharmaceuticals: '💊',
+                machinery: '🔧',
+                textiles: '🧵'
+            };
+            return icons[category] || '📦';
+        }
+
+        function getEmojiForTrigger(trigger) {
+            const emojis = {
+                delivery: '📦',
+                payment: '💰',
+                quality: '✅',
+                time: '⏰',
+                manual: '👤'
+            };
+            return emojis[trigger] || '🔧';
+        }
+
+        function getPerformanceScore() {
+            return Math.floor(Math.random() * 20) + 80; // 80-100%
+        }
+
+        // Modal Functions
+        function showBlockDetails(block) {
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h2>🔗 Block #${block.index} Details</h2>
+                <div style="margin-top: 25px;">
+                    <p><strong>Hash:</strong></p>
+                    <div class="hash-display" style="margin: 10px 0;">${block.hash}</div>
+                    
+                    <p><strong>Previous Hash:</strong></p>
+                    <div class="hash-display" style="margin: 10px 0;">${block.previousHash}</div>
+                    
+                    <p><strong>Merkle Root:</strong> ${block.merkleRoot}</p>
+                    <p><strong>Timestamp:</strong> ${formatDate(block.timestamp)}</p>
+                    <p><strong>Nonce:</strong> ${block.nonce.toLocaleString()}</p>
+                    <p><strong>Difficulty:</strong> ${blockchain.difficulty}</p>
+                    
+                    <h3 style="margin-top: 25px; color: #06ffa5;">📊 Block Data</h3>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                        <pre style="color: white; font-size: 0.9em; line-height: 1.6;">${JSON.stringify(block.data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function showProductDetails(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h2>📦 Product Details: ${product.name}</h2>
+                <div style="margin-top: 25px;">
+                    <div class="grid grid-2" style="gap: 20px;">
+                        <div>
+                            <p><strong>Product ID:</strong> ${product.id}</p>
+                            <p><strong>Category:</strong> ${getCategoryIcon(product.category)} ${product.category}</p>
+                            <p><strong>Supplier:</strong> ${product.supplier}</p>
+                            <p><strong>Batch ID:</strong> ${product.batch}</p>
+                            <p><strong>QR Code:</strong> ${product.qrCode}</p>
+                        </div>
+                        <div>
+                            <p><strong>Current Status:</strong> <span class="status-badge status-${product.status}">${product.status}</span></p>
+                            <p><strong>Location:</strong> 📍 ${product.location}</p>
+                            <p><strong>Temperature:</strong> 🌡️ ${product.temperature}°C</p>
+                            <p><strong>Humidity:</strong> 💧 ${product.humidity}%</p>
+                            <p><strong>GPS:</strong> 🌍 ${product.gps.lat}, ${product.gps.lng}</p>
+                        </div>
+                    </div>
+                    
+                    <p style="margin-top: 15px;"><strong>Description:</strong> ${product.description}</p>
+                    <p><strong>Created:</strong> ${formatDate(product.timestamp)}</p>
+                    
+                    <h3 style="margin-top: 25px; color: #06ffa5;">📍 Complete Supply Chain Journey</h3>
+                    <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+                        ${product.history.map((entry, index) => `
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; margin: 10px 0; border-radius: 10px; border-left: 3px solid #06ffa5;">
+                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+                                    <strong style="color: #06ffa5;">${index + 1}. ${entry.stage.toUpperCase()}</strong>
+                                    <small style="opacity: 0.8;">${formatDate(entry.timestamp)}</small>
+                                </div>
+                                <p><strong>Location:</strong> 📍 ${entry.location}</p>
+                                <p><strong>Details:</strong> ${entry.details}</p>
+                                <p><strong>Actor:</strong> ${entry.actor}</p>
+                                <p><strong>Sensors:</strong> 🌡️ ${entry.sensors.temperature}°C, 💧 ${entry.sensors.humidity}%, 🌍 ${entry.sensors.gps.lat}, ${entry.sensors.gps.lng}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button class="button btn-warning" onclick="updateProductStatus('${product.id}')">📋 Update Status</button>
+                        <button class="button btn-primary" onclick="simulateMovement('${product.id}')">🚚 Simulate Movement</button>
+                        <button class="button btn-success" onclick="generateQRCode('${product.id}')">📱 Generate QR Code</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function showContractDetails(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (!contract) return;
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h2>📄 Smart Contract: ${contract.id}</h2>
+                <div style="margin-top: 25px;">
+                    <div class="grid grid-2" style="gap: 20px;">
+                        <div>
+                            <p><strong>Type:</strong> ${getEmojiForTrigger(contract.type)} ${contract.type}</p>
+                            <p><strong>Parties:</strong> ${contract.parties}</p>
+                            <p><strong>Value:</strong> $${contract.value.toLocaleString()}</p>
+                            <p><strong>Trigger:</strong> ${getEmojiForTrigger(contract.trigger)} ${contract.trigger}</p>
+                        </div>
+                        <div>
+                            <p><strong>Status:</strong> <span class="contract-status status-${contract.status}">${contract.status}</span></p>
+                            <p><strong>Executed:</strong> ${contract.executed ? '✅ Yes' : '❌ No'}</p>
+                            <p><strong>Created:</strong> ${formatDate(contract.createdAt)}</p>
+                            ${contract.executedAt ? `<p><strong>Executed:</strong> ${formatDate(contract.executedAt)}</p>` : ''}
+                            ${contract.gasUsed ? `<p><strong>Gas Used:</strong> ${contract.gasUsed.toLocaleString()}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 25px; color: #06ffa5;">📋 Terms & Conditions</h3>
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                        ${contract.terms}
+                    </div>
+                    
+                    <h3 style="margin-top: 25px; color: #06ffa5;">📊 Contract Events</h3>
+                    <div style="max-height: 200px; overflow-y: auto; margin-top: 15px;">
+                        ${contract.events.length === 0 ? '<p>No events recorded yet.</p>' : 
+                          contract.events.map(event => `
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                <strong>${event.type}:</strong> ${event.description}<br>
+                                <small>${formatDate(event.timestamp)}</small>
+                            </div>
+                          `).join('')
+                        }
+                    </div>
+                    
+                    <div style="margin-top: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
+                        ${!contract.executed && contract.status === 'active' ? 
+                            `<button class="button btn-success" onclick="executeContract('${contract.id}'); closeModal();">✅ Execute Contract</button>` : ''
+                        }
+                        ${contract.status === 'active' && !contract.executed ? 
+                            `<button class="button btn-danger" onclick="cancelContract('${contract.id}'); closeModal();">❌ Cancel Contract</button>` : ''
+                        }
+                        <button class="button btn-primary" onclick="exportContract('${contract.id}')">📄 Export Contract</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Advanced Product Functions
+        function updateProductStatus(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const statusFlow = {
+                'manufacturing': { next: 'shipped', location: 'Distribution Center', details: 'Product shipped from manufacturing facility' },
+                'shipped': { next: 'delivered', location: 'Transport Vehicle', details: 'Product in transit to destination' },
+                'delivered': { next: 'retail', location: 'Retail Store', details: 'Product delivered to retail location' },
+                'retail': { next: 'retail', location: 'Customer Location', details: 'Product sold to end customer' }
+            };
+
+            const currentFlow = statusFlow[product.status];
+            if (currentFlow && product.status !== 'retail') {
+                product.updateStatus(currentFlow.next, currentFlow.location, currentFlow.details, 'System Admin');
+                
+                // Add to blockchain
+                const blockData = {
+                    type: 'Status Update',
+                    productId: product.id,
+                    previousStatus: Object.keys(statusFlow).find(key => statusFlow[key].next === currentFlow.next) || 'manufacturing',
+                    newStatus: currentFlow.next,
+                    location: currentFlow.location,
+                    timestamp: new Date().toISOString()
+                };
+
+                const newBlock = new AdvancedBlock(blockchain.chain.length, blockData, blockchain.getLatestBlock().hash);
+                blockchain.addBlock(newBlock);
+
+                addTransaction('Status Update', `Product ${product.id} status updated to ${currentFlow.next}`);
+                
+                renderProducts();
+                closeModal();
+                showNotification(`✅ Product status updated to ${currentFlow.next}!`, 'success');
+            } else {
+                showNotification('ℹ️ Product is already at final status!', 'info');
+            }
+        }
+
+        function simulateMovement(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const movements = [
+                'GPS coordinates updated - vehicle in motion',
+                'Temperature monitored - within safe range',
+                'Customs checkpoint passed successfully',
+                'Quality checkpoint completed',
+                'Package scanned at sorting facility',
+                'Out for final delivery',
+                'Delivery attempt made',
+                'Package delivered and signed for'
+            ];
+
+            const randomMovement = movements[Math.floor(Math.random() * movements.length)];
+            product.history.push({
+                stage: product.status,
+                location: product.location,
+                timestamp: new Date().toISOString(),
+                details: randomMovement,
+                actor: 'Automated System',
+                sensors: {
+                    temperature: product.generateSensorData('temperature'),
+                    humidity: product.generateSensorData('humidity'),
+                    gps: product.generateGPS()
+                }
+            });
+
+            addTransaction('Movement Update', `Product ${product.id}: ${randomMovement}`);
+            closeModal();
+            showNotification('🚚 Product movement simulated successfully!', 'success');
+        }
+
+        function generateQRCode(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            // In a real implementation, this would generate an actual QR code
+            const qrData = {
+                productId: product.id,
+                batch: product.batch,
+                verificationHash: generateTransactionHash(),
+                timestamp: new Date().toISOString()
+            };
+
+            addTransaction('QR Code Generated', `QR code generated for product ${product.id}`);
+            showNotification(`📱 QR Code generated for ${product.name}!`, 'success');
+            
+            // Could integrate with a real QR code library here
+            console.log('QR Code Data:', qrData);
+        }
+
+        // Background Simulation Functions
+        function simulateRandomProductMovement() {
+            if (products.length === 0) return;
+
+            const randomProduct = products[Math.floor(Math.random() * products.length)];
+            const movements = [
+                'Automated temperature check completed',
+                'RFID scan performed at checkpoint',
+                'GPS location updated automatically',
+                'Quality sensor reading recorded',
+                'Blockchain verification completed'
+            ];
+
+            const randomMovement = movements[Math.floor(Math.random() * movements.length)];
+            randomProduct.history.push({
+                stage: randomProduct.status,
+                location: randomProduct.location,
+                timestamp: new Date().toISOString(),
+                details: randomMovement,
+                actor: 'IoT System',
+                sensors: {
+                    temperature: randomProduct.generateSensorData('temperature'),
+                    humidity: randomProduct.generateSensorData('humidity'),
+                    gps: randomProduct.generateGPS()
+                }
+            });
+
+            addTransaction('Automated Update', `IoT system updated ${randomProduct.id}: ${randomMovement}`);
+        }
+
+        function autoExecuteContracts() {
+            contracts.forEach(contract => {
+                if (contract.status === 'active' && !contract.executed) {
+                    // Simulate random contract execution based on triggers
+                    const shouldExecute = Math.random() < 0.1; // 10% chance every 30 seconds
+                    
+                    if (shouldExecute) {
+                        executeContract(contract.id);
+                    }
+                }
+            });
+        }
+
+        function cancelContract(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (contract && contract.status === 'active' && !contract.executed) {
+                contract.cancel();
+                
+                addTransaction('Contract Cancelled', `Smart contract ${contract.id} was cancelled`);
+                renderContracts();
+                updateDashboard();
+                showNotification('Contract cancelled successfully!', 'warning');
+            }
+        }
+
+        function exportContract(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (!contract) return;
+
+            const contractData = {
+                id: contract.id,
+                type: contract.type,
+                parties: contract.parties,
+                terms: contract.terms,
+                value: contract.value,
+                status: contract.status,
+                createdAt: contract.createdAt,
+                events: contract.events
+            };
+
+            // In a real implementation, this would download a file
+            console.log('Contract Export:', contractData);
+            showNotification('📄 Contract exported successfully!', 'success');
+        }
+
+        // Quick Action Functions
+        function quickAddProduct() {
+            switchSection('products');
+            document.getElementById('productName').focus();
+        }
+
+        function quickMineBlock() {
+            mineNewBlock();
+        }
+
+        function quickCreateContract() {
+            switchSection('contracts');
+            document.getElementById('contractParties').focus();
+        }
+
+        // Event Listeners
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case '1':
+                        event.preventDefault();
+                        switchSection('dashboard');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        switchSection('blockchain');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        switchSection('products');
+                        break;
+                    case '4':
+                        event.preventDefault();
+                        switchSection('tracking');
+                        break;
+                    case '5':
+                        event.preventDefault();
+                        switchSection('contracts');
+                        break;
+                    case '6':
+                        event.preventDefault();
+                        switchSection('analytics');
+                        break;
+                }
+            }
+        });
+
+        // Initialize System on Page Load
+        window.addEventListener('load', function() {
+            console.log('🌟 Loading Advanced Blockchain Supply Chain Management System...');
+            
+            setTimeout(() => {
+                initializeSystem();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Ethereum Simulator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(55, 65, 81, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary { background: #3b82f6; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #6b7280; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn:disabled { background: #374151; cursor: not-allowed; }
+
+        .status-indicators {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            margin-left: auto;
+        }
+
+        .status-item {
+            background: rgba(75, 85, 99, 0.6);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: rgba(75, 85, 99, 0.6);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(107, 114, 128, 0.8);
+        }
+
+        .content {
+            background: rgba(55, 65, 81, 0.8);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            min-height: 600px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        .card {
+            background: rgba(75, 85, 99, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 300px;
+            background: rgba(31, 41, 55, 0.8);
+            color: white;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(31, 41, 55, 0.8);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .log-error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .log-info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        .stack-item {
+            background: rgba(107, 114, 128, 0.6);
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .memory-byte {
+            display: inline-block;
+            background: rgba(107, 114, 128, 0.6);
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(31, 41, 55, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+            font-size: 14px;
+        }
+
+        .table th {
+            background: rgba(55, 65, 81, 0.8);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #10b981; color: white; }
+        .badge-danger { background: #ef4444; color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+
+        .mono { font-family: 'Courier New', monospace; }
+
+        .text-blue { color: #3b82f6; }
+        .text-green { color: #10b981; }
+        .text-yellow { color: #f59e0b; }
+        .text-red { color: #ef4444; }
+        .text-purple { color: #8b5cf6; }
+        .text-gray { color: #9ca3af; }
+
+        .hidden { display: none; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .flex {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .mb-4 { margin-bottom: 16px; }
+        .mb-6 { margin-bottom: 24px; }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .status-indicators { margin-left: 0; margin-top: 10px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-cube"></i> Advanced Ethereum Simulator</h1>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button id="playPauseBtn" class="btn btn-success">
+                    <i class="fas fa-play"></i>
+                    <span>Start Simulation</span>
+                </button>
+                
+                <button id="resetBtn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    <span>Reset</span>
+                </button>
+                
+                <div class="status-indicators">
+                    <div class="status-item">
+                        Block: <span id="blockNumber" class="text-blue">18,500,000</span>
+                    </div>
+                    <div class="status-item">
+                        Gas: <span id="gasPrice" class="text-green">20 gwei</span>
+                    </div>
+                    <div class="status-item">
+                        Pending TXs: <span id="pendingTxs" class="text-yellow">12</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="evm">
+                <i class="fas fa-microchip"></i>
+                EVM Execution
+            </button>
+            <button class="tab" data-tab="contracts">
+                <i class="fas fa-code"></i>
+                Smart Contracts
+            </button>
+            <button class="tab" data-tab="gas">
+                <i class="fas fa-bolt"></i>
+                Gas Analysis
+            </button>
+            <button class="tab" data-tab="validators">
+                <i class="fas fa-users"></i>
+                PoS Validators
+            </button>
+            <button class="tab" data-tab="transactions">
+                <i class="fas fa-exchange-alt"></i>
+                Transaction Pool
+            </button>
+            <button class="tab" data-tab="network">
+                <i class="fas fa-network-wired"></i>
+                Network Stats
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- EVM Execution Tab -->
+            <div id="evm-content" class="tab-content">
+                <h2 class="section-title">EVM Execution Environment</h2>
+                
+                <div class="grid grid-2">
+                    <!-- EVM State -->
+                    <div>
+                        <div class="card mb-4">
+                            <h3><i class="fas fa-cog"></i> Current State</h3>
+                            <div class="mono">
+                                <div>Opcode: <span id="currentOpcode" class="text-yellow">STOP</span></div>
+                                <div>Gas Used: <span id="gasUsed" class="text-red">0</span></div>
+                                <div>Program Counter: <span id="programCounter" class="text-blue">0x00</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Stack</h3>
+                            <div id="evmStack" class="log-container">
+                                <div class="text-gray">Empty</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Memory & Storage -->
+                    <div>
+                        <div class="card mb-4">
+                            <h3>Memory</h3>
+                            <div id="evmMemory" class="log-container">
+                                <div class="text-gray">Empty</div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Storage</h3>
+                            <div id="evmStorage" class="log-container">
+                                <div class="text-gray">Empty</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Contracts Tab -->
+            <div id="contracts-content" class="tab-content hidden">
+                <h2 class="section-title">Smart Contract Development</h2>
+                
+                <div class="grid grid-2">
+                    <!-- Contract Editor -->
+                    <div>
+                        <div class="card">
+                            <h3>Solidity Code</h3>
+                            <textarea id="contractCode" class="textarea" placeholder="Enter your Solidity code here...">pragma solidity ^0.8.0;
+
+contract SimpleStorage {
+    uint256 public storedData;
+    
+    constructor(uint256 _data) {
+        storedData = _data;
+    }
+    
+    function set(uint256 _data) public {
+        storedData = _data;
+    }
+    
+    function get() public view returns (uint256) {
+        return storedData;
+    }
+}</textarea>
+                            <div class="flex" style="margin-top: 15px;">
+                                <button id="compileBtn" class="btn btn-primary">Compile</button>
+                                <button id="deployBtn" class="btn btn-success" disabled>Deploy</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contract Info & Interaction -->
+                    <div>
+                        <div class="card mb-4">
+                            <h3>Contract Info</h3>
+                            <div style="font-size: 14px;">
+                                <div>Address: <span id="contractAddress" class="text-blue mono">Not deployed</span></div>
+                                <div>Bytecode Length: <span id="bytecodeLength" class="text-green">0 bytes</span></div>
+                                <div>Deployment Cost: <span id="deploymentCost" class="text-red">0 gas</span></div>
+                            </div>
+                        </div>
+                        
+                        <div id="functionCalls" class="card mb-4 hidden">
+                            <h3>Function Calls</h3>
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="executeFunction('set(uint256)')">set(uint256)</button>
+                            <button class="btn btn-primary" style="width: 100%;" onclick="executeFunction('get()')">get()</button>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Execution Log</h3>
+                            <div id="executionLog" class="log-container">
+                                <div class="text-gray">No logs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gas Analysis Tab -->
+            <div id="gas-content" class="tab-content hidden">
+                <h2 class="section-title">Gas Analysis & Optimization</h2>
+                
+                <div class="grid grid-4 mb-6">
+                    <div class="card">
+                        <h3 class="text-blue">Deployment</h3>
+                        <div id="gasDeployment" class="metric">0</div>
+                        <div class="metric-label">gas units</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-green">Execution</h3>
+                        <div id="gasExecution" class="metric">0</div>
+                        <div class="metric-label">gas units</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-yellow">Storage</h3>
+                        <div id="gasStorage" class="metric">20,000</div>
+                        <div class="metric-label">gas units</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-purple">Computation</h3>
+                        <div id="gasComputation" class="metric">5,000</div>
+                        <div class="metric-label">gas units</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Gas Price Analysis</h3>
+                    <div class="grid grid-3">
+                        <div>
+                            <div class="metric-label">Current Gas Price</div>
+                            <div class="metric text-green"><span id="currentGasPrice">20</span> gwei</div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Estimated Cost (USD)</div>
+                            <div class="metric text-blue">$<span id="estimatedCost">2.40</span></div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Optimization Potential</div>
+                            <div class="metric text-yellow">-<span id="optimizationPotential">25</span>%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validators Tab -->
+            <div id="validators-content" class="tab-content hidden">
+                <h2 class="section-title">Proof of Stake Validators</h2>
+                
+                <div class="grid grid-3 mb-6">
+                    <div class="card">
+                        <h3 class="text-blue">Active Validators</h3>
+                        <div id="activeValidators" class="metric">850,000</div>
+                        <div class="metric-label">of 935,000 total</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-green">Total Staked ETH</h3>
+                        <div id="totalStaked" class="metric">27.2M</div>
+                        <div class="metric-label">ETH staked</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-purple">Your Rewards</h3>
+                        <div id="stakingRewards" class="metric">0.0000</div>
+                        <div class="metric-label">ETH earned</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Validator Status</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Validator ID</th>
+                                    <th>Address</th>
+                                    <th>Stake (ETH)</th>
+                                    <th>Status</th>
+                                    <th>Effectiveness</th>
+                                    <th>Rewards</th>
+                                </tr>
+                            </thead>
+                            <tbody id="validatorsTable">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactions-content" class="tab-content hidden">
+                <h2 class="section-title">Transaction Pool</h2>
+                
+                <div class="flex justify-between mb-4">
+                    <div style="font-size: 1.1rem;">
+                        Pending Transactions: <span id="pendingTxCount" class="text-yellow" style="font-weight: bold;">12</span>
+                    </div>
+                    <button id="addTxBtn" class="btn btn-primary">Add Transaction</button>
+                </div>
+                
+                <div class="card">
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Hash</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Value (ETH)</th>
+                                    <th>Gas Price</th>
+                                    <th>Gas Limit</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Stats Tab -->
+            <div id="network-content" class="tab-content hidden">
+                <h2 class="section-title">Network Statistics</h2>
+                
+                <div class="grid grid-4 mb-6">
+                    <div class="card">
+                        <h3 class="text-blue">Block Height</h3>
+                        <div id="networkBlockHeight" class="metric">18,500,000</div>
+                        <div class="metric-label">Latest block</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-green">Network Hashrate</h3>
+                        <div id="networkHashrate" class="metric">850 TH/s</div>
+                        <div class="metric-label">Total hashpower</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-yellow">Gas Price</h3>
+                        <div id="networkGasPrice" class="metric">20 gwei</div>
+                        <div class="metric-label">Standard</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-purple">Finality</h3>
+                        <div class="metric">12.8s</div>
+                        <div class="metric-label">Average time</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3>Protocol Metrics</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="flex justify-between">
+                                <span>Block Time:</span>
+                                <span class="text-green">12.05s</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>TPS (Transactions/sec):</span>
+                                <span class="text-blue">15.2</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Network Utilization:</span>
+                                <span class="text-yellow">67%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Active Nodes:</span>
+                                <span class="text-purple">8,247</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Recent Blocks</h3>
+                        <div id="recentBlocks" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let isRunning = false;
+        let blockNumber = 18500000;
+        let gasPrice = 20;
+        let networkHashrate = 850;
+        let activeValidators = 850000;
+        let pendingTxs = 12;
+        let stakingRewards = 0;
+        let gasUsed = 0;
+        let currentOpcode = '';
+        let evmStack = [];
+        let evmMemory = [];
+        let evmStorage = {};
+        let contractAddress = '';
+        let compiledBytecode = '';
+        let executionLog = [];
+        let validators = [];
+        let txPool = [];
+        let gasAnalysis = {
+            deployment: 0,
+            execution: 0,
+            storage: 20000,
+            computation: 5000
+        };
+
+        // Utility functions
+        function randomHex(length) {
+            return Math.random().toString(16).substr(2, length);
+        }
+
+        function randomAddress() {
+            return '0x' + randomHex(40);
+        }
+
+        function randomHash() {
+            return '0x' + randomHex(64);
+        }
+
+        // Initialize data
+        function initializeData() {
+            // Initialize validators
+            validators = Array.from({ length: 10 }, (_, i) => ({
+                id: i + 1,
+                address: randomAddress(),
+                stake: Math.floor(Math.random() * 32) + 32,
+                isActive: Math.random() > 0.1,
+                effectiveness: 95 + Math.random() * 5,
+                rewards: Math.floor(Math.random() * 100) / 100
+            }));
+
+            // Initialize transaction pool
+            txPool = Array.from({ length: 5 }, (_, i) => ({
+                hash: randomHash(),
+                from: randomAddress(),
+                to: randomAddress(),
+                value: Math.floor(Math.random() * 10),
+                gasPrice: 15 + Math.floor(Math.random() * 20),
+                gasLimit: 21000 + Math.floor(Math.random() * 50000),
+                status: 'pending'
+            }));
+
+            updateValidatorsTable();
+            updateTransactionsTable();
+            updateRecentBlocks();
+        }
+
+        // Tab switching
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.add('hidden'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + '-content').classList.remove('hidden');
+                });
+            });
+        }
+
+        // Simulation control
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('playPauseBtn');
+            
+            if (isRunning) {
+                btn.innerHTML = '<i class="fas fa-pause"></i><span>Pause Simulation</span>';
+                btn.className = 'btn btn-danger';
+                startSimulation();
+            } else {
+                btn.innerHTML = '<i class="fas fa-play"></i><span>Start Simulation</span>';
+                btn.className = 'btn btn-success';
+            }
+        }
+
+        function resetSimulation() {
+            isRunning = false;
+            blockNumber = 18500000;
+            gasPrice = 20;
+            gasUsed = 0;
+            executionLog = [];
+            evmStack = [];
+            evmMemory = [];
+            evmStorage = {};
+            compiledBytecode = '';
+            contractAddress = '';
+            currentOpcode = '';
+            stakingRewards = 0;
+
+            const btn = document.getElementById('playPauseBtn');
+            btn.innerHTML = '<i class="fas fa-play"></i><span>Start Simulation</span>';
+            btn.className = 'btn btn-success';
+
+            updateAllDisplays();
+            clearExecutionLog();
+            clearEVMState();
+        }
+
+        function startSimulation() {
+            if (!isRunning) return;
+
+            // Update blockchain metrics
+            blockNumber += 1;
+            gasPrice = Math.max(1, gasPrice + Math.floor(Math.random() * 6) - 3);
+            networkHashrate += Math.floor(Math.random() * 20) - 10;
+            pendingTxs = Math.max(0, pendingTxs + Math.floor(Math.random() * 8) - 4);
+            stakingRewards += Math.random() * 0.001;
+
+            // Update validators
+            validators = validators.map(v => ({
+                ...v,
+                effectiveness: Math.min(100, Math.max(90, v.effectiveness + Math.random() * 2 - 1)),
+                rewards: v.rewards + Math.random() * 0.01
+            }));
+
+            updateAllDisplays();
+            updateValidatorsTable();
+            updateRecentBlocks();
+
+            if (isRunning) {
+                setTimeout(startSimulation, 2000);
+            }
+        }
+
+        // Contract functions
+        function compileContract() {
+            const code = document.getElementById('contractCode').value;
+            if (!code.trim()) {
+                addLog('error', 'No contract code to compile');
+                return;
+            }
+
+            // Simulate compilation
+            compiledBytecode = '608060405234801561001057600080fd5b506004361061004c5760003560e01c80632a1afcd914610051578063' + randomHex(40);
+            contractAddress = '';
+
+            // Update gas analysis
+            gasAnalysis.deployment = 127000 + Math.floor(Math.random() * 50000);
+            gasAnalysis.execution = 21000 + Math.floor(Math.random() * 30000);
+
+            document.getElementById('bytecodeLength').textContent = compiledBytecode.length + ' bytes';
+            document.getElementById('deploymentCost').textContent = gasAnalysis.deployment.toLocaleString() + ' gas';
+            document.getElementById('deployBtn').disabled = false;
+
+            updateGasAnalysis();
+            addLog('info', 'Contract compiled successfully');
+        }
+
+        function deployContract() {
+            if (!compiledBytecode) {
+                addLog('error', 'No compiled bytecode found');
+                return;
+            }
+
+            contractAddress = randomAddress();
+            currentOpcode = 'CREATE';
+            evmStack = ['0x0', contractAddress, '0x1f4'];
+            evmMemory = ['60', '80', '60', '40', '52'];
+            evmStorage = { '0x0': '0x42' };
+            gasUsed += gasAnalysis.deployment;
+
+            document.getElementById('contractAddress').textContent = contractAddress;
+            document.getElementById('functionCalls').classList.remove('hidden');
+
+            updateEVMState();
+            addLog('success', `Contract deployed at ${contractAddress}`);
+            addLog('info', `Gas used: ${gasAnalysis.deployment.toLocaleString()}`);
+        }
+
+        function executeFunction(funcName) {
+            if (!contractAddress) {
+                addLog('error', 'No contract deployed');
+                return;
+            }
+
+            currentOpcode = 'CALL';
+            const newGasUsed = 21000 + Math.floor(Math.random() * 30000);
+            gasUsed += newGasUsed;
+
+            // Simulate stack operations
+            evmStack = [...evmStack.slice(-3), '0x1', '0x42', '0x0'];
+            evmMemory = [...evmMemory, '20', '00', '00', '00'];
+
+            updateEVMState();
+            addLog('success', `Function ${funcName} executed`);
+            addLog('info', `Gas used: ${newGasUsed.toLocaleString()}`);
+        }
+
+        function addTransaction() {
+            const newTx = {
+                hash: randomHash(),
+                from: randomAddress(),
+                to: contractAddress || randomAddress(),
+                value: Math.floor(Math.random() * 5),
+                gasPrice: gasPrice + Math.floor(Math.random() * 10),
+                gasLimit: 50000 + Math.floor(Math.random() * 100000),
+                status: 'pending'
+            };
+
+            txPool = [...txPool, newTx].slice(-10);
+            pendingTxs += 1;
+            updateTransactionsTable();
+            updateAllDisplays();
+        }
+
+        // Display update functions
+        function updateAllDisplays() {
+            document.getElementById('blockNumber').textContent = blockNumber.toLocaleString();
+            document.getElementById('gasPrice').textContent = gasPrice + ' gwei';
+            document.getElementById('pendingTxs').textContent = pendingTxs;
+            document.getElementById('gasUsed').textContent = gasUsed.toLocaleString();
+            document.getElementById('currentOpcode').textContent = currentOpcode || 'STOP';
+            document.getElementById('programCounter').textContent = '0x' + Math.floor(Math.random() * 255).toString(16).padStart(2, '0');
+            document.getElementById('networkBlockHeight').textContent = blockNumber.toLocaleString();
+            document.getElementById('networkGasPrice').textContent = gasPrice + ' gwei';
+            document.getElementById('currentGasPrice').textContent = gasPrice;
+            document.getElementById('stakingRewards').textContent = stakingRewards.toFixed(4);
+            document.getElementById('pendingTxCount').textContent = pendingTxs;
+
+            // Update gas analysis displays
+            const executionGas = gasAnalysis.execution || 0;
+            document.getElementById('estimatedCost').textContent = (executionGas * gasPrice * 0.000000001 * 2400).toFixed(2);
+            document.getElementById('optimizationPotential').textContent = Math.floor(Math.random() * 30 + 10);
+        }
+
+        function updateGasAnalysis() {
+            document.getElementById('gasDeployment').textContent = gasAnalysis.deployment.toLocaleString();
+            document.getElementById('gasExecution').textContent = gasAnalysis.execution.toLocaleString();
+            document.getElementById('gasStorage').textContent = gasAnalysis.storage.toLocaleString();
+            document.getElementById('gasComputation').textContent = gasAnalysis.computation.toLocaleString();
+        }
+
+        function updateEVMState() {
+            // Update stack
+            const stackContainer = document.getElementById('evmStack');
+            if (evmStack.length === 0) {
+                stackContainer.innerHTML = '<div class="text-gray">Empty</div>';
+            } else {
+                stackContainer.innerHTML = evmStack.map((item, i) => 
+                    `<div class="stack-item">[${evmStack.length - 1 - i}] ${item}</div>`
+                ).join('');
+            }
+
+            // Update memory
+            const memoryContainer = document.getElementById('evmMemory');
+            if (evmMemory.length === 0) {
+                memoryContainer.innerHTML = '<div class="text-gray">Empty</div>';
+            } else {
+                memoryContainer.innerHTML = evmMemory.map(byte => 
+                    `<span class="memory-byte">${byte}</span>`
+                ).join('');
+            }
+
+            // Update storage
+            const storageContainer = document.getElementById('evmStorage');
+            if (Object.keys(evmStorage).length === 0) {
+                storageContainer.innerHTML = '<div class="text-gray">Empty</div>';
+            } else {
+                storageContainer.innerHTML = Object.entries(evmStorage).map(([key, value]) => 
+                    `<div class="stack-item">${key}: ${value}</div>`
+                ).join('');
+            }
+        }
+
+        function updateValidatorsTable() {
+            const tbody = document.getElementById('validatorsTable');
+            tbody.innerHTML = validators.slice(0, 8).map(validator => `
+                <tr>
+                    <td class="mono">#${validator.id}</td>
+                    <td class="mono text-blue">${validator.address.slice(0, 10)}...</td>
+                    <td>${validator.stake}</td>
+                    <td>
+                        <span class="badge ${validator.isActive ? 'badge-success' : 'badge-danger'}">
+                            ${validator.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${validator.effectiveness.toFixed(1)}%</td>
+                    <td class="text-green">${validator.rewards.toFixed(4)} ETH</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTransactionsTable() {
+            const tbody = document.getElementById('transactionsTable');
+            tbody.innerHTML = txPool.map(tx => `
+                <tr>
+                    <td class="mono text-blue">${tx.hash.slice(0, 12)}...</td>
+                    <td class="mono text-gray">${tx.from.slice(0, 8)}...</td>
+                    <td class="mono text-gray">${tx.to.slice(0, 8)}...</td>
+                    <td>${tx.value}</td>
+                    <td>${tx.gasPrice} gwei</td>
+                    <td>${tx.gasLimit.toLocaleString()}</td>
+                    <td>
+                        <span class="badge ${
+                            tx.status === 'pending' ? 'badge-warning' :
+                            tx.status === 'confirmed' ? 'badge-success' : 'badge-danger'
+                        }">
+                            ${tx.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateRecentBlocks() {
+            const container = document.getElementById('recentBlocks');
+            container.innerHTML = Array.from({ length: 5 }, (_, i) => `
+                <div class="flex justify-between" style="background: rgba(107, 114, 128, 0.3); padding: 10px; border-radius: 6px;">
+                    <span class="mono">${(blockNumber - i).toLocaleString()}</span>
+                    <span class="text-gray" style="font-size: 14px;">${Math.floor(Math.random() * 200) + 100} txs</span>
+                    <span class="text-green" style="font-size: 14px;">${(Math.random() * 3 + 10).toFixed(1)}s ago</span>
+                </div>
+            `).join('');
+        }
+
+        function addLog(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            executionLog.push({ type, message, timestamp });
+            
+            const container = document.getElementById('executionLog');
+            const logHtml = executionLog.slice(-10).map(log => 
+                `<div class="log-entry log-${log.type}">
+                    [${log.timestamp}] ${log.message}
+                </div>`
+            ).join('');
+            
+            container.innerHTML = logHtml || '<div class="text-gray">No logs</div>';
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearExecutionLog() {
+            executionLog = [];
+            document.getElementById('executionLog').innerHTML = '<div class="text-gray">No logs</div>';
+        }
+
+        function clearEVMState() {
+            evmStack = [];
+            evmMemory = [];
+            evmStorage = {};
+            currentOpcode = '';
+            updateEVMState();
+            
+            document.getElementById('contractAddress').textContent = 'Not deployed';
+            document.getElementById('bytecodeLength').textContent = '0 bytes';
+            document.getElementById('deploymentCost').textContent = '0 gas';
+            document.getElementById('deployBtn').disabled = true;
+            document.getElementById('functionCalls').classList.add('hidden');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeData();
+            updateAllDisplays();
+            updateGasAnalysis();
+            updateEVMState();
+
+            // Button event listeners
+            document.getElementById('playPauseBtn').addEventListener('click', toggleSimulation);
+            document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+            document.getElementById('compileBtn').addEventListener('click', compileContract);
+            document.getElementById('deployBtn').addEventListener('click', deployContract);
+            document.getElementById('addTxBtn').addEventListener('click', addTransaction);
+        });
+    </script>
+</body>
+</html>

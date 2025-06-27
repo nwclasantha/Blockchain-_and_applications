@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced DeFi Lending Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wallet-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .wallet-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .pools-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pools-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .pool-filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border-color: transparent;
+        }
+
+        .pools-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .pool-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+        }
+
+        .pool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .pool-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .token-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .pool-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .pool-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .supply-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+        }
+
+        .borrow-btn {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .portfolio-card,
+        .transaction-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .portfolio-card h3,
+        .transaction-card h3 {
+            margin-bottom: 20px;
+            color: #e2e8f0;
+        }
+
+        .portfolio-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .portfolio-item:last-child {
+            border-bottom: none;
+        }
+
+        .health-factor {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .health-factor.safe {
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+
+        .health-factor.warning {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .max-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .advanced-features {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .feature-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .flash-loan-section {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.1));
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .leverage-controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .leverage-slider {
+            width: 100%;
+        }
+
+        .risk-indicator {
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .risk-low {
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+
+        .risk-medium {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+        }
+
+        .risk-high {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .pool-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .price-chart {
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 60%;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            width: 2px;
+            animation: chartAnimation 3s ease-in-out infinite;
+        }
+
+        @keyframes chartAnimation {
+            0%, 100% { height: 60%; }
+            50% { height: 80%; }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .yield-farming {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .reward-token {
+            display: inline-block;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚀 DeFi Lending Simulator</h1>
+            <p>Experience advanced decentralized finance lending protocols</p>
+        </header>
+
+        <div class="wallet-info">
+            <div class="wallet-card">
+                <h3>Total Portfolio Value</h3>
+                <div class="stat-value" id="portfolioValue">$10,000.00</div>
+            </div>
+            <div class="wallet-card">
+                <h3>Net APY</h3>
+                <div class="stat-value" id="netApy">+5.2%</div>
+            </div>
+            <div class="wallet-card">
+                <h3>Health Factor</h3>
+                <div class="stat-value" id="healthFactor">∞</div>
+            </div>
+            <div class="wallet-card">
+                <h3>Rewards Earned</h3>
+                <div class="stat-value" id="rewardsEarned">$127.50</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="pools-section">
+                <div class="pools-header">
+                    <h2>Lending Pools</h2>
+                    <div class="pool-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="supply">Supply</button>
+                        <button class="filter-btn" data-filter="borrow">Borrow</button>
+                        <button class="filter-btn" data-filter="stable">Stablecoins</button>
+                    </div>
+                </div>
+                <div class="pools-grid" id="poolsGrid">
+                    <!-- Pools will be generated here -->
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="portfolio-card">
+                    <h3>Your Positions</h3>
+                    <div id="healthFactorDisplay" class="health-factor safe">
+                        Health Factor: <span id="healthFactorValue">∞</span>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Safe Position</div>
+                    </div>
+                    <div id="portfolioList">
+                        <div class="portfolio-item">
+                            <span>No positions yet</span>
+                            <span>Start lending or borrowing!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transaction-card">
+                    <h3>Recent Transactions</h3>
+                    <div id="transactionList">
+                        <div class="transaction-item">
+                            <span>No transactions yet</span>
+                            <span>-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="advanced-features">
+            <h2>Advanced Features</h2>
+            <div class="feature-tabs">
+                <button class="tab-btn active" data-tab="yield">Yield Farming</button>
+                <button class="tab-btn" data-tab="flash">Flash Loans</button>
+                <button class="tab-btn" data-tab="leverage">Leverage Trading</button>
+                <button class="tab-btn" data-tab="liquidation">Liquidation</button>
+            </div>
+
+            <div class="tab-content active" id="yield-tab">
+                <div class="yield-farming">
+                    <h4>Available Yield Farms</h4>
+                    <p>Earn additional rewards by providing liquidity to lending pools:</p>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span>ETH Supply Pool</span>
+                            <div>
+                                <span class="reward-token">COMP</span>
+                                <span class="reward-token">AAVE</span>
+                                <span style="margin-left: 10px;">+12.5% APR</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span>USDC-USDT LP</span>
+                            <div>
+                                <span class="reward-token">CRV</span>
+                                <span style="margin-left: 10px;">+18.2% APR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="flash-tab">
+                <div class="flash-loan-section">
+                    <h4>Flash Loan Simulator</h4>
+                    <p>Borrow instantly without collateral (must repay in same transaction):</p>
+                    <div style="margin-top: 15px;">
+                        <input type="number" placeholder="Flash loan amount" style="width: 70%; padding: 10px; margin-right: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white;">
+                        <button class="action-btn supply-btn" style="width: 25%;">Execute</button>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9rem; color: #94a3b8;">
+                        Fee: 0.09% | Max: $10M per asset
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="leverage-tab">
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 20px;">
+                    <h4>Leverage Trading</h4>
+                    <div class="leverage-controls">
+                        <div>
+                            <label>Leverage: <span id="leverageValue">2x</span></label>
+                            <input type="range" class="leverage-slider" min="1" max="10" value="2" id="leverageSlider">
+                        </div>
+                        <button class="action-btn borrow-btn">Open Position</button>
+                    </div>
+                    <div class="risk-indicator risk-low" id="riskIndicator">
+                        Low Risk - Safe leverage level
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="liquidation-tab">
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 15px; padding: 20px;">
+                    <h4>Liquidation Dashboard</h4>
+                    <p>Monitor positions at risk of liquidation:</p>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Positions at Risk:</span>
+                            <span style="color: #ef4444;">3 accounts</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Total Liquidatable:</span>
+                            <span style="color: #f59e0b;">$2.3M</span>
+                        </div>
+                        <button class="action-btn" style="background: linear-gradient(45deg, #ef4444, #dc2626); width: 100%; margin-top: 10px;">
+                            Liquidate Positions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Supply/Borrow -->
+    <div class="modal" id="actionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Supply ETH</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="input-group" style="position: relative;">
+                <label for="amountInput">Amount</label>
+                <input type="number" id="amountInput" placeholder="0.0" step="0.01">
+                <button class="max-btn" onclick="setMaxAmount()">MAX</button>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Current APY:</span>
+                    <span id="currentApy">4.2%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Your balance:</span>
+                    <span id="currentBalance">5.0 ETH</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Health factor after:</span>
+                    <span id="healthAfter">2.5</span>
+                </div>
+            </div>
+            <button class="submit-btn" id="submitBtn" onclick="executeAction()">
+                Supply ETH
+            </button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        Transaction successful!
+    </div>
+
+    <script>
+        // DeFi Simulator State
+        let userBalances = {
+            ETH: 5.0,
+            USDC: 10000,
+            DAI: 5000,
+            WBTC: 0.25,
+            LINK: 500,
+            AAVE: 100
+        };
+
+        let userPositions = {
+            supplied: {},
+            borrowed: {}
+        };
+
+        let currentAction = null;
+        let currentToken = null;
+
+        // Pool data with dynamic rates
+        const pools = {
+            ETH: {
+                name: 'Ethereum',
+                symbol: 'ETH',
+                icon: '🔷',
+                color: '#627eea',
+                price: 3200,
+                totalSupply: 125000,
+                totalBorrow: 87500,
+                supplyApy: 4.2,
+                borrowApy: 6.8,
+                ltv: 0.8,
+                liquidationThreshold: 0.85,
+                isStable: false
+            },
+            USDC: {
+                name: 'USD Coin',
+                symbol: 'USDC',
+                icon: '💵',
+                color: '#2775ca',
+                price: 1.00,
+                totalSupply: 500000000,
+                totalBorrow: 350000000,
+                supplyApy: 3.5,
+                borrowApy: 5.2,
+                ltv: 0.9,
+                liquidationThreshold: 0.95,
+                isStable: true
+            },
+            DAI: {
+                name: 'Dai Stablecoin',
+                symbol: 'DAI',
+                icon: '🟡',
+                color: '#f5ac37',
+                price: 0.999,
+                totalSupply: 400000000,
+                totalBorrow: 280000000,
+                supplyApy: 3.8,
+                borrowApy: 5.5,
+                ltv: 0.85,
+                liquidationThreshold: 0.9,
+                isStable: true
+            },
+            WBTC: {
+                name: 'Wrapped Bitcoin',
+                symbol: 'WBTC',
+                icon: '₿',
+                color: '#f7931a',
+                price: 65000,
+                totalSupply: 15000,
+                totalBorrow: 10500,
+                supplyApy: 2.8,
+                borrowApy: 4.5,
+                ltv: 0.75,
+                liquidationThreshold: 0.8,
+                isStable: false
+            },
+            LINK: {
+                name: 'Chainlink',
+                symbol: 'LINK',
+                icon: '🔗',
+                color: '#375bd2',
+                price: 25,
+                totalSupply: 2000000,
+                totalBorrow: 1400000,
+                supplyApy: 5.5,
+                borrowApy: 8.2,
+                ltv: 0.7,
+                liquidationThreshold: 0.75,
+                isStable: false
+            },
+            AAVE: {
+                name: 'Aave',
+                symbol: 'AAVE',
+                icon: '👻',
+                color: '#b6509e',
+                price: 120,
+                totalSupply: 500000,
+                totalBorrow: 350000,
+                supplyApy: 6.2,
+                borrowApy: 9.5,
+                ltv: 0.65,
+                liquidationThreshold: 0.7,
+                isStable: false
+            }
+        };
+
+        // Initialize the simulator
+        function init() {
+            renderPools();
+            updatePortfolio();
+            updateTransactions();
+            setupEventListeners();
+            startPriceUpdates();
+        }
+
+        // Render lending pools
+        function renderPools() {
+            const poolsGrid = document.getElementById('poolsGrid');
+            poolsGrid.innerHTML = '';
+
+            Object.keys(pools).forEach(symbol => {
+                const pool = pools[symbol];
+                const utilization = (pool.totalBorrow / pool.totalSupply * 100).toFixed(1);
+                
+                const poolCard = document.createElement('div');
+                poolCard.className = 'pool-card';
+                poolCard.innerHTML = `
+                    <div class="pool-header">
+                        <div class="token-icon" style="background: ${pool.color}">
+                            ${pool.icon}
+                        </div>
+                        <div>
+                            <h3>${pool.name}</h3>
+                            <div style="color: #94a3b8;">$${pool.price.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="price-chart">
+                        <div class="chart-line" style="left: 10%; animation-delay: 0s;"></div>
+                        <div class="chart-line" style="left: 20%; animation-delay: 0.2s;"></div>
+                        <div class="chart-line" style="left: 30%; animation-delay: 0.4s;"></div>
+                        <div class="chart-line" style="left: 40%; animation-delay: 0.6s;"></div>
+                        <div class="chart-line" style="left: 50%; animation-delay: 0.8s;"></div>
+                        <div class="chart-line" style="left: 60%; animation-delay: 1s;"></div>
+                        <div class="chart-line" style="left: 70%; animation-delay: 1.2s;"></div>
+                        <div class="chart-line" style="left: 80%; animation-delay: 1.4s;"></div>
+                        <div class="chart-line" style="left: 90%; animation-delay: 1.6s;"></div>
+                    </div>
+                    <div class="pool-stats">
+                        <div class="stat">
+                            <div class="stat-label">Supply APY</div>
+                            <div class="stat-value" style="color: #10b981">${pool.supplyApy.toFixed(2)}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Borrow APY</div>
+                            <div class="stat-value" style="color: #f59e0b">${pool.borrowApy.toFixed(2)}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Utilization</div>
+                            <div class="stat-value">${utilization}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Liquidity</div>
+                            <div class="stat-value">$${((pool.totalSupply - pool.totalBorrow) * pool.price / 1000000).toFixed(1)}M</div>
+                        </div>
+                    </div>
+                    <div class="pool-actions">
+                        <button class="action-btn supply-btn" onclick="openModal('supply', '${symbol}')">
+                            Supply
+                        </button>
+                        <button class="action-btn borrow-btn" onclick="openModal('borrow', '${symbol}')">
+                            Borrow
+                        </button>
+                    </div>
+                `;
+                poolsGrid.appendChild(poolCard);
+            });
+        }
+
+        // Open action modal
+        function openModal(action, token) {
+            currentAction = action;
+            currentToken = token;
+            const modal = document.getElementById('actionModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const currentApy = document.getElementById('currentApy');
+            const currentBalance = document.getElementById('currentBalance');
+            
+            modalTitle.textContent = `${action.charAt(0).toUpperCase() + action.slice(1)} ${token}`;
+            submitBtn.textContent = `${action.charAt(0).toUpperCase() + action.slice(1)} ${token}`;
+            
+            const pool = pools[token];
+            currentApy.textContent = action === 'supply' ? 
+                `${pool.supplyApy.toFixed(2)}%` : 
+                `${pool.borrowApy.toFixed(2)}%`;
+            
+            currentBalance.textContent = `${userBalances[token] || 0} ${token}`;
+            
+            modal.classList.add('active');
+            document.getElementById('amountInput').focus();
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('actionModal');
+            modal.classList.remove('active');
+            document.getElementById('amountInput').value = '';
+        }
+
+        // Set max amount
+        function setMaxAmount() {
+            const amountInput = document.getElementById('amountInput');
+            if (currentAction === 'supply') {
+                amountInput.value = userBalances[currentToken] || 0;
+            } else {
+                // For borrowing, calculate max based on collateral
+                const maxBorrow = calculateMaxBorrow(currentToken);
+                amountInput.value = maxBorrow;
+            }
+            updateHealthFactor();
+        }
+
+        // Calculate max borrowing capacity
+        function calculateMaxBorrow(token) {
+            let totalCollateralValue = 0;
+            Object.keys(userPositions.supplied).forEach(symbol => {
+                const amount = userPositions.supplied[symbol];
+                const pool = pools[symbol];
+                totalCollateralValue += amount * pool.price * pool.ltv;
+            });
+
+            let totalBorrowValue = 0;
+            Object.keys(userPositions.borrowed).forEach(symbol => {
+                const amount = userPositions.borrowed[symbol];
+                const pool = pools[symbol];
+                totalBorrowValue += amount * pool.price;
+            });
+
+            const availableCredit = totalCollateralValue - totalBorrowValue;
+            const tokenPrice = pools[token].price;
+            return Math.max(0, availableCredit / tokenPrice).toFixed(6);
+        }
+
+        // Execute supply/borrow action
+        function executeAction() {
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount', 'error');
+                return;
+            }
+
+            if (currentAction === 'supply') {
+                if (amount > (userBalances[currentToken] || 0)) {
+                    showNotification('Insufficient balance', 'error');
+                    return;
+                }
+                
+                // Execute supply
+                userBalances[currentToken] = (userBalances[currentToken] || 0) - amount;
+                userPositions.supplied[currentToken] = (userPositions.supplied[currentToken] || 0) + amount;
+                
+                showNotification(`Successfully supplied ${amount} ${currentToken}`, 'success');
+            } else {
+                const maxBorrow = calculateMaxBorrow(currentToken);
+                if (amount > maxBorrow) {
+                    showNotification('Insufficient collateral', 'error');
+                    return;
+                }
+                
+                // Execute borrow
+                userBalances[currentToken] = (userBalances[currentToken] || 0) + amount;
+                userPositions.borrowed[currentToken] = (userPositions.borrowed[currentToken] || 0) + amount;
+                
+                showNotification(`Successfully borrowed ${amount} ${currentToken}`, 'success');
+            }
+
+            // Update display
+            updatePortfolio();
+            updateTransactions();
+            closeModal();
+        }
+
+        // Calculate health factor
+        function calculateHealthFactor() {
+            let totalCollateralValue = 0;
+            let totalBorrowValue = 0;
+
+            Object.keys(userPositions.supplied).forEach(symbol => {
+                const amount = userPositions.supplied[symbol];
+                const pool = pools[symbol];
+                totalCollateralValue += amount * pool.price * pool.liquidationThreshold;
+            });
+
+            Object.keys(userPositions.borrowed).forEach(symbol => {
+                const amount = userPositions.borrowed[symbol];
+                const pool = pools[symbol];
+                totalBorrowValue += amount * pool.price;
+            });
+
+            if (totalBorrowValue === 0) return Infinity;
+            return totalCollateralValue / totalBorrowValue;
+        }
+
+        // Update health factor in modal
+        function updateHealthFactor() {
+            const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+            const healthAfter = document.getElementById('healthAfter');
+            
+            // Simulate the action
+            let tempSupplied = { ...userPositions.supplied };
+            let tempBorrowed = { ...userPositions.borrowed };
+            
+            if (currentAction === 'supply') {
+                tempSupplied[currentToken] = (tempSupplied[currentToken] || 0) + amount;
+            } else {
+                tempBorrowed[currentToken] = (tempBorrowed[currentToken] || 0) + amount;
+            }
+            
+            // Calculate new health factor
+            let totalCollateralValue = 0;
+            let totalBorrowValue = 0;
+            
+            Object.keys(tempSupplied).forEach(symbol => {
+                const amt = tempSupplied[symbol];
+                const pool = pools[symbol];
+                totalCollateralValue += amt * pool.price * pool.liquidationThreshold;
+            });
+            
+            Object.keys(tempBorrowed).forEach(symbol => {
+                const amt = tempBorrowed[symbol];
+                const pool = pools[symbol];
+                totalBorrowValue += amt * pool.price;
+            });
+            
+            const newHealthFactor = totalBorrowValue === 0 ? Infinity : totalCollateralValue / totalBorrowValue;
+            healthAfter.textContent = newHealthFactor === Infinity ? '∞' : newHealthFactor.toFixed(2);
+            
+            // Color code the health factor
+            if (newHealthFactor < 1.1) {
+                healthAfter.style.color = '#ef4444';
+            } else if (newHealthFactor < 1.5) {
+                healthAfter.style.color = '#f59e0b';
+            } else {
+                healthAfter.style.color = '#10b981';
+            }
+        }
+
+        // Update portfolio display
+        function updatePortfolio() {
+            const portfolioList = document.getElementById('portfolioList');
+            const healthFactorDisplay = document.getElementById('healthFactorDisplay');
+            const healthFactorValue = document.getElementById('healthFactorValue');
+            const portfolioValue = document.getElementById('portfolioValue');
+            const netApy = document.getElementById('netApy');
+            
+            let hasPositions = false;
+            let totalValue = 0;
+            let weightedSupplyApy = 0;
+            let weightedBorrowApy = 0;
+            let totalSupplyValue = 0;
+            let totalBorrowValue = 0;
+            
+            portfolioList.innerHTML = '';
+            
+            // Display supplied positions
+            Object.keys(userPositions.supplied).forEach(symbol => {
+                const amount = userPositions.supplied[symbol];
+                if (amount > 0) {
+                    hasPositions = true;
+                    const pool = pools[symbol];
+                    const value = amount * pool.price;
+                    totalValue += value;
+                    totalSupplyValue += value;
+                    weightedSupplyApy += pool.supplyApy * value;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'portfolio-item';
+                    item.innerHTML = `
+                        <span>📈 ${amount.toFixed(4)} ${symbol}</span>
+                        <span style="color: #10b981">$${value.toFixed(2)}</span>
+                    `;
+                    portfolioList.appendChild(item);
+                }
+            });
+            
+            // Display borrowed positions
+            Object.keys(userPositions.borrowed).forEach(symbol => {
+                const amount = userPositions.borrowed[symbol];
+                if (amount > 0) {
+                    hasPositions = true;
+                    const pool = pools[symbol];
+                    const value = amount * pool.price;
+                    totalBorrowValue += value;
+                    weightedBorrowApy += pool.borrowApy * value;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'portfolio-item';
+                    item.innerHTML = `
+                        <span>📉 -${amount.toFixed(4)} ${symbol}</span>
+                        <span style="color: #f59e0b">-$${value.toFixed(2)}</span>
+                    `;
+                    portfolioList.appendChild(item);
+                }
+            });
+            
+            if (!hasPositions) {
+                portfolioList.innerHTML = '<div class="portfolio-item"><span>No positions yet</span><span>Start lending or borrowing!</span></div>';
+            }
+            
+            // Calculate and display health factor
+            const healthFactor = calculateHealthFactor();
+            healthFactorValue.textContent = healthFactor === Infinity ? '∞' : healthFactor.toFixed(2);
+            
+            if (healthFactor === Infinity || healthFactor > 2) {
+                healthFactorDisplay.className = 'health-factor safe';
+                healthFactorDisplay.children[1].textContent = 'Safe Position';
+            } else if (healthFactor > 1.2) {
+                healthFactorDisplay.className = 'health-factor warning';
+                healthFactorDisplay.children[1].textContent = 'Moderate Risk';
+            } else {
+                healthFactorDisplay.className = 'health-factor';
+                healthFactorDisplay.children[1].textContent = 'High Risk';
+            }
+            
+            // Update portfolio metrics
+            const netPortfolioValue = totalValue - totalBorrowValue;
+            portfolioValue.textContent = `$${netPortfolioValue.toFixed(2)}`;
+            
+            // Calculate net APY
+            const avgSupplyApy = totalSupplyValue > 0 ? weightedSupplyApy / totalSupplyValue : 0;
+            const avgBorrowApy = totalBorrowValue > 0 ? weightedBorrowApy / totalBorrowValue : 0;
+            const netApyValue = avgSupplyApy - (avgBorrowApy * totalBorrowValue / Math.max(totalValue, 1));
+            netApy.textContent = `${netApyValue >= 0 ? '+' : ''}${netApyValue.toFixed(2)}%`;
+            netApy.style.color = netApyValue >= 0 ? '#10b981' : '#ef4444';
+        }
+
+        // Update transaction history
+        function updateTransactions() {
+            const transactionList = document.getElementById('transactionList');
+            // This would normally show real transaction history
+            // For demo purposes, we'll show some sample transactions
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Amount input listener for real-time health factor updates
+            document.getElementById('amountInput').addEventListener('input', updateHealthFactor);
+            
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    // Filter logic would go here
+                });
+            });
+            
+            // Tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(`${tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // Leverage slider
+            const leverageSlider = document.getElementById('leverageSlider');
+            const leverageValue = document.getElementById('leverageValue');
+            const riskIndicator = document.getElementById('riskIndicator');
+            
+            leverageSlider.addEventListener('input', () => {
+                const leverage = leverageSlider.value;
+                leverageValue.textContent = `${leverage}x`;
+                
+                if (leverage <= 3) {
+                    riskIndicator.className = 'risk-indicator risk-low';
+                    riskIndicator.textContent = 'Low Risk - Safe leverage level';
+                } else if (leverage <= 6) {
+                    riskIndicator.className = 'risk-indicator risk-medium';
+                    riskIndicator.textContent = 'Medium Risk - Monitor position closely';
+                } else {
+                    riskIndicator.className = 'risk-indicator risk-high';
+                    riskIndicator.textContent = 'High Risk - Liquidation risk!';
+                }
+            });
+            
+            // Close modal on outside click
+            document.getElementById('actionModal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Simulate price updates
+        function startPriceUpdates() {
+            setInterval(() => {
+                Object.keys(pools).forEach(symbol => {
+                    const pool = pools[symbol];
+                    // Small random price movements
+                    const change = (Math.random() - 0.5) * 0.02; // ±1% max change
+                    pool.price *= (1 + change);
+                    
+                    // Update APY based on utilization
+                    const utilization = pool.totalBorrow / pool.totalSupply;
+                    pool.supplyApy = 2 + (utilization * 8);
+                    pool.borrowApy = pool.supplyApy * 1.5;
+                });
+                
+                // Update displays
+                renderPools();
+                updatePortfolio();
+            }, 10000); // Update every 10 seconds
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

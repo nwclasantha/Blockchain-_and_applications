@@ -1,0 +1,29 @@
+🪙 There are two main types of mining rewards:
+1. Block Reward
+This is a fixed amount of new cryptocurrency coins created and given to the miner who successfully mines a new block.
+
+It’s how new coins enter circulation in networks like Bitcoin.
+
+Example:
+In Bitcoin (as of 2024), a miner earns 3.125 BTC for each block mined.
+
+2. Transaction Fees
+Every transaction includes a fee.
+
+The miner who adds the transaction to a block keeps those fees.
+
+The more transactions included, the higher the total fee reward.
+
+🔁 Over time:
+Block rewards decrease (in Bitcoin, they halve every 210,000 blocks).
+
+Eventually, transaction fees will be the only reward, which is designed to make the system sustainable long-term.
+
+💡 Example Breakdown:
+Suppose a miner adds a block that includes 2 BTC in transaction fees.
+
+Block reward = 3.125 BTC
+
+Transaction fees = 2 BTC
+
+Total reward = 5.125 BT

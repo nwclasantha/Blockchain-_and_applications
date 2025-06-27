@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain DID Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .blockchain-visual {
+            grid-column: 1 / -1;
+            min-height: 300px;
+            background: linear-gradient(45deg, #1a202c, #2d3748);
+            color: white;
+            overflow-x: auto;
+        }
+
+        .block-chain {
+            display: flex;
+            padding: 20px;
+            min-width: max-content;
+            align-items: center;
+        }
+
+        .block {
+            background: linear-gradient(45deg, #4299e1, #3182ce);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 0 10px;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .block:hover {
+            transform: translateY(-5px);
+        }
+
+        .block::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #63b3ed;
+        }
+
+        .block:last-child::after {
+            display: none;
+        }
+
+        .block-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+
+        .block-content {
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .identity-form {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        button {
+            background: linear-gradient(45deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #3182ce, #2c5282);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .did-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .did-item {
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .did-item:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+
+        .did-id {
+            font-family: 'Courier New', monospace;
+            color: #2d3748;
+            font-weight: bold;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .did-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+
+        .credential-card {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .credential-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .credential-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .credential-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .network-graph {
+            position: relative;
+            height: 300px;
+            background: radial-gradient(circle, #2d3748, #1a202c);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #4299e1, #3182ce);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .node:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #63b3ed, #4299e1);
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #4299e1, #63b3ed);
+            transform-origin: left center;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background: #48bb78; }
+        .status-pending { background: #ed8936; }
+        .status-revoked { background: #f56565; }
+
+        .transaction-log {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .timestamp {
+            color: #63b3ed;
+            margin-right: 10px;
+        }
+
+        .mining-animation {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .mining-indicator {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #805ad5, #6b46c1);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .verification-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .step {
+            text-align: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .step.active {
+            background: #4299e1;
+            color: white;
+        }
+
+        .step.completed {
+            background: #48bb78;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Advanced Blockchain DID Simulator</h1>
+            <p>Comprehensive Decentralized Identity Management System</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalDIDs">0</div>
+                <div class="stat-label">Total DIDs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalCredentials">0</div>
+                <div class="stat-label">Credentials Issued</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalBlocks">3</div>
+                <div class="stat-label">Blockchain Blocks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="networkNodes">5</div>
+                <div class="stat-label">Network Nodes</div>
+            </div>
+        </div>
+
+        <div class="panel blockchain-visual">
+            <h2>🔗 Blockchain Visualization</h2>
+            <div class="block-chain" id="blockChain">
+                <div class="block">
+                    <div class="block-header">Genesis Block #0</div>
+                    <div class="block-content">
+                        Hash: 0000abc123...<br>
+                        Timestamp: 2024-01-01<br>
+                        Transactions: 0<br>
+                        Nonce: 12345
+                    </div>
+                </div>
+                <div class="block">
+                    <div class="block-header">Block #1</div>
+                    <div class="block-content">
+                        Hash: 0001def456...<br>
+                        Prev: 0000abc123...<br>
+                        DIDs Created: 0<br>
+                        Nonce: 67890
+                    </div>
+                </div>
+                <div class="block">
+                    <div class="block-header">Block #2</div>
+                    <div class="block-content">
+                        Hash: 0002ghi789...<br>
+                        Prev: 0001def456...<br>
+                        Credentials: 0<br>
+                        Nonce: 11111
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="panel">
+                <h2>🆔 Identity Management</h2>
+                <div class="identity-form">
+                    <div class="form-group">
+                        <label>Identity Type:</label>
+                        <select id="identityType">
+                            <option value="individual">Individual</option>
+                            <option value="organization">Organization</option>
+                            <option value="device">IoT Device</option>
+                            <option value="service">Service Provider</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name:</label>
+                        <input type="text" id="fullName" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="email" placeholder="Enter email address">
+                    </div>
+                    <div class="form-group">
+                        <label>Public Key (Auto-generated):</label>
+                        <textarea id="publicKey" readonly rows="3"></textarea>
+                    </div>
+                    <button onclick="createDID()">🔑 Create DID</button>
+                    <button onclick="generateKeys()">🔄 Generate New Keys</button>
+                </div>
+
+                <div class="did-list" id="didList">
+                    <!-- DID items will be populated here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📜 Verifiable Credentials</h2>
+                <div class="identity-form">
+                    <div class="form-group">
+                        <label>Credential Type:</label>
+                        <select id="credentialType">
+                            <option value="education">Educational Degree</option>
+                            <option value="employment">Employment Verification</option>
+                            <option value="license">Professional License</option>
+                            <option value="certification">Industry Certification</option>
+                            <option value="identity">Government ID</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Issuer DID:</label>
+                        <select id="issuerDID">
+                            <option value="">Select an issuer...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject DID:</label>
+                        <select id="subjectDID">
+                            <option value="">Select a subject...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Credential Data:</label>
+                        <textarea id="credentialData" rows="3" placeholder="Enter credential details..."></textarea>
+                    </div>
+                    <button onclick="issueCredential()">📋 Issue Credential</button>
+                    <button onclick="verifyCredential()">✅ Verify Selected</button>
+                </div>
+
+                <div id="credentialList">
+                    <!-- Credential cards will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="panel">
+                <h2>🌐 Trust Network</h2>
+                <div class="network-graph" id="networkGraph">
+                    <!-- Network nodes will be dynamically generated -->
+                </div>
+                <button onclick="refreshNetwork()">🔄 Refresh Network</button>
+                <button onclick="simulateVerification()">🔍 Simulate Verification</button>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Transaction Log</h2>
+                <button onclick="clearLog()">🗑️ Clear Log</button>
+                <button onclick="exportLog()">💾 Export Log</button>
+                <div class="transaction-log" id="transactionLog">
+                    <div class="log-entry">
+                        <span class="timestamp">[12:00:00]</span>
+                        System initialized - Blockchain DID simulator ready
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>⚙️ Advanced Operations</h2>
+            <button onclick="mineBlock()">⛏️ Mine New Block</button>
+            <button onclick="showDIDDocument()">📄 View DID Document</button>
+            <button onclick="revokeCredential()">❌ Revoke Credential</button>
+            <button onclick="exportIdentities()">📤 Export All Identities</button>
+            <button onclick="simulateAttack()">🛡️ Security Test</button>
+            <button onclick="showAnalytics()">📈 Show Analytics</button>
+            
+            <div class="mining-animation" id="miningAnimation" style="display: none;">
+                <div class="mining-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for DID Document Display -->
+    <div class="modal" id="didModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>DID Document</h2>
+            <pre id="didDocumentContent"></pre>
+        </div>
+    </div>
+
+    <!-- Modal for Verification Process -->
+    <div class="modal" id="verificationModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>Credential Verification Process</h2>
+            <div class="verification-steps">
+                <div class="step" id="step1">1. Fetch Credential</div>
+                <div class="step" id="step2">2. Verify Signature</div>
+                <div class="step" id="step3">3. Check Revocation</div>
+                <div class="step" id="step4">4. Validate Chain</div>
+            </div>
+            <div id="verificationResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        let blockchain = [];
+        let identities = [];
+        let credentials = [];
+        let transactionCount = 0;
+        let networkNodes = [];
+
+        // Initialize the simulator
+        function initializeSimulator() {
+            generateKeys();
+            initializeNetwork();
+            logTransaction("Blockchain DID simulator initialized successfully");
+            updateStats();
+        }
+
+        // Generate cryptographic keys (simulated)
+        function generateKeys() {
+            const publicKey = generateRandomKey();
+            document.getElementById('publicKey').value = publicKey;
+        }
+
+        function generateRandomKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '-----BEGIN PUBLIC KEY-----\n';
+            for (let i = 0; i < 64; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+                if ((i + 1) % 16 === 0) result += '\n';
+            }
+            result += '\n-----END PUBLIC KEY-----';
+            return result;
+        }
+
+        // Create a new Decentralized Identity
+        function createDID() {
+            const type = document.getElementById('identityType').value;
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const publicKey = document.getElementById('publicKey').value;
+
+            if (!name || !email) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const did = {
+                id: `did:blockchain:${generateDIDIdentifier()}`,
+                type: type,
+                name: name,
+                email: email,
+                publicKey: publicKey,
+                created: new Date().toISOString(),
+                status: 'active',
+                verificationMethods: [
+                    {
+                        id: '#keys-1',
+                        type: 'Ed25519VerificationKey2020',
+                        publicKeyMultibase: publicKey.slice(0, 50) + '...'
+                    }
+                ]
+            };
+
+            identities.push(did);
+            updateDIDList();
+            updateDropdowns();
+            logTransaction(`DID created: ${did.id} for ${name}`);
+            
+            // Add to blockchain
+            addTransactionToBlock('DID_CREATION', {
+                did: did.id,
+                type: type,
+                timestamp: did.created
+            });
+
+            updateStats();
+            clearForm();
+        }
+
+        function generateDIDIdentifier() {
+            return Math.random().toString(36).substr(2, 16);
+        }
+
+        // Update DID list display
+        function updateDIDList() {
+            const container = document.getElementById('didList');
+            container.innerHTML = '';
+
+            identities.forEach((identity, index) => {
+                const didItem = document.createElement('div');
+                didItem.className = 'did-item';
+                didItem.innerHTML = `
+                    <div class="did-id">${identity.id}</div>
+                    <div class="did-details">
+                        <div><strong>Name:</strong> ${identity.name}</div>
+                        <div><strong>Type:</strong> ${identity.type}</div>
+                        <div><strong>Email:</strong> ${identity.email}</div>
+                        <div><strong>Status:</strong> 
+                            <span class="status-indicator status-${identity.status}"></span>
+                            ${identity.status}
+                        </div>
+                        <div><strong>Created:</strong> ${new Date(identity.created).toLocaleDateString()}</div>
+                        <div><strong>Methods:</strong> ${identity.verificationMethods.length}</div>
+                    </div>
+                `;
+                didItem.onclick = () => showDIDDocument(identity);
+                container.appendChild(didItem);
+            });
+        }
+
+        // Update dropdown menus
+        function updateDropdowns() {
+            const issuerSelect = document.getElementById('issuerDID');
+            const subjectSelect = document.getElementById('subjectDID');
+            
+            // Clear existing options except the first
+            issuerSelect.innerHTML = '<option value="">Select an issuer...</option>';
+            subjectSelect.innerHTML = '<option value="">Select a subject...</option>';
+
+            identities.forEach(identity => {
+                const option1 = new Option(`${identity.name} (${identity.id})`, identity.id);
+                const option2 = new Option(`${identity.name} (${identity.id})`, identity.id);
+                issuerSelect.appendChild(option1);
+                subjectSelect.appendChild(option2);
+            });
+        }
+
+        // Issue a verifiable credential
+        function issueCredential() {
+            const type = document.getElementById('credentialType').value;
+            const issuerDID = document.getElementById('issuerDID').value;
+            const subjectDID = document.getElementById('subjectDID').value;
+            const credentialData = document.getElementById('credentialData').value;
+
+            if (!issuerDID || !subjectDID || !credentialData) {
+                alert('Please fill in all credential fields');
+                return;
+            }
+
+            const credential = {
+                id: `vc:${generateCredentialId()}`,
+                type: ['VerifiableCredential', type],
+                issuer: issuerDID,
+                subject: subjectDID,
+                issuanceDate: new Date().toISOString(),
+                credentialData: credentialData,
+                status: 'active',
+                proof: {
+                    type: 'Ed25519Signature2020',
+                    created: new Date().toISOString(),
+                    verificationMethod: `${issuerDID}#keys-1`,
+                    proofValue: generateProofValue()
+                }
+            };
+
+            credentials.push(credential);
+            updateCredentialList();
+            logTransaction(`Credential issued: ${credential.id} from ${issuerDID} to ${subjectDID}`);
+            
+            // Add to blockchain
+            addTransactionToBlock('CREDENTIAL_ISSUANCE', {
+                credentialId: credential.id,
+                issuer: issuerDID,
+                subject: subjectDID,
+                type: type
+            });
+
+            updateStats();
+            clearCredentialForm();
+        }
+
+        function generateCredentialId() {
+            return Math.random().toString(36).substr(2, 12);
+        }
+
+        function generateProofValue() {
+            return 'z' + Math.random().toString(36).substr(2, 40);
+        }
+
+        // Update credential list display
+        function updateCredentialList() {
+            const container = document.getElementById('credentialList');
+            container.innerHTML = '';
+
+            credentials.forEach(credential => {
+                const issuerName = identities.find(id => id.id === credential.issuer)?.name || 'Unknown';
+                const subjectName = identities.find(id => id.id === credential.subject)?.name || 'Unknown';
+
+                const credCard = document.createElement('div');
+                credCard.className = 'credential-card';
+                credCard.innerHTML = `
+                    <div class="credential-header">
+                        ${credential.type[1]} Credential
+                        <span class="status-indicator status-${credential.status}"></span>
+                    </div>
+                    <div class="credential-body">
+                        <div><strong>ID:</strong> ${credential.id}</div>
+                        <div><strong>Status:</strong> ${credential.status}</div>
+                        <div><strong>Issuer:</strong> ${issuerName}</div>
+                        <div><strong>Subject:</strong> ${subjectName}</div>
+                        <div><strong>Issued:</strong> ${new Date(credential.issuanceDate).toLocaleDateString()}</div>
+                        <div><strong>Data:</strong> ${credential.credentialData}</div>
+                    </div>
+                `;
+                credCard.onclick = () => verifySpecificCredential(credential);
+                container.appendChild(credCard);
+            });
+        }
+
+        // Blockchain operations
+        function addTransactionToBlock(type, data) {
+            const transaction = {
+                id: generateTransactionId(),
+                type: type,
+                data: data,
+                timestamp: new Date().toISOString(),
+                hash: generateTransactionHash()
+            };
+
+            // For simulation, we'll create a new block every 3 transactions
+            transactionCount++;
+            if (transactionCount % 3 === 0) {
+                mineBlock();
+            }
+        }
+
+        function mineBlock() {
+            const miningAnimation = document.getElementById('miningAnimation');
+            miningAnimation.style.display = 'flex';
+
+            setTimeout(() => {
+                const newBlock = {
+                    index: blockchain.length + 3, // Offset for genesis blocks
+                    hash: generateBlockHash(),
+                    previousHash: blockchain.length > 0 ? blockchain[blockchain.length - 1].hash : '0002ghi789...',
+                    timestamp: new Date().toISOString(),
+                    transactions: transactionCount,
+                    nonce: Math.floor(Math.random() * 100000)
+                };
+
+                blockchain.push(newBlock);
+                updateBlockchain();
+                logTransaction(`New block mined: Block #${newBlock.index} with hash ${newBlock.hash.substr(0, 12)}...`);
+                
+                miningAnimation.style.display = 'none';
+                updateStats();
+            }, 2000);
+        }
+
+        function updateBlockchain() {
+            const container = document.getElementById('blockChain');
+            // Keep the first 3 genesis blocks and add new ones
+            const existingBlocks = container.children.length;
+            
+            blockchain.forEach((block, index) => {
+                if (index >= existingBlocks - 3) { // Only add new blocks
+                    const blockDiv = document.createElement('div');
+                    blockDiv.className = 'block';
+                    blockDiv.innerHTML = `
+                        <div class="block-header">Block #${block.index}</div>
+                        <div class="block-content">
+                            Hash: ${block.hash.substr(0, 12)}...<br>
+                            Prev: ${block.previousHash.substr(0, 12)}...<br>
+                            Transactions: ${block.transactions}<br>
+                            Nonce: ${block.nonce}
+                        </div>
+                    `;
+                    container.appendChild(blockDiv);
+                }
+            });
+        }
+
+        // Network visualization
+        function initializeNetwork() {
+            networkNodes = [
+                { id: 'node1', x: 100, y: 100, label: 'Authority' },
+                { id: 'node2', x: 300, y: 80, label: 'Issuer' },
+                { id: 'node3', x: 500, y: 120, label: 'Verifier' },
+                { id: 'node4', x: 200, y: 200, label: 'Holder' },
+                { id: 'node5', x: 400, y: 220, label: 'Registry' }
+            ];
+            renderNetwork();
+        }
+
+        function renderNetwork() {
+            const container = document.getElementById('networkGraph');
+            container.innerHTML = '';
+
+            // Create connections
+            const connections = [
+                { from: 0, to: 1 }, { from: 1, to: 3 },
+                { from: 2, to: 4 }, { from: 3, to: 4 },
+                { from: 0, to: 4 }
+            ];
+
+            connections.forEach(conn => {
+                const line = document.createElement('div');
+                line.className = 'connection';
+                const fromNode = networkNodes[conn.from];
+                const toNode = networkNodes[conn.to];
+                
+                const deltaX = toNode.x - fromNode.x;
+                const deltaY = toNode.y - fromNode.y;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                
+                line.style.left = fromNode.x + 30 + 'px';
+                line.style.top = fromNode.y + 30 + 'px';
+                line.style.width = distance + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                container.appendChild(line);
+            });
+
+            // Create nodes
+            networkNodes.forEach((node, index) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'node';
+                nodeDiv.style.left = node.x + 'px';
+                nodeDiv.style.top = node.y + 'px';
+                nodeDiv.textContent = node.label;
+                nodeDiv.onclick = () => nodeClick(node);
+                container.appendChild(nodeDiv);
+            });
+        }
+
+        function nodeClick(node) {
+            logTransaction(`Network node selected: ${node.label} (${node.id})`);
+        }
+
+        function refreshNetwork() {
+            // Animate node positions
+            networkNodes.forEach(node => {
+                node.x = Math.random() * 450 + 50;
+                node.y = Math.random() * 200 + 50;
+            });
+            renderNetwork();
+            logTransaction('Network topology refreshed');
+        }
+
+        // Verification processes
+        function verifyCredential() {
+            if (credentials.length === 0) {
+                alert('No credentials available to verify');
+                return;
+            }
+
+            const credential = credentials[Math.floor(Math.random() * credentials.length)];
+            verifySpecificCredential(credential);
+        }
+
+        function verifySpecificCredential(credential) {
+            const modal = document.getElementById('verificationModal');
+            modal.style.display = 'block';
+
+            // Reset steps
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.className = 'step';
+            }
+
+            let currentStep = 1;
+            const interval = setInterval(() => {
+                const step = document.getElementById(`step${currentStep}`);
+                step.classList.add('active');
+
+                setTimeout(() => {
+                    step.classList.remove('active');
+                    step.classList.add('completed');
+                    currentStep++;
+
+                    if (currentStep > 4) {
+                        clearInterval(interval);
+                        showVerificationResult(credential);
+                    }
+                }, 1000);
+            }, 1200);
+
+            logTransaction(`Credential verification started for ${credential.id}`);
+        }
+
+        function showVerificationResult(credential) {
+            const result = document.getElementById('verificationResult');
+            const isValid = Math.random() > 0.1; // 90% success rate
+
+            result.innerHTML = `
+                <div style="padding: 20px; margin-top: 20px; border-radius: 8px; 
+                     background: ${isValid ? '#48bb78' : '#f56565'}; color: white;">
+                    <h3>Verification ${isValid ? 'Successful' : 'Failed'}</h3>
+                    <p><strong>Credential ID:</strong> ${credential.id}</p>
+                    <p><strong>Status:</strong> ${isValid ? 'Valid and trusted' : 'Invalid or revoked'}</p>
+                    <p><strong>Issuer Verified:</strong> ${isValid ? 'Yes' : 'No'}</p>
+                    <p><strong>Signature Valid:</strong> ${isValid ? 'Yes' : 'No'}</p>
+                </div>
+            `;
+
+            logTransaction(`Credential verification ${isValid ? 'successful' : 'failed'} for ${credential.id}`);
+        }
+
+        function simulateVerification() {
+            if (identities.length === 0) {
+                alert('Create some identities first to simulate verification');
+                return;
+            }
+
+            const randomIdentity = identities[Math.floor(Math.random() * identities.length)];
+            logTransaction(`Simulating peer verification for ${randomIdentity.name}`);
+            
+            // Simulate network activity
+            setTimeout(() => {
+                logTransaction(`Verification request broadcasted across network`);
+            }, 1000);
+
+            setTimeout(() => {
+                logTransaction(`Consensus reached: Identity ${randomIdentity.name} verified by network`);
+            }, 3000);
+        }
+
+        // Advanced operations
+        function showDIDDocument(identity = null) {
+            if (!identity && identities.length === 0) {
+                alert('No identities available');
+                return;
+            }
+
+            const selectedIdentity = identity || identities[0];
+            const didDocument = {
+                "@context": ["https://www.w3.org/ns/did/v1"],
+                "id": selectedIdentity.id,
+                "verificationMethod": selectedIdentity.verificationMethods,
+                "authentication": ["#keys-1"],
+                "assertion": ["#keys-1"],
+                "capabilityDelegation": ["#keys-1"],
+                "capabilityInvocation": ["#keys-1"],
+                "service": [
+                    {
+                        "id": "#identity-hub",
+                        "type": "IdentityHub",
+                        "serviceEndpoint": "https://hub.example.com"
+                    }
+                ],
+                "created": selectedIdentity.created,
+                "updated": selectedIdentity.created
+            };
+
+            document.getElementById('didDocumentContent').textContent = JSON.stringify(didDocument, null, 2);
+            document.getElementById('didModal').style.display = 'block';
+        }
+
+        function revokeCredential() {
+            if (credentials.length === 0) {
+                alert('No credentials available to revoke');
+                return;
+            }
+
+            const activeCredentials = credentials.filter(c => c.status === 'active');
+            if (activeCredentials.length === 0) {
+                alert('No active credentials to revoke');
+                return;
+            }
+
+            const credential = activeCredentials[Math.floor(Math.random() * activeCredentials.length)];
+            credential.status = 'revoked';
+            credential.revokedAt = new Date().toISOString();
+
+            updateCredentialList();
+            logTransaction(`Credential revoked: ${credential.id}`);
+            
+            addTransactionToBlock('CREDENTIAL_REVOCATION', {
+                credentialId: credential.id,
+                revokedAt: credential.revokedAt
+            });
+        }
+
+        function simulateAttack() {
+            logTransaction('🛡️ Security test initiated...');
+            
+            setTimeout(() => {
+                logTransaction('⚠️ Simulated attack: Attempted DID spoofing detected');
+            }, 1000);
+
+            setTimeout(() => {
+                logTransaction('✅ Security test passed: Attack successfully prevented by blockchain verification');
+            }, 2500);
+        }
+
+        function showAnalytics() {
+            const analytics = {
+                totalTransactions: transactionCount,
+                averageBlockTime: '2.3 seconds',
+                networkLatency: '45ms',
+                securityScore: '98.7%',
+                uptimePercentage: '99.9%'
+            };
+
+            let analyticsText = 'BLOCKCHAIN ANALYTICS REPORT\n';
+            analyticsText += '================================\n';
+            Object.entries(analytics).forEach(([key, value]) => {
+                analyticsText += `${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}\n`;
+            });
+
+            logTransaction('📈 Analytics report generated');
+            alert(analyticsText);
+        }
+
+        // Utility functions
+        function exportIdentities() {
+            const exportData = {
+                identities: identities,
+                credentials: credentials,
+                blockchain: blockchain,
+                timestamp: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'blockchain_identities.json';
+            link.click();
+            
+            logTransaction('📤 Identity data exported successfully');
+        }
+
+        function exportLog() {
+            const logElement = document.getElementById('transactionLog');
+            const logText = logElement.innerText;
+            const blob = new Blob([logText], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'transaction_log.txt';
+            link.click();
+            
+            logTransaction('💾 Transaction log exported');
+        }
+
+        function clearLog() {
+            document.getElementById('transactionLog').innerHTML = '';
+            logTransaction('Transaction log cleared');
+        }
+
+        function logTransaction(message) {
+            const log = document.getElementById('transactionLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('totalDIDs').textContent = identities.length;
+            document.getElementById('totalCredentials').textContent = credentials.length;
+            document.getElementById('totalBlocks').textContent = 3 + blockchain.length;
+            document.getElementById('networkNodes').textContent = networkNodes.length;
+        }
+
+        function clearForm() {
+            document.getElementById('fullName').value = '';
+            document.getElementById('email').value = '';
+            generateKeys();
+        }
+
+        function clearCredentialForm() {
+            document.getElementById('credentialData').value = '';
+            document.getElementById('issuerDID').selectedIndex = 0;
+            document.getElementById('subjectDID').selectedIndex = 0;
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // Hash generation functions (simplified for demo)
+        function generateTransactionId() {
+            return 'tx_' + Math.random().toString(36).substr(2, 16);
+        }
+
+        function generateTransactionHash() {
+            return Math.random().toString(36).substr(2, 64);
+        }
+
+        function generateBlockHash() {
+            const prefix = '000';
+            const hash = Math.random().toString(36).substr(2, 12);
+            return prefix + hash + '...';
+        }
+
+        // Initialize the application
+        window.onload = function() {
+            initializeSimulator();
+        };
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>

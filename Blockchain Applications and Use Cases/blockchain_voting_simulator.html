@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Voting System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00ff87, #60efff, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(0, 255, 135, 0.3)); }
+            to { filter: drop-shadow(0 0 30px rgba(96, 239, 255, 0.5)); }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #00ff87, #60efff);
+            color: #000;
+            box-shadow: 0 10px 25px rgba(0, 255, 135, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+            border-color: rgba(0, 255, 135, 0.3);
+        }
+
+        .blockchain-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+            min-height: 200px;
+        }
+
+        .block {
+            min-width: 250px;
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.1), rgba(96, 239, 255, 0.1));
+            border: 2px solid rgba(0, 255, 135, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            animation: blockAppear 0.6s ease-out;
+        }
+
+        @keyframes blockAppear {
+            from { transform: scale(0.8) rotateY(90deg); opacity: 0; }
+            to { transform: scale(1) rotateY(0deg); opacity: 1; }
+        }
+
+        .block::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #00ff87;
+            animation: pulse 2s infinite;
+        }
+
+        .block:last-child::after {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translateY(-50%) scale(1); }
+            50% { opacity: 1; transform: translateY(-50%) scale(1.2); }
+        }
+
+        .block-header {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #00ff87;
+        }
+
+        .block-data {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .voting-interface {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .voting-interface {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .candidate-card {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 176, 59, 0.1));
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .candidate-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .candidate-card:hover::before {
+            left: 100%;
+        }
+
+        .candidate-card:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 107, 157, 0.6);
+            box-shadow: 0 15px 30px rgba(255, 107, 157, 0.2);
+        }
+
+        .candidate-card.selected {
+            border-color: #00ff87;
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(96, 239, 255, 0.2));
+        }
+
+        .candidate-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .candidate-party {
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+
+        .vote-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ff87;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff87, #60efff);
+            border-radius: 4px;
+            transition: width 0.8s ease;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff87, #60efff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 255, 135, 0.3);
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 255, 135, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 15px 35px rgba(255, 107, 157, 0.4);
+        }
+
+        .admin-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(96, 239, 255, 0.1), rgba(0, 255, 135, 0.1));
+            border: 1px solid rgba(96, 239, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #60efff;
+            display: block;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #60efff;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00ff87;
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.3);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #00ff87, #60efff);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 15px 30px rgba(0, 255, 135, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .security-panel {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(196, 69, 105, 0.1));
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .security-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .security-icon {
+            width: 24px;
+            height: 24px;
+            background: #00ff87;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left-color: #00ff87;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .voter-id-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            border-left: 4px solid #00ff87;
+        }
+
+        .results-chart {
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            position: absolute;
+            bottom: 20px;
+            background: linear-gradient(180deg, #00ff87, #60efff);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.8s ease;
+            min-width: 60px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 255, 135, 0.6);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Blockchain Voting System</h1>
+            <p>Secure, Transparent, and Immutable Democratic Process</p>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('voting')">🗳️ Vote</div>
+            <div class="nav-tab" onclick="switchTab('blockchain')">⛓️ Blockchain</div>
+            <div class="nav-tab" onclick="switchTab('results')">📊 Results</div>
+            <div class="nav-tab" onclick="switchTab('admin')">⚙️ Admin</div>
+            <div class="nav-tab" onclick="switchTab('security')">🔒 Security</div>
+        </div>
+
+        <!-- Voting Tab -->
+        <div id="voting" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalVotes">0</span>
+                    <div class="stat-label">Total Votes</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalVoters">1,247</span>
+                    <div class="stat-label">Registered Voters</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="turnoutRate">0%</span>
+                    <div class="stat-label">Turnout Rate</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="blockHeight">1</span>
+                    <div class="stat-label">Block Height</div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3>🗳️ Cast Your Vote</h3>
+                <div class="voter-id-display">
+                    <strong>Voter ID:</strong> <span id="currentVoterId">0x...</span>
+                </div>
+                
+                <div class="voting-interface" id="candidatesContainer">
+                    <!-- Candidates will be populated here -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn" onclick="castVote()" id="voteButton">Cast Secure Vote</button>
+                    <button class="btn btn-secondary" onclick="generateNewVoter()">New Voter</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain Tab -->
+        <div id="blockchain" class="tab-content">
+            <div class="glass-card">
+                <h3>⛓️ Blockchain Explorer</h3>
+                <p>View the immutable chain of voting blocks</p>
+                
+                <div class="blockchain-container" id="blockchainContainer">
+                    <!-- Blocks will be populated here -->
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" onclick="mineBlock()">⛏️ Mine New Block</button>
+                    <button class="btn btn-secondary" onclick="validateChain()">✅ Validate Chain</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <div class="glass-card">
+                <h3>📊 Live Results</h3>
+                <div class="results-chart" id="resultsChart">
+                    <!-- Chart will be populated here -->
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <div class="glass-card">
+                    <h4>🏆 Leading Candidate</h4>
+                    <div id="leadingCandidate" style="text-align: center; font-size: 1.5rem; margin: 20px 0;">
+                        No votes yet
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h4>📈 Vote Distribution</h4>
+                    <div id="voteDistribution">
+                        <!-- Distribution will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Tab -->
+        <div id="admin" class="tab-content">
+            <div class="admin-panel">
+                <div class="glass-card">
+                    <h3>👥 Add Candidate</h3>
+                    <div class="form-group">
+                        <label>Candidate Name</label>
+                        <input type="text" id="candidateName" placeholder="Enter candidate name">
+                    </div>
+                    <div class="form-group">
+                        <label>Political Party</label>
+                        <input type="text" id="candidateParty" placeholder="Enter party name">
+                    </div>
+                    <button class="btn" onclick="addCandidate()">Add Candidate</button>
+                </div>
+
+                <div class="glass-card">
+                    <h3>🏛️ Election Management</h3>
+                    <div class="form-group">
+                        <label>Election Title</label>
+                        <input type="text" id="electionTitle" value="Presidential Election 2025">
+                    </div>
+                    <div class="form-group">
+                        <label>Election Status</label>
+                        <select id="electionStatus">
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="updateElection()">Update Election</button>
+                    <button class="btn btn-secondary" onclick="resetElection()">Reset Election</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security" class="tab-content">
+            <div class="glass-card">
+                <h3>🔒 Security Features</h3>
+                
+                <div class="security-panel">
+                    <div class="security-feature">
+                        <div class="security-icon">🔐</div>
+                        <div>
+                            <strong>End-to-End Encryption</strong><br>
+                            All votes are encrypted using AES-256 encryption
+                        </div>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <div class="security-icon">🔗</div>
+                        <div>
+                            <strong>Immutable Blockchain</strong><br>
+                            Votes stored in cryptographically linked blocks
+                        </div>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <div class="security-icon">✅</div>
+                        <div>
+                            <strong>Zero-Knowledge Proofs</strong><br>
+                            Verify vote validity without revealing content
+                        </div>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <div class="security-icon">🌐</div>
+                        <div>
+                            <strong>Distributed Consensus</strong><br>
+                            Network of validators ensures integrity
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn" onclick="performSecurityAudit()">🔍 Security Audit</button>
+                    <button class="btn btn-secondary" onclick="generateAuditReport()">📋 Audit Report</button>
+                </div>
+
+                <div id="auditResults" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Core voting system state
+        let blockchain = [];
+        let candidates = [
+            { id: 1, name: "Alice Johnson", party: "Progressive Party", votes: 0 },
+            { id: 2, name: "Bob Smith", party: "Unity Coalition", votes: 0 },
+            { id: 3, name: "Carol Williams", party: "Reform Movement", votes: 0 }
+        ];
+        let selectedCandidate = null;
+        let currentVoter = null;
+        let totalVotes = 0;
+        let totalVoters = 1247;
+
+        // Initialize system
+        document.addEventListener('DOMContentLoaded', function() {
+            generateGenesisBlock();
+            generateNewVoter();
+            renderCandidates();
+            renderBlockchain();
+            createParticles();
+            updateStats();
+        });
+
+        // Blockchain functions
+        class Block {
+            constructor(index, timestamp, data, previousHash) {
+                this.index = index;
+                this.timestamp = timestamp;
+                this.data = data;
+                this.previousHash = previousHash;
+                this.hash = this.calculateHash();
+                this.nonce = 0;
+            }
+
+            calculateHash() {
+                return this.simpleHash(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce);
+            }
+
+            simpleHash(string) {
+                let hash = 0;
+                if (string.length === 0) return hash.toString(16);
+                
+                for (let i = 0; i < string.length; i++) {
+                    const char = string.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32-bit integer
+                }
+                
+                // Ensure we always get a decent length hash
+                const result = Math.abs(hash).toString(16);
+                return result.padStart(8, '0'); // Pad to at least 8 characters
+            }
+
+            mineBlock(difficulty = 2) {
+                const target = Array(difficulty + 1).join("0");
+                let attempts = 0;
+                const maxAttempts = 100000; // Prevent infinite loops
+                
+                while (this.hash.substring(0, difficulty) !== target && attempts < maxAttempts) {
+                    this.nonce++;
+                    this.hash = this.calculateHash();
+                    attempts++;
+                }
+                
+                // If we couldn't find a valid hash, use a simple fallback
+                if (attempts >= maxAttempts) {
+                    this.hash = "00" + this.hash.substring(2);
+                }
+            }
+        }
+
+        function generateGenesisBlock() {
+            const genesisBlock = new Block(0, Date.now(), "Genesis Block", "0");
+            blockchain.push(genesisBlock);
+        }
+
+        function getLatestBlock() {
+            return blockchain[blockchain.length - 1];
+        }
+
+        function addBlock(newBlock) {
+            newBlock.previousHash = getLatestBlock().hash;
+            newBlock.mineBlock();
+            blockchain.push(newBlock);
+            renderBlockchain();
+            updateStats();
+        }
+
+        function mineBlock() {
+            // Allow mining even with no votes for demo purposes
+            showNotification("Mining new block...", "info");
+            
+            // Disable the mine button during mining
+            const mineButton = document.querySelector('button[onclick="mineBlock()"]');
+            if (mineButton) {
+                mineButton.disabled = true;
+                mineButton.textContent = "⛏️ Mining...";
+            }
+            
+            setTimeout(() => {
+                try {
+                    const blockData = {
+                        votes: candidates.map(c => ({ id: c.id, name: c.name, votes: c.votes })),
+                        timestamp: new Date().toISOString(),
+                        totalVotes: totalVotes,
+                        blockType: totalVotes === 0 ? "empty" : "votes"
+                    };
+
+                    const newBlock = new Block(
+                        blockchain.length,
+                        Date.now(),
+                        blockData,
+                        getLatestBlock().hash
+                    );
+
+                    addBlock(newBlock);
+                    showNotification("Block mined successfully!", "success");
+                } catch (error) {
+                    console.error("Mining error:", error);
+                    showNotification("Mining failed - please try again", "error");
+                } finally {
+                    // Re-enable the mine button
+                    if (mineButton) {
+                        mineButton.disabled = false;
+                        mineButton.textContent = "⛏️ Mine New Block";
+                    }
+                }
+            }, 1500); // Reduced time for better UX
+        }
+
+        function validateChain() {
+            for (let i = 1; i < blockchain.length; i++) {
+                const currentBlock = blockchain[i];
+                const previousBlock = blockchain[i - 1];
+
+                if (currentBlock.hash !== currentBlock.calculateHash()) {
+                    showNotification("Chain validation failed - Invalid hash detected!", "error");
+                    return false;
+                }
+
+                if (currentBlock.previousHash !== previousBlock.hash) {
+                    showNotification("Chain validation failed - Broken chain detected!", "error");
+                    return false;
+                }
+            }
+            showNotification("Blockchain validation successful - Chain is secure!", "success");
+            return true;
+        }
+
+        // Voting functions
+        function generateNewVoter() {
+            currentVoter = {
+                id: '0x' + Math.random().toString(16).substr(2, 8).toUpperCase(),
+                timestamp: Date.now(),
+                hasVoted: false
+            };
+            document.getElementById('currentVoterId').textContent = currentVoter.id;
+        }
+
+        function selectCandidate(candidateId) {
+            if (currentVoter.hasVoted) {
+                showNotification("This voter has already cast their vote!", "error");
+                return;
+            }
+
+            selectedCandidate = candidateId;
+            document.querySelectorAll('.candidate-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-candidate="${candidateId}"]`).classList.add('selected');
+        }
+
+        function castVote() {
+            if (!selectedCandidate) {
+                showNotification("Please select a candidate first!", "error");
+                return;
+            }
+
+            if (currentVoter.hasVoted) {
+                showNotification("This voter has already cast their vote!", "error");
+                return;
+            }
+
+            // Simulate vote encryption and blockchain submission
+            showNotification("Encrypting vote...", "info");
+            
+            setTimeout(() => {
+                const candidate = candidates.find(c => c.id === selectedCandidate);
+                candidate.votes++;
+                totalVotes++;
+                currentVoter.hasVoted = true;
+
+                // Create vote transaction
+                const voteData = {
+                    voterId: currentVoter.id,
+                    candidateId: selectedCandidate,
+                    timestamp: Date.now(),
+                    encrypted: true
+                };
+
+                renderCandidates();
+                renderResults();
+                updateStats();
+                
+                showNotification(`Vote cast for ${candidate.name}! Transaction pending...`, "success");
+                
+                // Auto-generate new voter for demo
+                setTimeout(() => {
+                    generateNewVoter();
+                    selectedCandidate = null;
+                    document.querySelectorAll('.candidate-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                }, 2000);
+            }, 1500);
+        }
+
+        // Admin functions
+        function addCandidate() {
+            const name = document.getElementById('candidateName').value;
+            const party = document.getElementById('candidateParty').value;
+
+            if (!name || !party) {
+                showNotification("Please fill in all fields!", "error");
+                return;
+            }
+
+            const newCandidate = {
+                id: candidates.length + 1,
+                name: name,
+                party: party,
+                votes: 0
+            };
+
+            candidates.push(newCandidate);
+            renderCandidates();
+            renderResults();
+
+            document.getElementById('candidateName').value = '';
+            document.getElementById('candidateParty').value = '';
+
+            showNotification(`Candidate ${name} added successfully!`, "success");
+        }
+
+        function updateElection() {
+            const title = document.getElementById('electionTitle').value;
+            const status = document.getElementById('electionStatus').value;
+            
+            showNotification(`Election updated: ${title} (${status})`, "success");
+        }
+
+        function resetElection() {
+            if (confirm("Are you sure you want to reset the entire election? This action cannot be undone.")) {
+                candidates.forEach(c => c.votes = 0);
+                totalVotes = 0;
+                blockchain = [];
+                generateGenesisBlock();
+                generateNewVoter();
+                renderCandidates();
+                renderResults();
+                renderBlockchain();
+                updateStats();
+                showNotification("Election reset successfully!", "success");
+            }
+        }
+
+        // Security functions
+        function performSecurityAudit() {
+            const auditResults = document.getElementById('auditResults');
+            auditResults.innerHTML = '<div class="loading-spinner"></div>';
+
+            setTimeout(() => {
+                const results = `
+                    <div class="glass-card">
+                        <h4>🔍 Security Audit Results</h4>
+                        <div class="security-feature">
+                            <div class="security-icon">✅</div>
+                            <div>Blockchain integrity: <strong>VERIFIED</strong></div>
+                        </div>
+                        <div class="security-feature">
+                            <div class="security-icon">✅</div>
+                            <div>Vote encryption: <strong>SECURE</strong></div>
+                        </div>
+                        <div class="security-feature">
+                            <div class="security-icon">✅</div>
+                            <div>Network consensus: <strong>ACTIVE</strong></div>
+                        </div>
+                        <div class="security-feature">
+                            <div class="security-icon">⚠️</div>
+                            <div>Last audit: <strong>${new Date().toLocaleString()}</strong></div>
+                        </div>
+                    </div>
+                `;
+                auditResults.innerHTML = results;
+                showNotification("Security audit completed - All systems secure!", "success");
+            }, 3000);
+        }
+
+        function generateAuditReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                totalVotes: totalVotes,
+                totalBlocks: blockchain.length,
+                candidates: candidates.length,
+                chainValid: validateChain()
+            };
+
+            const reportText = JSON.stringify(report, null, 2);
+            showNotification("Audit report generated and logged!", "success");
+            console.log("Audit Report:", reportText);
+        }
+
+        // UI Rendering functions
+        function renderCandidates() {
+            const container = document.getElementById('candidatesContainer');
+            container.innerHTML = candidates.map(candidate => `
+                <div class="candidate-card" data-candidate="${candidate.id}" onclick="selectCandidate(${candidate.id})">
+                    <div class="candidate-name">${candidate.name}</div>
+                    <div class="candidate-party">${candidate.party}</div>
+                    <div class="vote-count">${candidate.votes}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${totalVotes ? (candidate.votes / totalVotes * 100) : 0}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBlockchain() {
+            const container = document.getElementById('blockchainContainer');
+            container.innerHTML = blockchain.map(block => `
+                <div class="block">
+                    <div class="block-header">Block #${block.index}</div>
+                    <div class="block-data">Hash: ${block.hash.substring(0, 10)}...</div>
+                    <div class="block-data">Previous: ${block.previousHash.substring(0, 10)}...</div>
+                    <div class="block-data">Time: ${new Date(block.timestamp).toLocaleTimeString()}</div>
+                    <div class="block-data">Nonce: ${block.nonce}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderResults() {
+            const chart = document.getElementById('resultsChart');
+            const maxVotes = Math.max(...candidates.map(c => c.votes), 1);
+            
+            chart.innerHTML = candidates.map((candidate, index) => {
+                const height = (candidate.votes / maxVotes) * 200;
+                const left = (index * 120) + 50;
+                
+                return `
+                    <div class="chart-bar" style="height: ${height}px; left: ${left}px;">
+                        ${candidate.votes}
+                    </div>
+                `;
+            }).join('');
+
+            // Update leading candidate
+            const leading = candidates.reduce((prev, current) => 
+                (prev.votes > current.votes) ? prev : current
+            );
+            
+            const leadingElement = document.getElementById('leadingCandidate');
+            if (totalVotes > 0) {
+                leadingElement.innerHTML = `
+                    🏆 ${leading.name}<br>
+                    <small>${leading.party}</small><br>
+                    <span style="color: #00ff87;">${leading.votes} votes</span>
+                `;
+            } else {
+                leadingElement.textContent = "No votes cast yet";
+            }
+
+            // Update vote distribution
+            const distributionElement = document.getElementById('voteDistribution');
+            distributionElement.innerHTML = candidates.map(candidate => {
+                const percentage = totalVotes ? ((candidate.votes / totalVotes) * 100).toFixed(1) : 0;
+                return `
+                    <div style="margin-bottom: 10px;">
+                        <strong>${candidate.name}:</strong> ${percentage}% (${candidate.votes} votes)
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalVotes').textContent = totalVotes;
+            document.getElementById('blockHeight').textContent = blockchain.length;
+            
+            const turnout = ((totalVotes / totalVoters) * 100).toFixed(1);
+            document.getElementById('turnoutRate').textContent = `${turnout}%`;
+        }
+
+        // UI functions
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Auto-update demo
+        setInterval(() => {
+            if (Math.random() < 0.1 && totalVotes < 50) { // 10% chance every 3 seconds
+                const randomCandidate = candidates[Math.floor(Math.random() * candidates.length)];
+                randomCandidate.votes++;
+                totalVotes++;
+                renderCandidates();
+                renderResults();
+                updateStats();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

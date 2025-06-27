@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Blockchain Consensus Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: rgba(255,255,255,0.3);
+            border-color: #fff;
+        }
+
+        .simulation-panel {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .simulation-panel.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group input, .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .visualization {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .network-canvas {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #f0f2f5, #ffffff);
+        }
+
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .node.honest {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .node.byzantine {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+        }
+
+        .node.leader {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255,193,7,0.5);
+        }
+
+        .node.validator {
+            background: linear-gradient(45deg, #007bff, #6610f2);
+        }
+
+        .node.miner {
+            background: linear-gradient(45deg, #17a2b8, #6f42c1);
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .message {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255,193,7,0.7);
+            transition: all 0.5s ease;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .log-entry.success {
+            color: #68d391;
+        }
+
+        .log-entry.error {
+            color: #fc8181;
+        }
+
+        .log-entry.warning {
+            color: #fbb040;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .node.active {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes messageFlow {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        .message.flowing {
+            animation: messageFlow 2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Blockchain Consensus Simulator</h1>
+            <p>Advanced Interactive Simulation of Distributed Consensus Algorithms</p>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="byzantine">Byzantine Generals</div>
+            <div class="nav-tab" data-tab="pbft">PBFT</div>
+            <div class="nav-tab" data-tab="pos">Proof of Stake</div>
+            <div class="nav-tab" data-tab="pow">Proof of Work</div>
+            <div class="nav-tab" data-tab="dpos">Delegated PoS</div>
+            <div class="nav-tab" data-tab="consensus">Consensus Selector</div>
+        </div>
+
+        <!-- Byzantine Generals Problem -->
+        <div class="simulation-panel active" id="byzantine">
+            <h2>🏛️ Byzantine Generals Problem</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Number of Generals:</label>
+                    <input type="number" id="generals-count" value="7" min="3" max="15">
+                </div>
+                <div class="control-group">
+                    <label>Byzantine Generals:</label>
+                    <input type="number" id="byzantine-count" value="2" min="0" max="5">
+                </div>
+                <div class="control-group">
+                    <label>Decision:</label>
+                    <select id="decision-type">
+                        <option value="attack">Attack</option>
+                        <option value="retreat">Retreat</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startByzantineSimulation()">Start Simulation</button>
+                <button class="btn" onclick="resetByzantineSimulation()">Reset</button>
+            </div>
+            <div class="visualization" id="byzantine-viz">
+                <div class="network-canvas" id="byzantine-canvas"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="honest-votes">0</div>
+                    <div class="stat-label">Honest Votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="byzantine-votes">0</div>
+                    <div class="stat-label">Byzantine Votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="consensus-reached">No</div>
+                    <div class="stat-label">Consensus Reached</div>
+                </div>
+            </div>
+            <div class="log" id="byzantine-log"></div>
+        </div>
+
+        <!-- PBFT -->
+        <div class="simulation-panel" id="pbft">
+            <h2>🛡️ Practical Byzantine Fault Tolerance (PBFT)</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Number of Nodes:</label>
+                    <input type="number" id="pbft-nodes" value="4" min="4" max="12">
+                </div>
+                <div class="control-group">
+                    <label>Faulty Nodes:</label>
+                    <input type="number" id="pbft-faulty" value="1" min="0" max="3">
+                </div>
+                <button class="btn" onclick="startPBFTSimulation()">Start PBFT Round</button>
+                <button class="btn" onclick="resetPBFTSimulation()">Reset</button>
+            </div>
+            <div class="visualization" id="pbft-viz">
+                <div class="network-canvas" id="pbft-canvas"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="pbft-phase">Idle</div>
+                    <div class="stat-label">Current Phase</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pbft-round">0</div>
+                    <div class="stat-label">Round Number</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pbft-committed">0</div>
+                    <div class="stat-label">Committed Blocks</div>
+                </div>
+            </div>
+            <div class="log" id="pbft-log"></div>
+        </div>
+
+        <!-- Proof of Stake -->
+        <div class="simulation-panel" id="pos">
+            <h2>⚡ Proof of Stake</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Number of Validators:</label>
+                    <input type="number" id="pos-validators" value="8" min="3" max="15">
+                </div>
+                <div class="control-group">
+                    <label>Simulation Speed:</label>
+                    <input type="range" id="pos-speed" min="1" max="10" value="5">
+                </div>
+                <button class="btn" onclick="startPoSSimulation()">Start Staking</button>
+                <button class="btn" onclick="pausePoSSimulation()">Pause</button>
+                <button class="btn" onclick="resetPoSSimulation()">Reset</button>
+            </div>
+            <div class="visualization" id="pos-viz">
+                <div class="network-canvas" id="pos-canvas"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="pos-blocks">0</div>
+                    <div class="stat-label">Blocks Produced</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pos-rewards">0</div>
+                    <div class="stat-label">Total Rewards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pos-slashed">0</div>
+                    <div class="stat-label">Validators Slashed</div>
+                </div>
+            </div>
+            <div class="log" id="pos-log"></div>
+        </div>
+
+        <!-- Proof of Work -->
+        <div class="simulation-panel" id="pow">
+            <h2>⛏️ Proof of Work</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Number of Miners:</label>
+                    <input type="number" id="pow-miners" value="6" min="3" max="12">
+                </div>
+                <div class="control-group">
+                    <label>Difficulty:</label>
+                    <input type="range" id="pow-difficulty" min="1" max="6" value="3">
+                </div>
+                <div class="control-group">
+                    <label>Block Reward:</label>
+                    <input type="number" id="pow-reward" value="50" min="1" max="100">
+                </div>
+                <button class="btn" onclick="startPoWSimulation()">Start Mining</button>
+                <button class="btn" onclick="pausePoWSimulation()">Pause</button>
+                <button class="btn" onclick="resetPoWSimulation()">Reset</button>
+            </div>
+            <div class="visualization" id="pow-viz">
+                <div class="network-canvas" id="pow-canvas"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="pow-blocks">0</div>
+                    <div class="stat-label">Blocks Mined</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pow-hashrate">0</div>
+                    <div class="stat-label">Network Hashrate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pow-time">0s</div>
+                    <div class="stat-label">Avg Block Time</div>
+                </div>
+            </div>
+            <div class="log" id="pow-log"></div>
+        </div>
+
+        <!-- Delegated Proof of Stake -->
+        <div class="simulation-panel" id="dpos">
+            <h2>🗳️ Delegated Proof of Stake</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Number of Delegates:</label>
+                    <input type="number" id="dpos-delegates" value="21" min="3" max="25">
+                </div>
+                <div class="control-group">
+                    <label>Number of Voters:</label>
+                    <input type="number" id="dpos-voters" value="100" min="50" max="500">
+                </div>
+                <button class="btn" onclick="startDPoSElection()">Start Election</button>
+                <button class="btn" onclick="startDPoSProduction()">Start Production</button>
+                <button class="btn" onclick="resetDPoSSimulation()">Reset</button>
+            </div>
+            <div class="visualization" id="dpos-viz">
+                <div class="network-canvas" id="dpos-canvas"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="dpos-elected">0</div>
+                    <div class="stat-label">Elected Delegates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="dpos-blocks">0</div>
+                    <div class="stat-label">Blocks Produced</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="dpos-votes">0</div>
+                    <div class="stat-label">Total Votes Cast</div>
+                </div>
+            </div>
+            <div class="log" id="dpos-log"></div>
+        </div>
+
+        <!-- Consensus Selector -->
+        <div class="simulation-panel" id="consensus">
+            <h2>🎯 Consensus Algorithm Selector</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Network Size:</label>
+                    <input type="range" id="network-size" min="10" max="1000" value="100">
+                    <span id="network-size-value">100</span>
+                </div>
+                <div class="control-group">
+                    <label>Fault Tolerance Requirement:</label>
+                    <select id="fault-tolerance">
+                        <option value="low">Low (< 10%)</option>
+                        <option value="medium">Medium (10-33%)</option>
+                        <option value="high">High (> 33%)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Energy Efficiency:</label>
+                    <select id="energy-efficiency">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Throughput Requirement:</label>
+                    <select id="throughput">
+                        <option value="low">Low (< 100 TPS)</option>
+                        <option value="medium">Medium (100-1000 TPS)</option>
+                        <option value="high">High (> 1000 TPS)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="recommendConsensus()">Get Recommendation</button>
+            </div>
+            <div class="visualization" id="consensus-viz">
+                <div id="recommendation-result" style="text-align: center; padding: 40px;">
+                    <h3>Select your parameters and click "Get Recommendation" to see the best consensus algorithm for your use case.</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Global variables
+        let currentSimulation = null;
+        let simulationState = {
+            byzantine: { running: false, nodes: [] },
+            pbft: { running: false, nodes: [], phase: 'idle', round: 0 },
+            pos: { running: false, validators: [], blocks: 0, rewards: 0 },
+            pow: { running: false, miners: [], blocks: 0, difficulty: 3 },
+            dpos: { running: false, delegates: [], voters: [], elected: [] }
+        };
+
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.simulation-panel').forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+                
+                // Stop current simulation
+                if (currentSimulation) {
+                    clearInterval(currentSimulation);
+                    currentSimulation = null;
+                }
+            });
+        });
+
+        // Utility functions
+        function log(elementId, message, type = 'info') {
+            const logElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function createNode(x, y, type, id, stake = 0) {
+            return {
+                id,
+                x,
+                y,
+                type,
+                stake,
+                votes: 0,
+                element: null,
+                active: false
+            };
+        }
+
+        function renderNode(canvas, node) {
+            if (node.element) {
+                node.element.remove();
+            }
+            
+            const nodeElement = document.createElement('div');
+            nodeElement.className = `node ${node.type}`;
+            nodeElement.style.left = `${node.x}px`;
+            nodeElement.style.top = `${node.y}px`;
+            nodeElement.textContent = node.id;
+            
+            if (node.active) {
+                nodeElement.classList.add('active');
+            }
+            
+            nodeElement.addEventListener('mouseenter', (e) => {
+                showTooltip(e, `Node ${node.id} | Type: ${node.type} | Stake: ${node.stake}`);
+            });
+            
+            nodeElement.addEventListener('mouseleave', hideTooltip);
+            
+            canvas.appendChild(nodeElement);
+            node.element = nodeElement;
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = `${event.pageX + 10}px`;
+            tooltip.style.top = `${event.pageY - 30}px`;
+            tooltip.style.opacity = '1';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.opacity = '0';
+        }
+
+        function createConnection(canvas, node1, node2) {
+            const connection = document.createElement('div');
+            connection.className = 'connection';
+            
+            const dx = node2.x - node1.x;
+            const dy = node2.y - node1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            connection.style.width = `${length}px`;
+            connection.style.left = `${node1.x + 25}px`;
+            connection.style.top = `${node1.y + 25}px`;
+            connection.style.transform = `rotate(${angle}deg)`;
+            connection.style.transformOrigin = '0 0';
+            
+            canvas.appendChild(connection);
+        }
+
+        function animateMessage(canvas, fromNode, toNode, color = '#ffc107') {
+            const message = document.createElement('div');
+            message.className = 'message flowing';
+            message.style.background = color;
+            message.style.left = `${fromNode.x + 20}px`;
+            message.style.top = `${fromNode.y + 20}px`;
+            
+            canvas.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.left = `${toNode.x + 20}px`;
+                message.style.top = `${toNode.y + 20}px`;
+            }, 100);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 2000);
+        }
+
+        // Byzantine Generals Problem
+        function startByzantineSimulation() {
+            const generalsCount = parseInt(document.getElementById('generals-count').value);
+            const byzantineCount = parseInt(document.getElementById('byzantine-count').value);
+            const decision = document.getElementById('decision-type').value;
+            
+            if (byzantineCount >= generalsCount / 2) {
+                alert('Byzantine generals must be less than half of total generals!');
+                return;
+            }
+            
+            const canvas = document.getElementById('byzantine-canvas');
+            canvas.innerHTML = '';
+            
+            simulationState.byzantine.nodes = [];
+            
+            // Create nodes in a circle
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const radius = Math.min(centerX, centerY) - 60;
+            
+            for (let i = 0; i < generalsCount; i++) {
+                const angle = (i * 2 * Math.PI) / generalsCount;
+                const x = centerX + radius * Math.cos(angle) - 25;
+                const y = centerY + radius * Math.sin(angle) - 25;
+                const type = i < byzantineCount ? 'byzantine' : 'honest';
+                const node = createNode(x, y, type, `G${i + 1}`);
+                simulationState.byzantine.nodes.push(node);
+                renderNode(canvas, node);
+            }
+            
+            // Create connections
+            simulationState.byzantine.nodes.forEach((node1, i) => {
+                simulationState.byzantine.nodes.forEach((node2, j) => {
+                    if (i < j) {
+                        createConnection(canvas, node1, node2);
+                    }
+                });
+            });
+            
+            // Start voting simulation
+            simulationState.byzantine.running = true;
+            let votingRound = 0;
+            
+            const votingInterval = setInterval(() => {
+                if (!simulationState.byzantine.running) {
+                    clearInterval(votingInterval);
+                    return;
+                }
+                
+                votingRound++;
+                log('byzantine-log', `Starting voting round ${votingRound}`, 'info');
+                
+                let honestVotes = 0;
+                let byzantineVotes = 0;
+                
+                simulationState.byzantine.nodes.forEach((node, index) => {
+                    setTimeout(() => {
+                        node.active = true;
+                        renderNode(canvas, node);
+                        
+                        if (node.type === 'honest') {
+                            node.vote = decision;
+                            honestVotes++;
+                            log('byzantine-log', `${node.id} (honest) votes: ${decision}`, 'success');
+                        } else {
+                            // Byzantine nodes vote randomly or maliciously
+                            node.vote = Math.random() > 0.5 ? decision : (decision === 'attack' ? 'retreat' : 'attack');
+                            byzantineVotes++;
+                            log('byzantine-log', `${node.id} (byzantine) votes: ${node.vote}`, 'error');
+                        }
+                        
+                        // Update stats
+                        document.getElementById('honest-votes').textContent = honestVotes;
+                        document.getElementById('byzantine-votes').textContent = byzantineVotes;
+                        
+                        // Send messages to other nodes
+                        simulationState.byzantine.nodes.forEach(otherNode => {
+                            if (otherNode !== node) {
+                                setTimeout(() => {
+                                    animateMessage(canvas, node, otherNode, node.type === 'honest' ? '#28a745' : '#dc3545');
+                                }, Math.random() * 500);
+                            }
+                        });
+                        
+                        setTimeout(() => {
+                            node.active = false;
+                            renderNode(canvas, node);
+                        }, 1000);
+                        
+                    }, index * 200);
+                });
+                
+                // Check consensus after all votes
+                setTimeout(() => {
+                    const totalVotes = simulationState.byzantine.nodes.length;
+                    const majority = Math.floor(totalVotes / 2) + 1;
+                    const attackVotes = simulationState.byzantine.nodes.filter(n => n.vote === 'attack').length;
+                    const retreatVotes = simulationState.byzantine.nodes.filter(n => n.vote === 'retreat').length;
+                    
+                    if (attackVotes >= majority) {
+                        document.getElementById('consensus-reached').textContent = 'Attack';
+                        log('byzantine-log', `Consensus reached: ATTACK (${attackVotes}/${totalVotes} votes)`, 'success');
+                    } else if (retreatVotes >= majority) {
+                        document.getElementById('consensus-reached').textContent = 'Retreat';
+                        log('byzantine-log', `Consensus reached: RETREAT (${retreatVotes}/${totalVotes} votes)`, 'success');
+                    } else {
+                        document.getElementById('consensus-reached').textContent = 'No Consensus';
+                        log('byzantine-log', `No consensus reached (Attack: ${attackVotes}, Retreat: ${retreatVotes})`, 'warning');
+                    }
+                }, generalsCount * 200 + 1000);
+                
+            }, 3000);
+            
+            currentSimulation = votingInterval;
+        }
+
+        function resetByzantineSimulation() {
+            simulationState.byzantine.running = false;
+            if (currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+            }
+            document.getElementById('byzantine-canvas').innerHTML = '';
+            document.getElementById('byzantine-log').innerHTML = '';
+            document.getElementById('honest-votes').textContent = '0';
+            document.getElementById('byzantine-votes').textContent = '0';
+            document.getElementById('consensus-reached').textContent = 'No';
+        }
+
+        // PBFT Simulation
+        function startPBFTSimulation() {
+            const nodesCount = parseInt(document.getElementById('pbft-nodes').value);
+            const faultyCount = parseInt(document.getElementById('pbft-faulty').value);
+            
+            if (faultyCount >= nodesCount / 3) {
+                alert('Faulty nodes must be less than 1/3 of total nodes for PBFT!');
+                return;
+            }
+            
+            const canvas = document.getElementById('pbft-canvas');
+            canvas.innerHTML = '';
+            
+            simulationState.pbft.nodes = [];
+            simulationState.pbft.round++;
+            simulationState.pbft.phase = 'pre-prepare';
+            
+            // Create nodes
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const radius = Math.min(centerX, centerY) - 60;
+            
+            for (let i = 0; i < nodesCount; i++) {
+                const angle = (i * 2 * Math.PI) / nodesCount;
+                const x = centerX + radius * Math.cos(angle) - 25;
+                const y = centerY + radius * Math.sin(angle) - 25;
+                const type = i === 0 ? 'leader' : (i <= faultyCount ? 'byzantine' : 'honest');
+                const node = createNode(x, y, type, `N${i + 1}`);
+                simulationState.pbft.nodes.push(node);
+                renderNode(canvas, node);
+            }
+            
+            // Create connections
+            simulationState.pbft.nodes.forEach((node1, i) => {
+                simulationState.pbft.nodes.forEach((node2, j) => {
+                    if (i < j) {
+                        createConnection(canvas, node1, node2);
+                    }
+                });
+            });
+            
+            document.getElementById('pbft-round').textContent = simulationState.pbft.round;
+            log('pbft-log', `Starting PBFT round ${simulationState.pbft.round}`, 'info');
+            
+            // PBFT phases
+            setTimeout(() => runPBFTPhase('pre-prepare'), 1000);
+        }
+
+        function runPBFTPhase(phase) {
+            const canvas = document.getElementById('pbft-canvas');
+            simulationState.pbft.phase = phase;
+            document.getElementById('pbft-phase').textContent = phase.toUpperCase();
+            
+            switch (phase) {
+                case 'pre-prepare':
+                    log('pbft-log', 'Phase 1: Pre-prepare - Primary broadcasts proposal', 'info');
+                    const primary = simulationState.pbft.nodes[0];
+                    primary.active = true;
+                    renderNode(canvas, primary);
+                    
+                    simulationState.pbft.nodes.slice(1).forEach((node, index) => {
+                        setTimeout(() => {
+                            animateMessage(canvas, primary, node, '#ffc107');
+                        }, index * 100);
+                    });
+                    
+                    setTimeout(() => {
+                        primary.active = false;
+                        renderNode(canvas, primary);
+                        runPBFTPhase('prepare');
+                    }, 2000);
+                    break;
+                    
+                case 'prepare':
+                    log('pbft-log', 'Phase 2: Prepare - Nodes broadcast prepare messages', 'info');
+                    simulationState.pbft.nodes.slice(1).forEach((node, index) => {
+                        setTimeout(() => {
+                            node.active = true;
+                            renderNode(canvas, node);
+                            
+                            // Broadcast to all other nodes
+                            simulationState.pbft.nodes.forEach(otherNode => {
+                                if (otherNode !== node) {
+                                    setTimeout(() => {
+                                        animateMessage(canvas, node, otherNode, '#007bff');
+                                    }, Math.random() * 300);
+                                }
+                            });
+                            
+                            setTimeout(() => {
+                                node.active = false;
+                                renderNode(canvas, node);
+                            }, 1000);
+                        }, index * 200);
+                    });
+                    
+                    setTimeout(() => runPBFTPhase('commit'), 3000);
+                    break;
+                    
+                case 'commit':
+                    log('pbft-log', 'Phase 3: Commit - Nodes broadcast commit messages', 'info');
+                    simulationState.pbft.nodes.forEach((node, index) => {
+                        setTimeout(() => {
+                            node.active = true;
+                            renderNode(canvas, node);
+                            
+                            // Broadcast to all other nodes
+                            simulationState.pbft.nodes.forEach(otherNode => {
+                                if (otherNode !== node) {
+                                    setTimeout(() => {
+                                        animateMessage(canvas, node, otherNode, '#28a745');
+                                    }, Math.random() * 300);
+                                }
+                            });
+                            
+                            setTimeout(() => {
+                                node.active = false;
+                                renderNode(canvas, node);
+                            }, 1000);
+                        }, index * 200);
+                    });
+                    
+                    setTimeout(() => {
+                        log('pbft-log', 'Block committed successfully!', 'success');
+                        const committed = parseInt(document.getElementById('pbft-committed').textContent) + 1;
+                        document.getElementById('pbft-committed').textContent = committed;
+                        simulationState.pbft.phase = 'completed';
+                        document.getElementById('pbft-phase').textContent = 'COMPLETED';
+                    }, 4000);
+                    break;
+            }
+        }
+
+        function resetPBFTSimulation() {
+            simulationState.pbft.running = false;
+            simulationState.pbft.round = 0;
+            simulationState.pbft.phase = 'idle';
+            document.getElementById('pbft-canvas').innerHTML = '';
+            document.getElementById('pbft-log').innerHTML = '';
+            document.getElementById('pbft-phase').textContent = 'Idle';
+            document.getElementById('pbft-round').textContent = '0';
+            document.getElementById('pbft-committed').textContent = '0';
+        }
+
+        // Proof of Stake Simulation
+        function startPoSSimulation() {
+            const validatorsCount = parseInt(document.getElementById('pos-validators').value);
+            const canvas = document.getElementById('pos-canvas');
+            canvas.innerHTML = '';
+            
+            simulationState.pos.validators = [];
+            simulationState.pos.running = true;
+            
+            // Create validators with random stakes
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const radius = Math.min(centerX, centerY) - 60;
+            
+            for (let i = 0; i < validatorsCount; i++) {
+                const angle = (i * 2 * Math.PI) / validatorsCount;
+                const x = centerX + radius * Math.cos(angle) - 25;
+                const y = centerY + radius * Math.sin(angle) - 25;
+                const stake = Math.floor(Math.random() * 1000) + 100;
+                const node = createNode(x, y, 'validator', `V${i + 1}`, stake);
+                simulationState.pos.validators.push(node);
+                renderNode(canvas, node);
+            }
+            
+            // Create connections
+            simulationState.pos.validators.forEach((node1, i) => {
+                simulationState.pos.validators.forEach((node2, j) => {
+                    if (i < j && Math.random() > 0.3) {
+                        createConnection(canvas, node1, node2);
+                    }
+                });
+            });
+            
+            log('pos-log', 'Proof of Stake simulation started', 'info');
+            
+            // Start block production
+            const blockInterval = setInterval(() => {
+                if (!simulationState.pos.running) {
+                    clearInterval(blockInterval);
+                    return;
+                }
+                
+                // Select validator based on stake
+                const totalStake = simulationState.pos.validators.reduce((sum, v) => sum + v.stake, 0);
+                let random = Math.random() * totalStake;
+                let selectedValidator = null;
+                
+                for (let validator of simulationState.pos.validators) {
+                    random -= validator.stake;
+                    if (random <= 0) {
+                        selectedValidator = validator;
+                        break;
+                    }
+                }
+                
+                if (selectedValidator) {
+                    selectedValidator.active = true;
+                    renderNode(canvas, selectedValidator);
+                    
+                    log('pos-log', `${selectedValidator.id} selected to produce block (stake: ${selectedValidator.stake})`, 'success');
+                    
+                    // Broadcast block
+                    simulationState.pos.validators.forEach(validator => {
+                        if (validator !== selectedValidator) {
+                            setTimeout(() => {
+                                animateMessage(canvas, selectedValidator, validator, '#6610f2');
+                            }, Math.random() * 500);
+                        }
+                    });
+                    
+                    // Update stats
+                    simulationState.pos.blocks++;
+                    simulationState.pos.rewards += 10;
+                    selectedValidator.stake += 10; // Reward
+                    
+                    document.getElementById('pos-blocks').textContent = simulationState.pos.blocks;
+                    document.getElementById('pos-rewards').textContent = simulationState.pos.rewards;
+                    
+                    setTimeout(() => {
+                        selectedValidator.active = false;
+                        renderNode(canvas, selectedValidator);
+                    }, 2000);
+                }
+                
+            }, 3000);
+            
+            currentSimulation = blockInterval;
+        }
+
+        function pausePoSSimulation() {
+            simulationState.pos.running = !simulationState.pos.running;
+            if (!simulationState.pos.running && currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+                log('pos-log', 'Simulation paused', 'warning');
+            } else if (simulationState.pos.running) {
+                startPoSSimulation();
+                log('pos-log', 'Simulation resumed', 'info');
+            }
+        }
+
+        function resetPoSSimulation() {
+            simulationState.pos.running = false;
+            if (currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+            }
+            simulationState.pos.blocks = 0;
+            simulationState.pos.rewards = 0;
+            document.getElementById('pos-canvas').innerHTML = '';
+            document.getElementById('pos-log').innerHTML = '';
+            document.getElementById('pos-blocks').textContent = '0';
+            document.getElementById('pos-rewards').textContent = '0';
+            document.getElementById('pos-slashed').textContent = '0';
+        }
+
+        // Proof of Work Simulation
+        function startPoWSimulation() {
+            const minersCount = parseInt(document.getElementById('pow-miners').value);
+            const difficulty = parseInt(document.getElementById('pow-difficulty').value);
+            const reward = parseInt(document.getElementById('pow-reward').value);
+            
+            const canvas = document.getElementById('pow-canvas');
+            canvas.innerHTML = '';
+            
+            simulationState.pow.miners = [];
+            simulationState.pow.running = true;
+            simulationState.pow.difficulty = difficulty;
+            
+            // Create miners with different hash rates
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const radius = Math.min(centerX, centerY) - 60;
+            
+            for (let i = 0; i < minersCount; i++) {
+                const angle = (i * 2 * Math.PI) / minersCount;
+                const x = centerX + radius * Math.cos(angle) - 25;
+                const y = centerY + radius * Math.sin(angle) - 25;
+                const hashRate = Math.floor(Math.random() * 500) + 100;
+                const node = createNode(x, y, 'miner', `M${i + 1}`, hashRate);
+                node.hashRate = hashRate;
+                node.attempts = 0;
+                simulationState.pow.miners.push(node);
+                renderNode(canvas, node);
+            }
+            
+            // Create connections
+            simulationState.pow.miners.forEach((node1, i) => {
+                simulationState.pow.miners.forEach((node2, j) => {
+                    if (i < j && Math.random() > 0.4) {
+                        createConnection(canvas, node1, node2);
+                    }
+                });
+            });
+            
+            log('pow-log', `Proof of Work mining started (difficulty: ${difficulty})`, 'info');
+            
+            // Update network hashrate
+            const totalHashRate = simulationState.pow.miners.reduce((sum, m) => sum + m.hashRate, 0);
+            document.getElementById('pow-hashrate').textContent = `${totalHashRate} H/s`;
+            
+            // Start mining competition
+            const miningInterval = setInterval(() => {
+                if (!simulationState.pow.running) {
+                    clearInterval(miningInterval);
+                    return;
+                }
+                
+                // Each miner attempts to mine
+                let blockFound = false;
+                
+                for (let miner of simulationState.pow.miners) {
+                    miner.attempts++;
+                    const probability = miner.hashRate / (totalHashRate * difficulty);
+                    
+                    if (Math.random() < probability && !blockFound) {
+                        blockFound = true;
+                        miner.active = true;
+                        renderNode(canvas, miner);
+                        
+                        log('pow-log', `${miner.id} found a block! (attempts: ${miner.attempts}, reward: ${reward})`, 'success');
+                        
+                        // Broadcast block
+                        simulationState.pow.miners.forEach(otherMiner => {
+                            if (otherMiner !== miner) {
+                                setTimeout(() => {
+                                    animateMessage(canvas, miner, otherMiner, '#17a2b8');
+                                }, Math.random() * 500);
+                            }
+                        });
+                        
+                        // Update stats
+                        simulationState.pow.blocks++;
+                        miner.stake += reward;
+                        
+                        document.getElementById('pow-blocks').textContent = simulationState.pow.blocks;
+                        
+                        // Calculate average block time
+                        const avgTime = (10 * difficulty) / (totalHashRate / 1000);
+                        document.getElementById('pow-time').textContent = `${avgTime.toFixed(1)}s`;
+                        
+                        // Reset all miners' attempts
+                        simulationState.pow.miners.forEach(m => m.attempts = 0);
+                        
+                        setTimeout(() => {
+                            miner.active = false;
+                            renderNode(canvas, miner);
+                        }, 2000);
+                        
+                        break;
+                    }
+                }
+                
+            }, 100);
+            
+            currentSimulation = miningInterval;
+        }
+
+        function pausePoWSimulation() {
+            simulationState.pow.running = !simulationState.pow.running;
+            if (!simulationState.pow.running && currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+                log('pow-log', 'Mining paused', 'warning');
+            } else if (simulationState.pow.running) {
+                startPoWSimulation();
+                log('pow-log', 'Mining resumed', 'info');
+            }
+        }
+
+        function resetPoWSimulation() {
+            simulationState.pow.running = false;
+            if (currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+            }
+            simulationState.pow.blocks = 0;
+            document.getElementById('pow-canvas').innerHTML = '';
+            document.getElementById('pow-log').innerHTML = '';
+            document.getElementById('pow-blocks').textContent = '0';
+            document.getElementById('pow-hashrate').textContent = '0';
+            document.getElementById('pow-time').textContent = '0s';
+        }
+
+        // Delegated Proof of Stake
+        function startDPoSElection() {
+            const delegatesCount = parseInt(document.getElementById('dpos-delegates').value);
+            const votersCount = parseInt(document.getElementById('dpos-voters').value);
+            
+            const canvas = document.getElementById('dpos-canvas');
+            canvas.innerHTML = '';
+            
+            simulationState.dpos.delegates = [];
+            simulationState.dpos.voters = [];
+            simulationState.dpos.elected = [];
+            
+            // Create delegate candidates in center area
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const delegateRadius = 80;
+            
+            for (let i = 0; i < delegatesCount; i++) {
+                const angle = (i * 2 * Math.PI) / delegatesCount;
+                const x = centerX + delegateRadius * Math.cos(angle) - 25;
+                const y = centerY + delegateRadius * Math.sin(angle) - 25;
+                const node = createNode(x, y, 'validator', `D${i + 1}`);
+                node.votes = 0;
+                simulationState.dpos.delegates.push(node);
+                renderNode(canvas, node);
+            }
+            
+            // Create voters around the edges
+            const voterRadius = Math.min(centerX, centerY) - 40;
+            for (let i = 0; i < Math.min(votersCount, 50); i++) { // Limit visual voters
+                const angle = (i * 2 * Math.PI) / Math.min(votersCount, 50);
+                const x = centerX + voterRadius * Math.cos(angle) - 15;
+                const y = centerY + voterRadius * Math.sin(angle) - 15;
+                const node = createNode(x, y, 'honest', `V${i + 1}`);
+                node.element.style.width = '30px';
+                node.element.style.height = '30px';
+                node.element.style.fontSize = '10px';
+                simulationState.dpos.voters.push(node);
+                renderNode(canvas, node);
+            }
+            
+            log('dpos-log', `Starting DPoS election with ${delegatesCount} delegates and ${votersCount} voters`, 'info');
+            
+            // Simulate voting
+            let votingDelay = 0;
+            for (let i = 0; i < votersCount; i++) {
+                setTimeout(() => {
+                    // Each voter votes for a random delegate
+                    const selectedDelegate = simulationState.dpos.delegates[Math.floor(Math.random() * delegatesCount)];
+                    selectedDelegate.votes++;
+                    
+                    if (i < simulationState.dpos.voters.length) {
+                        const voter = simulationState.dpos.voters[i];
+                        voter.active = true;
+                        renderNode(canvas, voter);
+                        
+                        setTimeout(() => {
+                            animateMessage(canvas, voter, selectedDelegate, '#ffc107');
+                            voter.active = false;
+                            renderNode(canvas, voter);
+                        }, 200);
+                    }
+                    
+                    if (i % 100 === 0) {
+                        log('dpos-log', `${i + 1} votes cast...`, 'info');
+                    }
+                    
+                }, votingDelay);
+                votingDelay += Math.random() * 20;
+            }
+            
+            // Tally results after voting
+            setTimeout(() => {
+                simulationState.dpos.delegates.sort((a, b) => b.votes - a.votes);
+                const topDelegates = Math.min(21, Math.floor(delegatesCount / 2));
+                simulationState.dpos.elected = simulationState.dpos.delegates.slice(0, topDelegates);
+                
+                simulationState.dpos.elected.forEach(delegate => {
+                    delegate.type = 'leader';
+                    renderNode(canvas, delegate);
+                });
+                
+                document.getElementById('dpos-elected').textContent = simulationState.dpos.elected.length;
+                document.getElementById('dpos-votes').textContent = votersCount;
+                
+                log('dpos-log', `Election complete! ${simulationState.dpos.elected.length} delegates elected`, 'success');
+                simulationState.dpos.delegates.forEach(delegate => {
+                    log('dpos-log', `${delegate.id}: ${delegate.votes} votes ${simulationState.dpos.elected.includes(delegate) ? '(ELECTED)' : ''}`, 'info');
+                });
+                
+            }, votingDelay + 1000);
+        }
+
+        function startDPoSProduction() {
+            if (simulationState.dpos.elected.length === 0) {
+                alert('Please run an election first!');
+                return;
+            }
+            
+            const canvas = document.getElementById('dpos-canvas');
+            log('dpos-log', 'Starting block production phase', 'info');
+            
+            let blockCount = 0;
+            let delegateIndex = 0;
+            
+            const productionInterval = setInterval(() => {
+                const producer = simulationState.dpos.elected[delegateIndex];
+                producer.active = true;
+                renderNode(canvas, producer);
+                
+                log('dpos-log', `${producer.id} producing block ${blockCount + 1}`, 'success');
+                
+                // Broadcast to other delegates
+                simulationState.dpos.elected.forEach(delegate => {
+                    if (delegate !== producer) {
+                        setTimeout(() => {
+                            animateMessage(canvas, producer, delegate, '#28a745');
+                        }, Math.random() * 300);
+                    }
+                });
+                
+                blockCount++;
+                document.getElementById('dpos-blocks').textContent = blockCount;
+                
+                setTimeout(() => {
+                    producer.active = false;
+                    renderNode(canvas, producer);
+                }, 1500);
+                
+                delegateIndex = (delegateIndex + 1) % simulationState.dpos.elected.length;
+                
+                if (blockCount >= 21) {
+                    clearInterval(productionInterval);
+                    log('dpos-log', 'Block production round completed', 'success');
+                }
+                
+            }, 2000);
+            
+            currentSimulation = productionInterval;
+        }
+
+        function resetDPoSSimulation() {
+            if (currentSimulation) {
+                clearInterval(currentSimulation);
+                currentSimulation = null;
+            }
+            simulationState.dpos = { running: false, delegates: [], voters: [], elected: [] };
+            document.getElementById('dpos-canvas').innerHTML = '';
+            document.getElementById('dpos-log').innerHTML = '';
+            document.getElementById('dpos-elected').textContent = '0';
+            document.getElementById('dpos-blocks').textContent = '0';
+            document.getElementById('dpos-votes').textContent = '0';
+        }
+
+        // Consensus Algorithm Selector
+        function recommendConsensus() {
+            const networkSize = parseInt(document.getElementById('network-size').value);
+            const faultTolerance = document.getElementById('fault-tolerance').value;
+            const energyEfficiency = document.getElementById('energy-efficiency').value;
+            const throughput = document.getElementById('throughput').value;
+            
+            document.getElementById('network-size-value').textContent = networkSize;
+            
+            const resultDiv = document.getElementById('recommendation-result');
+            
+            let recommendation = {
+                algorithm: '',
+                score: 0,
+                reasoning: [],
+                pros: [],
+                cons: []
+            };
+            
+            const algorithms = {
+                'Proof of Work': {
+                    networkSize: { small: 2, medium: 5, large: 8 },
+                    faultTolerance: { low: 6, medium: 8, high: 9 },
+                    energyEfficiency: { low: 8, medium: 3, high: 1 },
+                    throughput: { low: 7, medium: 4, high: 2 },
+                    pros: ['High security', 'Decentralized', 'Battle-tested'],
+                    cons: ['High energy consumption', 'Low throughput', 'Slow finality']
+                },
+                'Proof of Stake': {
+                    networkSize: { small: 7, medium: 8, large: 6 },
+                    faultTolerance: { low: 7, medium: 8, high: 6 },
+                    energyEfficiency: { low: 3, medium: 8, high: 9 },
+                    throughput: { low: 6, medium: 7, high: 8 },
+                    pros: ['Energy efficient', 'Fast finality', 'Good throughput'],
+                    cons: ['Nothing at stake problem', 'Wealth concentration']
+                },
+                'Delegated Proof of Stake': {
+                    networkSize: { small: 8, medium: 9, large: 7 },
+                    faultTolerance: { low: 8, medium: 7, high: 5 },
+                    energyEfficiency: { low: 4, medium: 9, high: 9 },
+                    throughput: { low: 5, medium: 8, high: 9 },
+                    pros: ['Very high throughput', 'Energy efficient', 'Fast transactions'],
+                    cons: ['More centralized', 'Voter apathy risk']
+                },
+                'PBFT': {
+                    networkSize: { small: 9, medium: 6, large: 3 },
+                    faultTolerance: { low: 5, medium: 6, high: 9 },
+                    energyEfficiency: { low: 6, medium: 8, high: 8 },
+                    throughput: { low: 8, medium: 9, high: 7 },
+                    pros: ['Strong consistency', 'Byzantine fault tolerant', 'Immediate finality'],
+                    cons: ['Limited scalability', 'High communication overhead']
+                }
+            };
+            
+            const sizeCategory = networkSize < 100 ? 'small' : networkSize < 1000 ? 'medium' : 'large';
+            
+            let bestAlgorithm = '';
+            let bestScore = 0;
+            
+            Object.entries(algorithms).forEach(([name, config]) => {
+                const score = 
+                    config.networkSize[sizeCategory] * 0.25 +
+                    config.faultTolerance[faultTolerance] * 0.25 +
+                    config.energyEfficiency[energyEfficiency] * 0.25 +
+                    config.throughput[throughput] * 0.25;
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestAlgorithm = name;
+                    recommendation = {
+                        algorithm: name,
+                        score: score,
+                        pros: config.pros,
+                        cons: config.cons
+                    };
+                }
+            });
+            
+            resultDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin-bottom: 20px;">
+                    <h2>🎯 Recommended: ${recommendation.algorithm}</h2>
+                    <p style="font-size: 1.2em; margin: 10px 0;">Compatibility Score: ${(recommendation.score * 10).toFixed(1)}/10</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #2d5016; margin-bottom: 15px;">✅ Advantages</h3>
+                        <ul style="color: #2d5016;">
+                            ${recommendation.pros.map(pro => `<li style="margin-bottom: 8px;">${pro}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div style="background: #ffeaea; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #721c24; margin-bottom: 15px;">⚠️ Considerations</h3>
+                        <ul style="color: #721c24;">
+                            ${recommendation.cons.map(con => `<li style="margin-bottom: 8px;">${con}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h3>📊 Analysis Summary</h3>
+                    <p><strong>Network Size:</strong> ${networkSize} nodes (${sizeCategory})</p>
+                    <p><strong>Fault Tolerance:</strong> ${faultTolerance} priority</p>
+                    <p><strong>Energy Efficiency:</strong> ${energyEfficiency} priority</p>
+                    <p><strong>Throughput:</strong> ${throughput} requirement</p>
+                    <p style="margin-top: 15px; font-style: italic;">
+                        Based on your requirements, ${recommendation.algorithm} provides the best balance of 
+                        performance, security, and efficiency for your use case.
+                    </p>
+                </div>
+            `;
+        }
+
+        // Update network size display
+        document.getElementById('network-size').addEventListener('input', (e) => {
+            document.getElementById('network-size-value').textContent = e.target.value;
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('byzantine-log', 'Byzantine Generals Problem simulation ready', 'info');
+        });
+    </script>
+</body>
+</html>
