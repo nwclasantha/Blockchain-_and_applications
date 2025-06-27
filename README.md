@@ -22,7 +22,7 @@ The contributions of this work are as follows:
 
 1. We systematically describe the architecture and workflow of each simulator (both HTML and Python versions), highlighting design principles like modularity (e.g., classes for blocks, transactions, nodes) and interactivity.
 
-2. We illustrate how these simulators can be used to demonstrate key concepts in blockchain networks and security—for example, how proof-of-work mining is modeled or how smart contract vulnerabilities can be explored.
+2. We illustrate how these simulators can be used to demonstrate key concepts in blockchain networks and security for example, how proof-of-work mining is modeled or how smart contract vulnerabilities can be explored.
 
 3. We present sample results and analyses from using the simulators, showcasing their ability to reproduce known behaviors (such as consensus thresholds or attack success conditions) and inform research questions.
 
